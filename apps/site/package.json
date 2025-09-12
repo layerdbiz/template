@@ -31,6 +31,7 @@
 	"dependencies": {
 		"@layerd/config-svelte": "workspace:*",
 		"@layerd/config-vite": "workspace:*",
-		"@layerd/ui": "workspace:*"
+		"@layerd/ui": "workspace:*",
+		"@sveltejs/adapter-vercel": "^5.10.2"
 	}
 }

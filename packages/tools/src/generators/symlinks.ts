@@ -73,6 +73,11 @@ async function createSymlink(source: string, target: string): Promise<void> {
 		const isSymlink = await isSymbolicLink(absoluteTarget);
 		console.log(`🔍 Verification - Is symlink: ${isSymlink}`);
 	} catch (error) {
+		// Handle EEXIST gracefully - symlink might already exist
+		if (error instanceof Error && "code" in error && error.code === "EEXIST") {
+			console.log(`ℹ️ Symlink already exists: ${target} (skipping)`);
+			return;
+		}
 		console.error(`❌ Failed to create symlink for ${target}:`, error);
 		throw error;
 	}
@@ -96,12 +101,7 @@ export async function generateSymlinks(): Promise<void> {
 
 	// Create symlinks for each target
 	for (const target of targets) {
-		try {
-			await createSymlink(source, target);
-		} catch (error) {
-			console.error(`❌ Failed to create symlink ${target}:`, error);
-			// Continue with other targets even if one fails
-		}
+		await createSymlink(source, target);
 	}
 
 	console.log("✨ Static asset symlinks created successfully!");
