@@ -1,7 +1,5 @@
 {
-	"buildCommand": "pnpm build --filter=site",
-	"framework": null,
+	"buildCommand": "pnpm --filter site build",
 	"installCommand": "pnpm install",
-	"devCommand": "pnpm --filter=site dev",
-	"outputDirectory": ".vercel/output"
+	"devCommand": "pnpm --filter site dev"
 }
