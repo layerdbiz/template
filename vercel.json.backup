@@ -1,5 +1,0 @@
-{
-	"buildCommand": "pnpm --filter site build",
-	"installCommand": "pnpm install",
-	"devCommand": "pnpm --filter site dev"
-}
