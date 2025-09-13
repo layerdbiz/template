@@ -82,24 +82,64 @@
 	// Partners
 	const partnerLogos = [
 		{
+			name: 'Arc Marine',
+			img: '/partners/arc-marine-logo.svg'
+		},
+		{
 			name: 'BNSF Logistics',
 			img: '/partners/bnsf-logistics.svg'
 		},
 		{
 			name: 'CSX Corporation',
-			img: '/partners/csx-coporation.svg'
+			img: '/partners/csx.svg'
+		},
+		{
+			name: 'D-Ship',
+			img: '/partners/d-ship.svg'
 		},
 		{
 			name: 'DS Nordon',
 			img: '/partners/ds-nordon.svg'
 		},
 		{
+			name: 'Fagioli',
+			img: '/partners/fagioli-logo.svg'
+		},
+		{
+			name: 'G&C',
+			img: '/partners/g-c-logo.svg'
+		},
+		{
+			name: 'Gensteam',
+			img: '/partners/gensteam-logo.svg'
+		},
+		{
 			name: 'Mitsubishi Power',
 			img: '/partners/mitsubishi-power.svg'
 		},
 		{
+			name: 'Port City Sabine',
+			img: '/partners/port-city-sabine-logo.svg'
+		},
+		{
 			name: 'QSL',
 			img: '/partners/qsl-logo.svg'
+		},
+		{
+			name: 'SC Ports',
+			img: '/partners/sc-ports-logo.svg'
+		},
+		{
+			name: 'SSA Marine',
+			img: '/partners/ssa-marine.svg'
+		},
+		{
+			name: 'Stevens Towing',
+			img: '/partners/stevens-towing.svg'
+		},
+		{
+			name: 'Texas International Freight',
+			img: '/partners/texas-international-freight.svg'
 		}
 	];
 
@@ -223,7 +263,9 @@
 
 	<!-- partners -->
 	<Container class="flex select-none flex-col items-center justify-around gap-14 pb-20 text-white ">
-		<div class="grid grid-cols-2 gap-8 text-white invert md:grid-cols-3 lg:grid-cols-5 lg:gap-x-20">
+		<div
+			class="grid grid-cols-2 items-center justify-center gap-8 text-white invert md:grid-cols-3 lg:grid-cols-5 lg:gap-x-20"
+		>
 			{#each partnerLogos as partner}
 				<img
 					src={partner.img}
