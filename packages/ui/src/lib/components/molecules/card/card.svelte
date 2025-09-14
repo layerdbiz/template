@@ -8,6 +8,7 @@
 		Text,
 		Icon,
 		Button,
+		Content,
 		type ComponentProps,
 		type ImageProps
 	} from '@layerd/ui';
@@ -29,7 +30,7 @@
 	let {
 		variant = 'service',
 		title = 'Headline',
-		subtitle = undefined,
+		subtitle = 'Subtitle',
 		description = 'Please add your content here. Keep it short and simple. ',
 		label = 'label',
 		image = undefined,
@@ -116,60 +117,50 @@
 
 <!-- Testimonial -->
 {#snippet testimonial()}
-	<div class="card-testimonial space-y-4 p-6">
-		{#if icon}
-			<div class="flex justify-center">
-				<Icon
-					name={icon}
-					class="text-primary-500 h-8 w-8"
-				/>
-			</div>
-		{/if}
+	<!-- Quote content -->
+	{#if description}
+		<!-- 	
+		<blockquote
+			class="relative mb-6 inline-block text-balance font-serif text-xl leading-[1.2] before:absolute before:-left-6 before:content-['“'] after:content-['”'] lg:text-4xl"
+		>
+			{description}
 
+			<b
+				class="border-primary absolute -left-6 bottom-0 top-0 inline-block border-l-4 lg:-left-12 lg:bottom-2 lg:top-2"
+			></b>
+		</blockquote> -->
+		<blockquote
+			class="relative mb-6 inline-block text-balance font-serif text-xl leading-[1.2] lg:text-4xl"
+		>
+			{description}
+
+			<b
+				class="border-primary absolute -left-6 bottom-0 top-0 inline-block border-l-4 lg:-left-12 lg:bottom-2 lg:top-2"
+			></b>
+		</blockquote>
+	{/if}
+
+	<!-- Attribution section -->
+	<div class="pt-4">
 		{#if title}
-			<h3 class="card-title text-base-950-50 text-center text-lg font-semibold">{title}</h3>
-		{/if}
-
-		{#if description}
-			<p class="card-description text-base-600-300 text-center text-sm italic leading-relaxed">
-				{description}
-			</p>
-		{/if}
-
-		{#if image}
-			<div class="flex justify-center">
-				{#if typeof image === 'string'}
-					<Image
-						src={image}
-						alt={title || 'Testimonial'}
-						class="h-12 w-12 rounded-full object-cover"
-					/>
-				{:else}
-					<Image
-						{...image}
-						alt={image.alt || title || 'Testimonial'}
-						class="h-12 w-12 rounded-full object-cover {image.class || ''}"
-					/>
-				{/if}
-			</div>
+			<p class="text-base-950-50 text-sm font-medium uppercase lg:text-lg">{title}</p>
 		{/if}
 
 		{#if subtitle}
-			<p class="text-base-500-400 text-center text-xs font-medium">{subtitle}</p>
-		{/if}
-
-		{#if children}
-			{@render children()}
+			<p class="text-primary-500 text-sm uppercase lg:text-lg">{subtitle}</p>
 		{/if}
 	</div>
+
+	{#if children}
+		{@render children()}
+	{/if}
 {/snippet}
 
 <!-- Template 
 ::::::::::::::::::::::::::::::::::::::::::::: -->
 <Component
-	glass
 	{...props}
-	class="card block overflow-hidden rounded-xl {props.class}"
+	class="card block rounded-xl {props.class}"
 >
 	{#snippet component({ props })}
 		<div {...props}>

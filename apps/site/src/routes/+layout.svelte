@@ -5,11 +5,13 @@
 		Theme,
 		Header,
 		Footer,
+		Container,
 		Nav,
 		Button,
 		Logo,
 		Toggle,
 		Link,
+		Image,
 		scroll,
 		mq
 	} from '@layerd/ui';
@@ -103,9 +105,17 @@
 	{@render children()}
 </main>
 <Footer
-	primary
-	divider="top">hi mom footer</Footer
+	class="relative py-10"
+	invert
 >
+	<Container>hi mom footer</Container>
+	<!-- blue radial gradient -->
+	<Image
+		bg
+		class="mask-t-from-0% mask-t-to-100% absolute bottom-0 size-full overflow-hidden"
+		overlay="bg-radial from-primary to-transparent from-0% to-100% bg-black scale-y-200 origin-bottom translate-y-3/4 "
+	/>
+</Footer>
 
 <style lang="postcss">
 	@reference '@layerd/ui/ui.css';

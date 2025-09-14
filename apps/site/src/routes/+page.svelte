@@ -110,6 +110,10 @@
 			img: '/partners/g-c-logo.svg'
 		},
 		{
+			name: 'J.E. Oswalt & Sons',
+			img: '/partners/j-e-oswalt-and-sons.svg'
+		},
+		{
 			name: 'Gensteam',
 			img: '/partners/gensteam-logo.svg'
 		},
@@ -202,7 +206,7 @@
 			<Button
 				size={mq.md ? 'xl' : 'md'}
 				reverse
-				label="Contact Sales"
+				label="Contact sales"
 				class="bg-base-950-950 text-light-light w-full flex-1 lg:min-w-72"
 				href="#"
 			/>
@@ -264,16 +268,26 @@
 	<!-- partners -->
 	<Container class="flex select-none flex-col items-center justify-around gap-14 pb-20 text-white ">
 		<div
-			class="grid grid-cols-2 items-center justify-center gap-8 text-white invert md:grid-cols-3 lg:grid-cols-5 lg:gap-x-20"
+			class="mask-x-from-90% mask-x-to-100% grid grid-cols-2 items-center justify-center gap-8 text-white invert sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
 		>
 			{#each partnerLogos as partner}
 				<img
 					src={partner.img}
 					alt={partner.name}
-					class="h-16 w-auto max-w-32 shrink-0 object-contain"
+					class="h-8 w-auto max-w-32 shrink-0 place-self-center self-center object-contain lg:min-h-16"
 				/>
 			{/each}
 		</div>
+	</Container>
+	<!-- partners -->
+	<Container class="flex flex-col items-center justify-center gap-14 pb-20 text-white">
+		<Card
+			class="dark max-w-xl pl-14"
+			variant="testimonial"
+			title="Justin ONeill"
+			subtitle="Arc Marine"
+			description="Trident has been an invaluable partner in managing our complex logistics needs. Their expertise and dedication have significantly improved our operational efficiency."
+		/>
 	</Container>
 </Section>
 
@@ -331,7 +345,12 @@
 		subtitle="We got the services bruh"
 	/>
 	<div class="services-container">
-		<Card total="10" />
+		<Card
+			class="overflow-hidden"
+			glass
+			variant="service"
+			total="10"
+		/>
 	</div>
 </Section>
 
@@ -384,28 +403,24 @@
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
 <Section
 	invert
-	class="flex flex-col !items-center !justify-center !py-0 text-center lg:!items-start lg:!justify-start lg:text-left"
-	container="!gap-4 !pt-0 lg:px-0"
+	class="flex flex-col py-0 text-center lg:items-start lg:justify-start lg:text-left"
+	container="!gap-6 !pt-0 lg:!gap-6 flex w-full flex-col items-center lg:grid lg:grid-flow-col lg:grid-rows-2"
 >
-	<div class="flex flex-col items-center justify-between gap-10 lg:flex-row">
-		<div class="flex flex-col gap-4">
-			<Text
-				class="noprose whitespace-nowrap text-balance text-4xl lg:text-pretty lg:text-6xl"
-				h1="Ready to become a partner?"
-			/>
-			<Text
-				class="max-w-1/2 text-balance"
-				p="Sign up for a free account and start building your AI-powered applications today."
-			/>
-		</div>
-		<Button
-			size="xl"
-			primary
-			label="Contact Sales"
-			class="min-w-72"
-			href="#"
-		/>
-	</div>
+	<Text
+		class="text-balance text-4xl md:text-pretty md:text-6xl"
+		h1="Ready to become a partner?"
+	/>
+	<Text
+		class="text-pretty md:max-w-xl md:text-balance"
+		p="Sign up for a free account and start building your AI-powered applications today."
+	/>
+	<Button
+		size="xl"
+		primary
+		label="Contact sales"
+		class="row-span-2 min-w-72 place-self-end self-center"
+		href="#"
+	/>
 </Section>
 
 <style lang="postcss">
