@@ -19,7 +19,7 @@
 		pattern?: string | boolean;
 		/** Classes applied to the img element */
 		image?: string;
-		/** Classes applied to the overlay div, or true for default overlay */
+		/** Classes applied to the overlay div. Use true/""/\"linear" for linear gradient, "radial" for radial gradient, or custom classes */
 		overlay?: string | boolean;
 		/** Classes applied to the foreground div */
 		foreground?: string;
@@ -68,7 +68,22 @@
 
 	let overlayClasses = $derived.by(() => {
 		if (!overlay) return '';
-		return overlay === true ? 'bg-radial -from-black to-black to-70% opacity-80' : overlay;
+
+		// Handle preset overlay types
+		if (overlay === true || overlay === '' || overlay === 'linear') {
+			return 'bg-linear-to-b from-transparent from-50% via-black via-85% to-black to-100%';
+		}
+		if (overlay === 'radial') {
+			return 'bg-radial -from-black to-black to-70% opacity-80';
+		}
+
+		// Custom classes
+		return overlay;
+	});
+
+	let overlayMaskStyle = $derived.by(() => {
+		if (!overlay || !imageSrc) return '';
+		return `mask: url(${imageSrc}); -webkit-mask: url(${imageSrc}); mask-size: cover; -webkit-mask-size: cover; mask-position: center; -webkit-mask-position: center; mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;`;
 	});
 </script>
 
@@ -121,7 +136,10 @@
 <!-- Overlay Layer -->
 {#snippet overlayLayer()}
 	{#if overlay}
-		<div class="pointer-events-none absolute inset-0 {overlayClasses}"></div>
+		<div
+			class="pointer-events-none absolute inset-0 {overlayClasses}"
+			style={overlayMaskStyle}
+		></div>
 	{/if}
 {/snippet}
 

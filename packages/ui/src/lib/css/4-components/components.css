@@ -17,8 +17,3 @@
 		}
 	}
 }
-
-/* cards */
-.card {
-	@apply min-w-20 rounded-lg p-1;
-}

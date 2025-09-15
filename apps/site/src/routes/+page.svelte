@@ -166,7 +166,7 @@
 	------------------------------------------>
 	<Container class="flex select-none flex-col items-center justify-around gap-14">
 		<!-- title -->
-		<div class="text-light-light flex flex-col gap-2 text-center">
+		<div class="text-base-50 flex flex-col gap-2 text-center">
 			<h1 class="order-2 text-balance text-xl font-bold leading-tight lg:text-6xl">
 				<span>We are Port Captains, Surveyors and Transport Engineers</span>
 			</h1>
@@ -201,14 +201,14 @@
 				primary
 				label="Learn More"
 				class="w-full flex-1 lg:min-w-72"
-				href="#"
+				href="#About"
 			/>
 			<Button
 				size={mq.md ? 'xl' : 'md'}
-				reverse
+				base
 				label="Contact sales"
-				class="bg-base-950-950 text-light-light w-full flex-1 lg:min-w-72"
-				href="#"
+				class="w-full flex-1 lg:min-w-72"
+				href="#Contact"
 			/>
 		</div>
 	</Container>
@@ -254,10 +254,10 @@
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
 <Section
 	id="Partners"
-	class="bg-dark-dark text-light-light z-0 flex flex-col pt-20"
+	class="bg-dark-dark text-light-dark z-0 flex flex-col pt-20"
 	container="!gap-10"
 	divider="bottom"
-	dividerBottom={{ svg: 'text-light-light' }}
+	dividerBottom={{ svg: 'text-base-50-950' }}
 >
 	<Text
 		class="text-base-300 text-center"
@@ -266,9 +266,9 @@
 	/>
 
 	<!-- partners -->
-	<Container class="flex select-none flex-col items-center justify-around gap-14 pb-20 text-white ">
+	<Container class="flex select-none flex-col items-center justify-around gap-14 pb-20">
 		<div
-			class="mask-x-from-90% mask-x-to-100% grid grid-cols-2 items-center justify-center gap-8 text-white invert sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
+			class="mask-lr grid grid-cols-2 items-center justify-center gap-8 invert sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
 		>
 			{#each partnerLogos as partner}
 				<img
@@ -279,8 +279,9 @@
 			{/each}
 		</div>
 	</Container>
-	<!-- partners -->
-	<Container class="flex flex-col items-center justify-center gap-14 pb-20 text-white">
+
+	<!-- testimonials -->
+	<Container class="flex flex-col items-center justify-center gap-14 pb-20 ">
 		<Card
 			class="dark max-w-xl pl-14"
 			variant="testimonial"
@@ -305,7 +306,7 @@
 
 	<!-- team 
 	------------------------------------------>
-	<div class="team-container">
+	<div class="team-container grid grid-cols-2 lg:grid-cols-4">
 		{#each teamMembers as team (team.id)}
 			<Card
 				variant="profile"
@@ -342,14 +343,14 @@
 	<Title
 		id="Services"
 		title="Services"
-		subtitle="We got the services bruh"
+		subtitle="The Standard in Marine Surveying & Port Captain Services"
 	/>
 	<div class="services-container">
 		<Card
 			class="overflow-hidden"
 			glass
 			variant="service"
-			total="10"
+			total="12"
 		/>
 	</div>
 </Section>
@@ -402,8 +403,7 @@
 <!-- CTA 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
 <Section
-	invert
-	class="flex flex-col py-0 text-center lg:items-start lg:justify-start lg:text-left"
+	class="dark flex flex-col py-0 text-center lg:items-start lg:justify-start lg:text-left"
 	container="!gap-6 !pt-0 lg:!gap-6 flex w-full flex-col items-center lg:grid lg:grid-flow-col lg:grid-rows-2"
 >
 	<Text
@@ -412,7 +412,7 @@
 	/>
 	<Text
 		class="text-pretty md:max-w-xl md:text-balance"
-		p="Sign up for a free account and start building your AI-powered applications today."
+		p="Join forces with Trident Cubed and gain a partner backed by 100+ years of combined experience."
 	/>
 	<Button
 		size="xl"
@@ -427,10 +427,9 @@
 	@reference "@layerd/ui/ui.css";
 
 	:global {
-		.team-container,
 		.services-container {
-			@apply grid gap-10;
-			grid-template-columns: repeat(auto-fill, minmax(25ch, 1fr));
+			@apply grid gap-4;
+			grid-template-columns: repeat(auto-fit, minmax(25ch, 1fr));
 		}
 	}
 </style>

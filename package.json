@@ -19,6 +19,7 @@
     "clear": "git clean -fd"
   },
   "devDependencies": {
+    "@iconify-json/devicon": "^1.2.43",
     "@iconify-json/carbon": "^1.2.13",
     "@iconify-json/mdi": "^1.2.3",
     "turbo": "^2.5.6",

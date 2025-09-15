@@ -104,11 +104,8 @@
 <main class="container flex flex-col">
 	{@render children()}
 </main>
-<Footer
-	class="relative py-10"
-	invert
->
-	<Container>hi mom footer</Container>
+<Footer class="dark relative py-10">
+	<Container class="opacity-0"></Container>
 	<!-- blue radial gradient -->
 	<Image
 		bg

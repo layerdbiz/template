@@ -52,6 +52,7 @@
 		"svelte": "^5.0.0"
 	},
 	"devDependencies": {
+		"@iconify-json/devicon": "^1.2.43",
 		"@iconify/tailwind4": "^1.0.6",
 		"@layerd/config-svelte": "workspace:*",
 		"@layerd/config-ts": "workspace:*",
@@ -83,6 +84,7 @@
 		"@fontsource/inter": "^5.2.6",
 		"@iconify-json/carbon": "^1.2.13",
 		"@iconify-json/heroicons": "^1.2.2",
+		"@iconify-json/logos": "^1.2.9",
 		"@iconify-json/material-symbols": "^1.2.34",
 		"@iconify-json/mdi": "^1.2.3",
 		"@iconify-json/solar": "^1.2.4",

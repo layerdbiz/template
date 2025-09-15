@@ -16,6 +16,9 @@
   },
   "devDependencies": {
     "@chromatic-com/storybook": "5.0.0-next.1",
+    "@layerd/config-svelte": "workspace:*",
+    "@layerd/config-vite": "workspace:*",
+    "@layerd/tools": "workspace:*",
     "@storybook/addon-docs": "^9.1.5",
     "@storybook/addon-svelte-csf": "^5.0.8",
     "@storybook/addon-themes": "^9.1.5",
@@ -36,9 +39,6 @@
     "vite": "^7.1.5"
   },
   "dependencies": {
-    "@layerd/config-svelte": "workspace:*",
-    "@layerd/config-vite": "workspace:*",
-    "@layerd/tools": "workspace:*",
     "@layerd/ui": "workspace:*"
   }
 }

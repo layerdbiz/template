@@ -38,6 +38,13 @@
 		children = undefined,
 		...props
 	}: CardProps = $props();
+
+	// Computed mask style with dynamic URL
+	let maskStyle = $derived(
+		image
+			? `mask: url(${image}); -webkit-mask: url(${image}); mask-size: contain; -webkit-mask-size: contain;`
+			: ''
+	);
 </script>
 
 <!-- ⬜ default ⬛ prop 🟪 snippet 🟦 children -->
@@ -80,35 +87,39 @@
 <!-- Profile -->
 {#snippet profile()}
 	<div
-		class="image relative flex flex-col items-center justify-end rounded-lg py-3"
-		style="aspect-ratio: 12 / 16;"
+		class="image relative flex flex-col items-center justify-end rounded-lg pb-2 md:pb-6 lg:pb-4"
+		style="aspect-ratio: 1 / 1;"
 	>
-		{#if typeof image === 'string'}
-			<Image
-				bg
+		<figure class="-z-1 reflect absolute bottom-0">
+			<img
+				class="w-full"
 				src={image}
 				alt={title}
 			/>
-		{:else if image}
-			<Image
-				bg
-				{...image}
-				alt={image.alt || title}
+
+			<div
+				class="bg-linear-to-b pointer-events-none absolute inset-0 from-transparent from-60% to-black to-100%"
+				style={maskStyle}
+			></div>
+		</figure>
+
+		<i class="icon-[devicon--linkedin] text-md mb-1 sm:text-xl lg:text-2xl"></i>
+
+		{#if icon}
+			<Button
+				variant="icon"
+				class=""
 			/>
 		{/if}
 
-		<Image
-			bg
-			overlay="bg-gradient-to-t from-black to-transparent from-0% to-30%"
-		/>
 		<Text
 			h4={title}
-			class="text-light-light text-xl"
+			class="text-light-light text-[x-small] sm:text-xl md:text-xl lg:text-xl"
 		/>
 
 		{#if subtitle}
 			<Text
-				class="text-base-200 text-sm"
+				class="text-base-300 text-[x-small] sm:text-sm md:text-sm lg:text-sm"
 				p={subtitle}
 			/>
 		{/if}
@@ -119,16 +130,6 @@
 {#snippet testimonial()}
 	<!-- Quote content -->
 	{#if description}
-		<!-- 	
-		<blockquote
-			class="relative mb-6 inline-block text-balance font-serif text-xl leading-[1.2] before:absolute before:-left-6 before:content-['“'] after:content-['”'] lg:text-4xl"
-		>
-			{description}
-
-			<b
-				class="border-primary absolute -left-6 bottom-0 top-0 inline-block border-l-4 lg:-left-12 lg:bottom-2 lg:top-2"
-			></b>
-		</blockquote> -->
 		<blockquote
 			class="relative mb-6 inline-block text-balance font-serif text-xl leading-[1.2] lg:text-4xl"
 		>

@@ -121,6 +121,73 @@
 	@apply from-primary-500 to-secondary-500 bg-gradient-to-br;
 }
 
+/* iOS Safari fallbacks for light-dark() CSS function issues */
+@supports not (color: light-dark(red, blue)) {
+	/* Fallback for iOS Safari that doesn't support light-dark() properly */
+	.theme-heavy-primary {
+		background-color: var(--color-primary-500) !important;
+		color: var(--color-primary-50) !important;
+	}
+
+	.theme-lite-primary {
+		background-color: var(--color-primary-200) !important;
+		color: var(--color-primary-700) !important;
+	}
+
+	.theme-outline-primary {
+		color: var(--color-primary-500) !important;
+		border-color: var(--color-primary-500) !important;
+	}
+
+	.theme-ghost-primary {
+		color: var(--color-primary-500) !important;
+		background-color: transparent !important;
+	}
+
+	/* Secondary color fallbacks */
+	.theme-heavy-secondary {
+		background-color: var(--color-secondary-500) !important;
+		color: var(--color-secondary-50) !important;
+	}
+
+	.theme-lite-secondary {
+		background-color: var(--color-secondary-200) !important;
+		color: var(--color-secondary-700) !important;
+	}
+
+	/* Accent color fallbacks */
+	.theme-heavy-accent {
+		background-color: var(--color-accent-500) !important;
+		color: var(--color-accent-50) !important;
+	}
+
+	.theme-lite-accent {
+		background-color: var(--color-accent-200) !important;
+		color: var(--color-accent-700) !important;
+	}
+
+	/* Dark mode adjustments for iOS Safari */
+	:root.dark .theme-heavy-primary {
+		background-color: var(--color-primary-500) !important;
+		color: var(--color-primary-50) !important;
+	}
+
+	:root.dark .theme-lite-primary {
+		background-color: var(--color-primary-700) !important;
+		color: var(--color-primary-200) !important;
+	}
+
+	:root.dark .theme-heavy-secondary {
+		background-color: var(--color-secondary-500) !important;
+		color: var(--color-secondary-50) !important;
+	}
+
+	:root.dark .theme-heavy-accent {
+		background-color: var(--color-accent-500) !important;
+		color: var(--color-accent-50) !important;
+	}
+}
+
 /* Section Layout Variants */
 .layout-grid-2x2 {
 	@apply grid grid-cols-1 gap-6 md:grid-cols-2;

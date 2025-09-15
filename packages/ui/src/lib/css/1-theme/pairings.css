@@ -17,10 +17,10 @@
 @theme {
 	/* Pairings (black/white)
 	*************************************************************************/
-	--color-light-dark: light-dark(var(--color-white), var(--color-black));
-	--color-light-light: light-dark(var(--color-white), var(--color-white));
-	--color-dark-light: light-dark(var(--color-black), var(--color-white));
-	--color-dark-dark: light-dark(var(--color-black), var(--color-black));
+	--color-light-dark: light-dark(var(--color-base-50), var(--color-base-950));
+	--color-light-light: light-dark(var(--color-base-50), var(--color-base-50));
+	--color-dark-light: light-dark(var(--color-base-950), var(--color-base-50));
+	--color-dark-dark: light-dark(var(--color-base-950), var(--color-base-950));
 
 	/* Pairings (colors)
 	*************************************************************************/

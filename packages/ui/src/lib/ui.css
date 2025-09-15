@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 @source './';
 @plugin "@iconify/tailwind4";
-/* @plugin "@tailwindcss/typography"; */
 @plugin "@tailwindcss/forms";
 
 @custom-variant state (&:is(:hover, :focus-visible, :active));
@@ -67,7 +66,7 @@
 	}
 
 	.bleed {
-		@apply relative end-[calc(50%-50svw)] start-[calc(50%-50svw)] w-[100svw];
+		@apply relative end-[calc(50%-50svw)] start-[calc(50%-50svw)] w-[100svw] max-w-[unset];
 	}
 }
 @utility text-md {
@@ -102,4 +101,8 @@
 
 @utility prose-xl {
 	--prose-scale: var(--prose-scale-xl);
+}
+
+@utility reflect {
+	-webkit-box-reflect: below 3px linear-gradient(to bottom, transparent 90%, rgba(0, 0, 0, 0.25));
 }
