@@ -164,7 +164,7 @@
 >
 	<!-- hero content
 	------------------------------------------>
-	<Container class="flex select-none flex-col items-center justify-around gap-14">
+	<Container class="z-0 flex select-none flex-col items-center justify-around gap-14">
 		<!-- title -->
 		<div class="text-base-50 flex flex-col gap-2 text-center">
 			<h1 class="order-2 text-balance text-xl font-bold leading-tight lg:text-6xl">
@@ -220,7 +220,6 @@
 		bg="fixed"
 		overlay="bg-radial -from-black to-black to-85%"
 	/>
-
 	<!-- bottom black radial 
 	------------------------------------------>
 	<Image

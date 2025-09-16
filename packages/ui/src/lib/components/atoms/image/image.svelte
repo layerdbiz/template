@@ -115,10 +115,9 @@
 <!-- Fixed Background Image -->
 {#snippet fixedBackgroundImage(src: string, alt: string)}
 	<div
-		class="absolute inset-0 h-full w-full bg-cover bg-fixed bg-bottom bg-no-repeat {image || ''}"
+		class="absolute inset-0 size-full bg-cover bg-fixed bg-bottom bg-no-repeat {image || ''}"
 		style="background-image: url({src});"
-		role="img"
-		aria-label={alt}
+		aria-hidden="true"
 	></div>
 {/snippet}
 
@@ -165,7 +164,7 @@
 {#snippet divContainer(containerProps: any)}
 	<div
 		{...containerProps}
-		class="{bg ? '-z-1 absolute inset-0 ' : 'relative w-full'} {containerProps.class}"
+		class="{bg ? '-z-1 absolute inset-0 h-svh w-svw' : 'relative w-full'} {containerProps.class}"
 		style={maskStyle}
 	>
 		{@render backgroundLayer()}
@@ -180,7 +179,7 @@
 {#snippet figureContainer(containerProps: any)}
 	<figure
 		{...containerProps}
-		class="{bg ? '-z-1 absolute inset-0 ' : 'relative w-full'} {containerProps.class}"
+		class="{bg ? '-z-1 absolute inset-0 h-svh w-svw' : 'relative w-full'} {containerProps.class}"
 		style={maskStyle}
 	>
 		{@render backgroundLayer()}
@@ -207,4 +206,23 @@
 
 <style lang="postcss">
 	@reference "@layerd/ui/ui.css";
+
+	/* iOS Safari fallback - use stable height to prevent jumps */
+	@supports (-webkit-touch-callout: none) {
+		.bg-fixed {
+			@apply bg-scroll;
+			/* Keep consistent height - don't change positioning */
+			height: 100vh !important;
+			height: 100svh !important;
+		}
+	}
+
+	@media (hover: none) and (pointer: coarse) {
+		.bg-fixed {
+			@apply bg-scroll;
+			/* Keep consistent height - don't change positioning */
+			height: 100vh !important;
+			height: 100svh !important;
+		}
+	}
 </style>
