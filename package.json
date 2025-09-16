@@ -19,9 +19,12 @@
     "clear": "git clean -fd"
   },
   "devDependencies": {
-    "@iconify-json/devicon": "^1.2.43",
+    "@csstools/postcss-light-dark-function": "^2.0.10",
     "@iconify-json/carbon": "^1.2.13",
+    "@iconify-json/devicon": "^1.2.43",
     "@iconify-json/mdi": "^1.2.3",
+    "@tailwindcss/postcss": "^4.1.13",
+    "postcss": "^8.5.6",
     "turbo": "^2.5.6",
     "unplugin-icons": "^22.2.0"
   },

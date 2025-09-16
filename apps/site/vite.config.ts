@@ -2,6 +2,10 @@ import devtoolsJson from "vite-plugin-devtools-json";
 import tailwindcss from "@tailwindcss/vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
 	plugins: [
@@ -24,5 +28,12 @@ export default defineConfig({
 	resolve: {
 		// Preserve symlinks for better HMR
 		preserveSymlinks: false,
+		alias: {
+			// Force using the built CSS with PostCSS transformations during development
+			"@layerd/ui/ui.css": path.resolve(
+				__dirname,
+				"../../packages/ui/dist/ui.css",
+			),
+		},
 	},
 });

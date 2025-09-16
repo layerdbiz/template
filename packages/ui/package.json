@@ -5,7 +5,7 @@
 		"dev": "svelte-kit sync",
 		"dev:build": "svelte-package -i src/lib --watch || pnpm dev:build",
 		"build": "svelte-kit sync && pnpm barrel && pnpm components && pnpm styles",
-		"styles": "cp ./src/lib/ui.css ./dist/ui.css",
+		"styles": "postcss ./src/lib/ui.css -o ./dist/ui.css",
 		"barrel": "barrels",
 		"components": "svelte-package -i src/lib",
 		"sync": "svelte-kit sync",
@@ -52,6 +52,7 @@
 		"svelte": "^5.0.0"
 	},
 	"devDependencies": {
+		"@csstools/postcss-light-dark-function": "^2.0.10",
 		"@iconify-json/devicon": "^1.2.43",
 		"@iconify/tailwind4": "^1.0.6",
 		"@layerd/config-svelte": "workspace:*",
@@ -64,8 +65,11 @@
 		"@sveltejs/vite-plugin-svelte-inspector": "^5.0.1",
 		"@tailwindcss/cli": "^4.1.13",
 		"@tailwindcss/forms": "^0.5.10",
+		"@tailwindcss/postcss": "^4.1.13",
 		"@tailwindcss/typography": "^0.5.16",
 		"@tailwindcss/vite": "^4.1.13",
+		"postcss": "^8.5.6",
+		"postcss-cli": "^11.0.1",
 		"prettier": "^3.6.2",
 		"prettier-plugin-svelte": "^3.4.0",
 		"prettier-plugin-tailwindcss": "^0.6.14",
@@ -91,5 +95,10 @@
 		"@sveltejs/kit": "^2.37.1",
 		"mode-watcher": "^1.1.0",
 		"runed": "^0.31.1"
-	}
+	},
+	"browserslist": [
+		">0.5%",
+		"last 2 versions",
+		"iOS >= 12"
+	]
 }
