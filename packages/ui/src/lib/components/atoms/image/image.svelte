@@ -164,7 +164,7 @@
 {#snippet divContainer(containerProps: any)}
 	<div
 		{...containerProps}
-		class="{bg ? '-z-1 absolute inset-0 h-svh w-svw' : 'relative w-full'} {containerProps.class}"
+		class="{bg ? '-z-1 absolute inset-0 size-full' : 'relative w-full'} {containerProps.class}"
 		style={maskStyle}
 	>
 		{@render backgroundLayer()}
@@ -179,7 +179,7 @@
 {#snippet figureContainer(containerProps: any)}
 	<figure
 		{...containerProps}
-		class="{bg ? '-z-1 absolute inset-0 h-svh w-svw' : 'relative w-full'} {containerProps.class}"
+		class="{bg ? '-z-1 absolute inset-0 size-full' : 'relative w-full'} {containerProps.class}"
 		style={maskStyle}
 	>
 		{@render backgroundLayer()}
@@ -211,18 +211,12 @@
 	@supports (-webkit-touch-callout: none) {
 		.bg-fixed {
 			@apply bg-scroll;
-			/* Keep consistent height - don't change positioning */
-			height: 100vh !important;
-			height: 100svh !important;
 		}
 	}
 
 	@media (hover: none) and (pointer: coarse) {
 		.bg-fixed {
 			@apply bg-scroll;
-			/* Keep consistent height - don't change positioning */
-			height: 100vh !important;
-			height: 100svh !important;
 		}
 	}
 </style>
