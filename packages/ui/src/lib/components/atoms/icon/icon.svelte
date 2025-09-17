@@ -7,7 +7,7 @@
 	export interface IconProps {
 		/**
 		 * Icon identifier - supports multiple formats:
-		 * - String: "person" or "icon-[mdi--person]"
+		 * - String: "person" or "icon-[mdi--person]" or "mdi--person"
 		 * - Object: { name: "person", theme: "mdi", class: "custom" }
 		 */
 		icon?:
@@ -103,6 +103,19 @@
 					name: '',
 					theme: '',
 					class: icon,
+					useRawClass: true
+				};
+			}
+
+			// Check for "theme--name" pattern in icon prop and convert to dynamic selector
+			const themeNamePattern = /^([^-]+)--([^-]+)$/;
+			const iconThemeNameMatch = icon.match(themeNamePattern);
+			if (iconThemeNameMatch) {
+				// Convert "devicon--linkedin" to "icon-[devicon--linkedin]"
+				return {
+					name: '',
+					theme: '',
+					class: `icon-[${icon}]`,
 					useRawClass: true
 				};
 			}

@@ -387,14 +387,25 @@
 	<Container class="flex flex-col items-center justify-center gap-4">
 		<h3 class="text-lg font-semibold">Icon API Testing</h3>
 		<div class="flex items-center gap-4">
-			<!-- String format with icon prop -->
+			<!-- Full format with icon prop -->
 			<Icon
 				icon="icon-[heroicons--home]"
 				class="text-2xl"
 			/>
 
-			<!-- String format with class prop -->
+			<!-- Full format with class prop -->
 			<Icon class="icon-[devicon--linkedin] text-2xl" />
+
+			<!-- Short format with class prop -->
+			<Icon class="solar:cat-bold-duotone text-2xl" />
+			<!-- Icon set i dont have installed! -->
+			<Icon class="streamline-stickies-color:ghost-duo text-2xl" />
+
+			<!-- Short format with icon prop -->
+			<Icon
+				icon="mdi--heart"
+				class="text-2xl"
+			/>
 
 			<!-- Object format with name and theme -->
 			<Icon
