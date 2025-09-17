@@ -1,8 +1,8 @@
 @import 'tailwindcss';
 @source './';
 @plugin "@iconify/tailwind4";
-@plugin "@tailwindcss/forms";
 
+/* Custom States */
 @custom-variant state (&:is(:hover, :focus-visible, :active));
 
 /* 1. Theme */

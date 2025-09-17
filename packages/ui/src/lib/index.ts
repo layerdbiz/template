@@ -1,6 +1,7 @@
 /* COMPONENTS */
 // atoms
 export { default as Button, type ButtonProps } from "./components/atoms/button/button.svelte";
+export { default as Checkbox } from "./components/atoms/forms/checkbox/checkbox.svelte";
 export { default as Colorss } from "./components/atoms/Colorss.svelte";
 export { default as Container, type ContainerProps } from "./components/atoms/container/container.svelte";
 export { default as Content } from "./components/atoms/content/content.svelte";
@@ -12,14 +13,17 @@ export { default as IconTheme } from "./components/atoms/icon/icon-theme.svelte"
 export { default as Image, type ImageProps } from "./components/atoms/image/image.svelte";
 export * from "./components/atoms/image/image.data.ts";
 export { default as Indicator } from "./components/atoms/indicator/indicator.svelte";
+export { default as Input, type InputProps } from "./components/atoms/forms/input/input.svelte";
 export { default as Link } from "./components/atoms/link/link.svelte";
 export * from "./components/atoms/link/link.data.ts";
 export { default as Metadata } from "./components/atoms/metadata/metadata.svelte";
 export { default as Nav } from "./components/atoms/nav/nav.svelte";
 export { default as Number } from "./components/atoms/number/number.svelte";
 export * from "./components/atoms/number/number.data.ts";
+export { default as Radio } from "./components/atoms/forms/radio/radio.svelte";
 export { default as Section } from "./components/atoms/section/section.svelte";
 export * from "./components/atoms/section/section.data.ts";
+export { default as Switch } from "./components/atoms/forms/switch/switch.svelte";
 export { default as Text } from "./components/atoms/text/text.svelte";
 export * from "./components/atoms/text/text.data.ts";
 export { default as Theme } from "./components/atoms/theme/theme.svelte";

@@ -4,8 +4,20 @@
 	 * @type multi
 	 * @layout horizontal
 	 */
-
 	export interface IconProps {
+		/**
+		 * Icon identifier - supports multiple formats:
+		 * - String: "person" or "icon-[mdi--person]"
+		 * - Object: { name: "person", theme: "mdi", class: "custom" }
+		 */
+		icon?:
+			| string
+			| {
+					name?: string;
+					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
+					class?: string;
+			  };
+		/** Legacy name prop for backward compatibility */
 		name?:
 			| 'home'
 			| 'user'
@@ -41,7 +53,8 @@
 	}
 
 	let {
-		name = 'home',
+		icon,
+		name = '',
 		theme,
 		all = false,
 		remote = false,
@@ -52,6 +65,71 @@
 		'aria-label': ariaLabel,
 		...props
 	}: IconProps = $props();
+
+	// Process hybrid icon prop to extract name, theme, and additional classes
+	const processedIcon = $derived(() => {
+		// Check if className contains "icon-[theme--name]" pattern first
+		const iconPattern = /^icon-\[([^-]+)--([^\]]+)\]$/;
+		const classMatch = className && className.match(iconPattern);
+
+		if (classMatch) {
+			// Use className as raw class when it matches the pattern
+			return {
+				name: '',
+				theme: '',
+				class: className,
+				useRawClass: true
+			};
+		}
+
+		// Handle object format: { name: "person", theme: "mdi", class: "custom" }
+		if (icon && typeof icon === 'object') {
+			return {
+				name: icon.name || '',
+				theme: icon.theme || theme,
+				class: icon.class || '',
+				useRawClass: false
+			};
+		}
+
+		// Handle string format: "icon-[theme--name]" or "person"
+		if (icon && typeof icon === 'string') {
+			// Check for "icon-[theme--name]" pattern - use as raw class
+			const match = icon.match(iconPattern);
+
+			if (match) {
+				// Use the full string as-is for the class
+				return {
+					name: '',
+					theme: '',
+					class: icon,
+					useRawClass: true
+				};
+			}
+
+			// Plain string like "person"
+			return {
+				name: icon,
+				theme: theme,
+				class: '',
+				useRawClass: false
+			};
+		}
+
+		// Fallback to legacy name prop
+		return {
+			name: name,
+			theme: theme,
+			class: '',
+			useRawClass: false
+		};
+	});
+
+	// Final computed values
+	const finalName = $derived(processedIcon().useRawClass ? '' : processedIcon().name);
+	const finalTheme = $derived(processedIcon().useRawClass ? '' : processedIcon().theme);
+	const finalClass = $derived(processedIcon().class);
+	const useRawClass = $derived(processedIcon().useRawClass);
 
 	// Fallback icons only for 'all' mode, not for 'remote' mode
 	const fallbackIcons = [
@@ -94,8 +172,13 @@
 	</div>
 {:else}
 	<i
-		class="icon icon-{name} {className}"
-		data-icon-theme={theme}
+		class="{useRawClass
+			? finalClass
+			: `icon ${finalName ? `icon-${finalName}` : ''} ${finalClass}`} {useRawClass &&
+		finalClass === className
+			? ''
+			: className}"
+		data-icon-theme={useRawClass ? undefined : finalTheme}
 		{role}
 		aria-hidden={ariaHidden}
 		aria-label={ariaLabel}

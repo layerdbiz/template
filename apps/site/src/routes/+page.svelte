@@ -13,7 +13,8 @@
 		Text,
 		Number,
 		Toggle,
-		Flex
+		Flex,
+		Input
 	} from '@layerd/ui';
 	import { getIcons } from '$lib/icons.remote';
 
@@ -23,7 +24,7 @@
 			id: 1,
 			title: 'Capt. Cezary Poninski',
 			subtitle: 'Managing Partner',
-			image: '/team/cezary-poninski.png'
+			image: '/team/cezary-poninski.webp'
 		},
 		{
 			id: 2,
@@ -35,12 +36,12 @@
 			id: 3,
 			title: 'Michael Boone',
 			subtitle: 'Business Development',
-			image: '/team/michael-boone.png'
+			image: '/team/michael-boone.webp'
 		},
 		{
 			id: 4,
 			title: 'Capt. Hector Ramirez',
-			subtitle: 'Managing Partner',
+			subtitle: 'Head of Operations',
 			image: '/team/hector-ramirez.png'
 		}
 	];
@@ -300,7 +301,7 @@
 	<Title
 		id="About"
 		title="Trident Cubed"
-		subtitle="We are masters in the industry"
+		subtitle="The founding partners behind Trident Cubed"
 	/>
 
 	<!-- team 
@@ -362,7 +363,58 @@
 		title="Contact"
 		subtitle="Hit us up"
 	/>
-	<Container class="flex flex-col items-center justify-center">hi mom</Container>
+
+	<Container class="flex flex-col items-center justify-center">
+		<Input
+			label="Name"
+			variant="icon label"
+			icon="icon-[mdi--account]"
+		/>
+		<Input
+			label="Email"
+			variant="icon label"
+			icon="icon-[devicon--linkedin]"
+		/>
+		<Input
+			label="Message"
+			textarea
+			variant="icon label"
+			icon={{ name: 'chat' }}
+		/>
+	</Container>
+
+	<!-- Icon API Testing -->
+	<Container class="flex flex-col items-center justify-center gap-4">
+		<h3 class="text-lg font-semibold">Icon API Testing</h3>
+		<div class="flex items-center gap-4">
+			<!-- String format with icon prop -->
+			<Icon
+				icon="icon-[heroicons--home]"
+				class="text-2xl"
+			/>
+
+			<!-- String format with class prop -->
+			<Icon class="icon-[devicon--linkedin] text-2xl" />
+
+			<!-- Object format with name and theme -->
+			<Icon
+				icon={{ name: 'settings', theme: 'heroicons' }}
+				class="text-2xl"
+			/>
+
+			<!-- Simple string format -->
+			<Icon
+				icon="home"
+				class="text-2xl"
+			/>
+
+			<!-- Legacy name prop -->
+			<Icon
+				name="search"
+				class="text-2xl"
+			/>
+		</div>
+	</Container>
 </Section>
 
 <!-- FAQ 
