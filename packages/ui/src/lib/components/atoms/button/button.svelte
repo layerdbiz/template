@@ -5,11 +5,28 @@
 	 * @layout horizontal
 	 */
 	import { Icon, Component } from '@layerd/ui';
-	import type { ComponentProps } from '@layerd/ui';
+	import type { ComponentProps, ComponentReturn } from '@layerd/ui';
 
 	export interface ButtonProps extends ComponentProps {
 		href?: string;
-		icon?: 'home' | 'menu' | 'arrow-right' | string;
+		/** External link indicator */
+		external?: boolean;
+		/** Link target attribute */
+		target?: '_blank' | '_self' | '_parent' | '_top';
+		/** Link rel attribute */
+		rel?: string;
+		/**
+		 * Icon configuration - supports multiple formats:
+		 * - String: "person" or "icon-[mdi--person]" or "mdi--person"
+		 * - Object: { name: "person", theme: "mdi", class: "custom" }
+		 */
+		icon?:
+			| string
+			| {
+					name?: string;
+					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
+					class?: string;
+			  };
 		label?: string;
 		type?: 'button' | 'submit' | 'reset' | 'radio' | 'checkbox';
 		/** For radio/checkbox types: the name attribute for grouping */
@@ -21,9 +38,21 @@
 		/** Whether to reverse the icon and text order (icon on right instead of left) */
 		reverse?: boolean;
 		/** Icon to show when button is clicked/toggled */
-		iconToggle?: 'home' | 'menu' | 'arrow-right' | string;
+		iconToggle?:
+			| string
+			| {
+					name?: string;
+					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
+					class?: string;
+			  };
 		/** Icon to show on hover */
-		iconHover?: 'home' | 'menu' | 'arrow-right' | string;
+		iconHover?:
+			| string
+			| {
+					name?: string;
+					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
+					class?: string;
+			  };
 		/** Whether the button is currently in toggled state (controlled) */
 		toggled?: boolean;
 		/** Callback when toggle state changes */
@@ -38,13 +67,34 @@
 		align?: 'center' | 'start' | 'end' | 'between' | 'around';
 
 		// NEW: Secondary icon system (for 'icon text icon' variant)
-		iconEnd?: 'home' | 'menu' | 'arrow-right' | string;
-		iconEndHover?: 'home' | 'menu' | 'arrow-right' | string;
-		iconEndToggle?: 'home' | 'menu' | 'arrow-right' | string;
+		iconEnd?:
+			| string
+			| {
+					name?: string;
+					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
+					class?: string;
+			  };
+		iconEndHover?:
+			| string
+			| {
+					name?: string;
+					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
+					class?: string;
+			  };
+		iconEndToggle?:
+			| string
+			| {
+					name?: string;
+					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
+					class?: string;
+			  };
 	}
 
 	let {
 		href = undefined,
+		external = false,
+		target = undefined,
+		rel = undefined,
 		type = 'button',
 		icon = undefined,
 		label = undefined,
@@ -68,6 +118,10 @@
 		class: className = '',
 		...props
 	}: ButtonProps = $props();
+
+	// Auto-set target and rel for external links
+	const finalTarget = $derived(external ? '_blank' : target);
+	const finalRel = $derived(external ? 'noopener noreferrer' : rel);
 
 	// Determine if this is a form control button (radio/checkbox)
 	const isFormControl = $derived(type === 'radio' || type === 'checkbox');
@@ -188,7 +242,7 @@
 	{#if showIcon && currentIcon}
 		<Icon
 			class={!unstyled ? 'btn-icon' : ''}
-			name={currentIcon}
+			icon={currentIcon}
 		/>
 	{/if}
 	{#if showText}
@@ -214,7 +268,7 @@
 	{#if currentIcon}
 		<Icon
 			class={!unstyled ? 'btn-icon' : ''}
-			name={currentIcon}
+			icon={currentIcon}
 		/>
 	{/if}
 {/snippet}
@@ -224,7 +278,7 @@
 	{#if currentIcon}
 		<Icon
 			class={!unstyled ? 'btn-icon' : ''}
-			name={currentIcon}
+			icon={currentIcon}
 		/>
 	{/if}
 	{#if children}
@@ -248,7 +302,7 @@
 	{#if currentIcon}
 		<Icon
 			class={!unstyled ? 'btn-icon' : ''}
-			name={currentIcon}
+			icon={currentIcon}
 		/>
 	{/if}
 {/snippet}
@@ -258,7 +312,7 @@
 	{#if currentIcon}
 		<Icon
 			class={!unstyled ? 'btn-icon' : ''}
-			name={currentIcon}
+			icon={currentIcon}
 		/>
 	{/if}
 	{#if children}
@@ -271,7 +325,7 @@
 	{#if currentIconEnd}
 		<Icon
 			class={!unstyled ? 'btn-icon btn-icon-end' : ''}
-			name={currentIconEnd}
+			icon={currentIconEnd}
 		/>
 	{/if}
 {/snippet}
@@ -290,7 +344,13 @@
 			{reverse && !unstyled ? 'btn-reverse' : ''} 
 			{className}"
 	>
-		{#snippet component({ props, content })}
+		{#snippet component({
+			props,
+			content
+		}: {
+			props: ComponentReturn;
+			content: import('svelte').Snippet<[string?]>;
+		})}
 			{#if isFormControl}
 				<!-- Form Control (Radio/Checkbox) - Input inside label for better structure -->
 				<label
@@ -319,6 +379,8 @@
 				<!-- Link Button -->
 				<a
 					{href}
+					target={finalTarget}
+					rel={finalRel}
 					{...props}
 					onmouseenter={() => (isHovered = true)}
 					onmouseleave={() => (isHovered = false)}
@@ -359,7 +421,7 @@
 		base={!unstyled}
 		class={buttonClasses()}
 	>
-		{#snippet component({ props })}
+		{#snippet component({ props }: { props: ComponentReturn })}
 			{#if isFormControl}
 				<!-- Form Control (Radio/Checkbox) -->
 				<label
@@ -394,6 +456,8 @@
 				<!-- Link Button -->
 				<a
 					{href}
+					target={finalTarget}
+					rel={finalRel}
 					{...props}
 					onmouseenter={() => (isHovered = true)}
 					onmouseleave={() => (isHovered = false)}

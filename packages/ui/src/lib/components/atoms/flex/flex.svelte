@@ -3,7 +3,7 @@
 	 * @tags ui
 	 * @layout horizontal
 	 */
-	import { Component, type ComponentProps } from '@layerd/ui';
+	import { Component, type ComponentProps, type ComponentReturn } from '@layerd/ui';
 
 	export interface FlexProps extends ComponentProps {
 		text?: string;
@@ -38,7 +38,7 @@
 	{...props}
 	class="flex {props.class}"
 >
-	{#snippet component({ props })}
+	{#snippet component({ props }: { props: ComponentReturn })}
 		<div {...props}>
 			{#if children}
 				{@render children()}

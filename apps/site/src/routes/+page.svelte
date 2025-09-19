@@ -42,7 +42,7 @@
 			id: 4,
 			title: 'Capt. Hector Ramirez',
 			subtitle: 'Head of Operations',
-			image: '/team/hector-ramirez.png'
+			image: '/team/hector-ramirez.webp'
 		}
 	];
 
@@ -360,71 +360,123 @@
 <Section>
 	<Title
 		id="Contact"
-		title="Contact"
-		subtitle="Hit us up"
+		title="Contact Us"
+		subtitle="We serve domestic and international waters"
 	/>
 
-	<Container class="flex flex-col items-center justify-center">
-		<Input
-			label="Name"
-			variant="icon label"
-			icon="icon-[mdi--account]"
-		/>
-		<Input
-			label="Email"
-			variant="icon label"
-			icon="icon-[devicon--linkedin]"
-		/>
-		<Input
-			label="Message"
-			textarea
-			variant="icon label"
-			icon={{ name: 'chat' }}
-		/>
-	</Container>
+	<Container
+		class="relative flex flex-col items-stretch justify-center gap-32 lg:flex-row lg:items-start"
+	>
+		<!-- Contact Info 
+		---------------------------------------------------->
+		<div
+			class="contact-info order-2 flex flex-col items-start gap-8 px-8 lg:order-1 lg:mt-2 lg:items-start"
+		>
+			<!-- Phone -->
+			<div>
+				<Text
+					h3="Phone"
+					class="bar-outside relative font-bold uppercase tracking-wider"
+				/>
+				<Text
+					class="text-base-600-300 text-md"
+					p="+1 (570) 575-1179"
+				/>
+				<Text
+					class="text-base-600-300 text-md"
+					p="+1 (832) 477-6974"
+				/>
+			</div>
 
-	<!-- Icon API Testing -->
-	<Container class="flex flex-col items-center justify-center gap-4">
-		<h3 class="text-lg font-semibold">Icon API Testing</h3>
-		<div class="flex items-center gap-4">
-			<!-- Full format with icon prop -->
-			<Icon
-				icon="icon-[heroicons--home]"
-				class="text-2xl"
-			/>
+			<!-- Email -->
+			<div>
+				<Text
+					h3="Email"
+					class="bar-outside relative font-bold uppercase tracking-wider"
+				/>
+				<Text
+					class="text-base-600-300 text-md"
+					p="operations@tridentcubed.com"
+				/>
+				<Text
+					class="text-base-600-300 text-md"
+					p="ops.sa@tridentcubed.com"
+				/>
+				<Text
+					class="text-base-600-300 text-md"
+					p="ops.carib@tridentcubed.com"
+				/>
+				<Text
+					class="text-base-600-300 text-md"
+					p="ops.eu@tridentcubed.com"
+				/>
+			</div>
 
-			<!-- Full format with class prop -->
-			<Icon class="icon-[devicon--linkedin] text-2xl" />
+			<!-- Location -->
+			<div>
+				<Text
+					h3="Locations"
+					class="bar-outside relative font-bold uppercase tracking-wider"
+				/>
+				<Text
+					class="text-base-600-300 text-md"
+					p="800 Town and Country, Ste 500"
+				/>
+				<Text
+					class="text-base-600-300 text-md"
+					p="Houston, TX 77024"
+				/>
+			</div>
 
-			<!-- Short format with class prop -->
-			<Icon class="solar:cat-bold-duotone text-2xl" />
-			<!-- Icon set i dont have installed! -->
-			<Icon class="streamline-stickies-color:ghost-duo text-2xl" />
-
-			<!-- Short format with icon prop -->
-			<Icon
-				icon="mdi--heart"
-				class="text-2xl"
-			/>
-
-			<!-- Object format with name and theme -->
-			<Icon
-				icon={{ name: 'settings', theme: 'heroicons' }}
-				class="text-2xl"
-			/>
-
-			<!-- Simple string format -->
-			<Icon
-				icon="home"
-				class="text-2xl"
-			/>
-
-			<!-- Legacy name prop -->
-			<Icon
-				name="search"
-				class="text-2xl"
-			/>
+			<!-- Hours -->
+			<div>
+				<Text
+					h3="Hours"
+					class="bar-outside relative font-bold uppercase tracking-wider"
+				/>
+				<Text
+					class="text-base-600-300 text-md"
+					p="Monday - Friday | 7:30am to 6:00pm"
+				/>
+			</div>
 		</div>
+
+		<!-- Contact Form
+		---------------------------------------------------->
+		<form
+			class="contact-form sticky order-1 lg:top-32 lg:order-2"
+			action=""
+		>
+			<Input
+				icon="icon-[mdi--account]"
+				variant="icon label"
+				label="Name"
+			/>
+			<!-- 			
+			<Input
+				icon="icon-[mdi--phone]"
+				variant="icon label"
+				label="Phone"
+			/> -->
+			<Input
+				icon="icon-[mdi--email]"
+				variant="icon label"
+				label="Email"
+			/>
+			<Input
+				icon="icon-[mdi--pencil]"
+				variant="icon label"
+				label="Message"
+				textarea
+			/>
+			<Button
+				size="lg"
+				primary
+				label="Submit"
+				class="mt-10 min-w-full !rounded-xl"
+				href="#"
+			/>
+		</form>
 	</Container>
 </Section>
 

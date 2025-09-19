@@ -32,7 +32,7 @@
 	let {
 		href = '/',
 		src,
-		name = 'Trident Cubed',
+		name = undefined,
 		variant = 'color',
 		type = 'both',
 		dark = false,
@@ -53,8 +53,8 @@
 	// Show icon when type is 'icon' or 'both'
 	const showIcon = $derived(finalType === 'icon' || finalType === 'both');
 
-	// Show text when type is 'logo' or 'both'
-	const showText = $derived(finalType === 'logo' || finalType === 'both');
+	// Show text when type is 'logo' or 'both' AND there's a name to display
+	const showText = $derived((finalType === 'logo' || finalType === 'both') && name);
 
 	// Simple logic: if no explicit boolean shortcuts are used, use the type
 	const finalShowIcon = $derived(showIcon);

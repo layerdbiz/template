@@ -74,6 +74,10 @@
 	line-height: 1.5rem;
 }
 
+@utility bar-outside {
+	@apply before:bg-primary before:absolute before:-left-4 before:bottom-2 before:top-2 before:w-2;
+}
+
 @utility mask-lr {
 	@apply mask-alpha mask-r-from-black mask-r-from-80% mask-r-to-transparent mask-l-from-black mask-l-from-80% mask-l-to-transparent;
 }

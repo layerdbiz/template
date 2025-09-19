@@ -2,7 +2,13 @@
 	/**
 	 * @tags navigation, link, anchor
 	 */
-	import { Component, Button, type ComponentProps, navigationState } from '@layerd/ui';
+	import {
+		Component,
+		Button,
+		type ComponentProps,
+		type ComponentReturn,
+		navigationState
+	} from '@layerd/ui';
 
 	interface LinkProps extends ComponentProps {
 		/** Link destination URL */
@@ -109,7 +115,13 @@
 		class="link {isActive ? 'active' : ''} {props.class}"
 		{children}
 	>
-		{#snippet component({ props, content })}
+		{#snippet component({
+			props,
+			content
+		}: {
+			props: ComponentReturn;
+			content: import('svelte').Snippet<[string?]>;
+		})}
 			<a
 				{href}
 				target={finalTarget}

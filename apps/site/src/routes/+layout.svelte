@@ -5,6 +5,7 @@
 		Theme,
 		Header,
 		Footer,
+		Copyright,
 		Container,
 		Nav,
 		Button,
@@ -104,13 +105,54 @@
 <main class="container flex flex-col">
 	{@render children()}
 </main>
-<Footer class="dark relative py-10">
-	<Container class="opacity-0"></Container>
+<Footer class="dark relative overflow-clip py-10">
+	<Container class="mt-6 flex translate-y-6 flex-col items-center justify-end">
+		<Copyright
+			year="2020"
+			name="Trident Cubed Solutions"
+			type="llc"
+			class="text-primary-200 !py-1 text-sm"
+		/>
+		<div class="-ml-3 flex items-start justify-start">
+			<Button
+				lg
+				variant="icon"
+				href="https://www.facebook.com/TridentCubed"
+				icon="icon-[mdi--facebook]"
+				ghost
+				external
+				class="text-primary-50 hover:text-primary-200 -mx-2"
+			/>
+			<Button
+				lg
+				variant="icon"
+				href="https://www.linkedin.com/company/trident-cubed-solutions"
+				icon="icon-[mdi--linkedin]"
+				ghost
+				external
+				class="text-primary-50 hover:text-primary-200 -mx-2"
+			/>
+		</div>
+		<!-- <div class="flex flex-col">
+		</div>
+		<div class="flex items-start justify-center">
+			<Link
+				href="#"
+				class="text-primary-50 hover:text-primary-200 !w-auto text-sm">Privacy Policy</Link
+			>
+			<span class="mx-2">|</span>
+			<Link
+				href="#"
+				class="text-primary-50 hover:text-primary-200 !w-auto text-sm">Terms of Service</Link
+			>
+		</div> -->
+	</Container>
+
 	<!-- blue radial gradient -->
 	<Image
 		bg
-		class="mask-t-from-0% mask-t-to-100% absolute bottom-0 size-full overflow-hidden"
-		overlay="bg-radial from-primary to-transparent from-0% to-100% bg-black scale-y-200 origin-bottom translate-y-3/4 "
+		class="mask-t-from-0% mask-t-to-100% absolute bottom-0 mx-auto size-full"
+		overlay="bg-radial from-primary to-transparent from-0% to-80% bg-black scale-y-200  translate-y-1/2"
 	/>
 </Footer>
 

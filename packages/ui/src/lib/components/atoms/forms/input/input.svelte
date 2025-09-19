@@ -3,7 +3,7 @@
 	 * @tags forms, input, textfield, icon, label
 	 * @layout horizontal
 	 */
-	import { Component, type ComponentProps, Text, Icon } from '@layerd/ui';
+	import { Component, type ComponentProps, type ComponentReturn, Text, Icon } from '@layerd/ui';
 	import { TextareaAutosize } from 'runed';
 
 	export interface InputProps extends ComponentProps {
@@ -98,7 +98,7 @@
 	{#if icon}
 		<Icon
 			{icon}
-			class="input-icon"
+			class="input-icon input-icon--leading top-0.75 absolute left-4 text-2xl"
 		/>
 	{/if}
 {/snippet}
@@ -108,7 +108,7 @@
 	{#if icon}
 		<Icon
 			{icon}
-			class="input-trailing-icon"
+			class="input-icon input-icon--trailing top-0.75 absolute right-4 text-2xl"
 		/>
 	{/if}
 {/snippet}
@@ -119,30 +119,30 @@
 <!-- Icon -->
 {#snippet iconVariant()}
 	{@render leadingIcon()}
-	{@render inputElement('input-with-icon')}
+	{@render inputElement('pl-12')}
 {/snippet}
 
 <!-- Label -->
 {#snippet labelVariant()}
-	{@render inputElement('input-with-label')}
+	{@render inputElement('pl-5')}
 {/snippet}
 
 <!-- Icon Label -->
 {#snippet iconLabelVariant()}
 	{@render leadingIcon()}
-	{@render inputElement('input-with-icon-label')}
+	{@render inputElement('pl-12')}
 {/snippet}
 
 <!-- Label Icon -->
 {#snippet labelIconVariant()}
-	{@render inputElement('input-with-label-icon')}
+	{@render inputElement('pl-5 pr-12')}
 	{@render trailingIcon()}
 {/snippet}
 
 <!-- Icon Label Icon -->
 {#snippet iconLabelIconVariant()}
 	{@render leadingIcon()}
-	{@render inputElement('input-with-icon-label-icon')}
+	{@render inputElement('pl-12 pr-12')}
 	{@render trailingIcon()}
 {/snippet}
 
@@ -163,14 +163,16 @@
 			{spellcheck}
 			class="
 				-mt-1.25 mb-1.25
+				text-base-900-50
 				block min-h-32
-				w-full resize-none
+				w-full
+				resize-none
 				border-0
 				bg-transparent
 				px-4
 				py-2
-				pl-5
 				outline-none
+				{className}
 			"
 		></textarea>
 	{:else}
@@ -190,12 +192,13 @@
 			{spellcheck}
 			class="
 				-mt-1.25 mb-1.25
+				text-base-900-50
 				block
-				w-full
-				border-0 bg-transparent px-4
+				w-full border-0 bg-transparent
+				px-4
 				py-2
-				pl-5
 				outline-none
+				{className}
 			"
 		/>
 	{/if}
@@ -207,12 +210,13 @@
 	{...props}
 	class="input-wrapper {props.class}"
 >
-	{#snippet component({ props })}
+	{#snippet component({ props }: { props: ComponentReturn })}
 		<fieldset
 			{...props}
 			class="
-					border-base-300-700
-					bg-base-300-700
+					border-base-200-700
+					text-base-300-700
+					bg-base-200-700
 					shadow-base-100-700
 					group relative min-w-72
 					rounded-xl
@@ -223,14 +227,14 @@
 			<legend
 				class="
 					px-1.25
-					text-base-300-600/80
+					text-base-300-600
 					pointer-events-none
-					mx-4
+					mx-3
 					origin-top-left
+					translate-x-8
 					translate-y-[125%]
 					font-medium
 					leading-[1.25rem]
-
 					transition-all
 					duration-200
 					will-change-[color,transform,font-size]
@@ -257,29 +261,35 @@
 	@reference "@layerd/ui/ui.css";
 
 	fieldset {
+		/* icon, border: focused + value */
 		@variant focus-within {
-			@apply border-primary bg-transparent shadow-none;
+			@apply border-primary text-primary bg-transparent opacity-100 shadow-none;
 
+			/* icon, border: focused + value */
 			@variant has-[input:not(:placeholder-shown),textarea:not(:placeholder-shown)] {
-				@apply border-primary bg-transparent shadow-none;
+				@apply border-primary text-primary bg-transparent opacity-100 shadow-none;
 			}
 		}
 
+		/* icon, border: unfocused + value */
 		@variant has-[input:not(:placeholder-shown),textarea:not(:placeholder-shown)] {
-			@apply border-base-600-50 bg-transparent shadow-none;
+			@apply text-primary-700 border-primary-700 bg-transparent shadow-none;
 		}
 
 		legend {
 			@variant group-focus-within {
-				@apply text-primary-500 translate-y-0 text-xs;
+				/* label: focused */
+				@apply text-primary translate-x-0 translate-y-0 text-xs;
 
+				/* label: focused */
 				@variant group-has-[input:not(:placeholder-shown),textarea:not(:placeholder-shown)] {
-					@apply text-primary-500 translate-y-0 text-xs;
+					@apply text-primary translate-x-0 translate-y-0 text-xs;
 				}
 			}
 
+			/* label: unfocused + value */
 			@variant group-has-[input:not(:placeholder-shown),textarea:not(:placeholder-shown)] {
-				@apply text-primary-600 translate-y-0 text-xs;
+				@apply text-primary-500 translate-x-0 translate-y-0 text-xs;
 			}
 		}
 	}

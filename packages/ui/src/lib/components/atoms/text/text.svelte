@@ -2,9 +2,9 @@
 	/**
 	 * @tags text, typography, heading, paragraph
 	 */
-	import { Component, type ComponentProps } from '@layerd/ui';
+	import { Component, type ComponentProps, type ComponentReturn } from '@layerd/ui';
 
-	interface TextProps extends ComponentProps {
+	export interface TextProps extends ComponentProps {
 		// Core text properties
 		type?:
 			| 'h1'
@@ -155,8 +155,18 @@
 	});
 </script>
 
-<Component {...props} class="text {proseClasses} {props.class}" {children}>
-	{#snippet component({ props: componentProps, content })}
+<Component
+	{...props}
+	class="text {proseClasses} {props.class}"
+	{children}
+>
+	{#snippet component({
+		props: componentProps,
+		content
+	}: {
+		props: ComponentReturn;
+		content: import('svelte').Snippet<[string?]>;
+	})}
 		{#if finalType === 'h1'}
 			<h1 {...componentProps}>{@render content(finalContent)}</h1>
 		{:else if finalType === 'h2'}
