@@ -16,7 +16,7 @@
 		Flex,
 		Input
 	} from '@layerd/ui';
-	import { getIcons } from '$lib/icons.remote';
+	import { getIcons } from '$site/lib/icons/icons.remote';
 
 	// Team
 	const teamMembers = [
