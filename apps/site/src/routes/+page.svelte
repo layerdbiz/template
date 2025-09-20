@@ -16,137 +16,9 @@
 		Flex,
 		Input
 	} from '@layerd/ui';
-	import { getIcons } from '$site/lib/icons/icons.remote';
-
-	// Team
-	const teamMembers = [
-		{
-			id: 1,
-			title: 'Capt. Cezary Poninski',
-			subtitle: 'Managing Partner',
-			image: '/team/cezary-poninski.webp'
-		},
-		{
-			id: 2,
-			title: 'Duncan Cooke',
-			subtitle: 'Project Engineer',
-			image: '/team/duncan-cooke.webp'
-		},
-		{
-			id: 3,
-			title: 'Michael Boone',
-			subtitle: 'Business Development',
-			image: '/team/michael-boone.webp'
-		},
-		{
-			id: 4,
-			title: 'Capt. Hector Ramirez',
-			subtitle: 'Head of Operations',
-			image: '/team/hector-ramirez.webp'
-		}
-	];
-
-	// FAQ
-	const faqs = [
-		{
-			id: 1,
-			label: 'What is Layerd?',
-			content:
-				'Layerd is a Svelte component library that provides a set of pre-designed and customizable UI components to help developers build modern web applications quickly and efficiently.'
-		},
-		{
-			id: 2,
-			label: 'How do I install Layerd?',
-			content:
-				"You can install Layerd using npm or pnpm. Run 'pnpm add @layerd/ui' in your project directory to get started."
-		},
-		{
-			id: 3,
-			label: 'Is Layerd compatible with SvelteKit?',
-			content:
-				'Yes! Layerd is specifically designed to work seamlessly with SvelteKit projects and follows SvelteKit conventions.'
-		},
-		{
-			id: 4,
-			label: 'Can I customize the components?',
-			content:
-				'Absolutely! All Layerd components are highly customizable through props, CSS variables, and custom styling approaches.'
-		},
-		{
-			id: 5,
-			label: 'What about TypeScript support?',
-			content:
-				'Layerd is built with TypeScript and provides full type definitions for all components and their props.'
-		}
-	];
-
-	// Partners
-	const partnerLogos = [
-		{
-			name: 'Arc Marine',
-			img: '/partners/arc-marine-logo.svg'
-		},
-		{
-			name: 'BNSF Logistics',
-			img: '/partners/bnsf-logistics.svg'
-		},
-		{
-			name: 'CSX Corporation',
-			img: '/partners/csx.svg'
-		},
-		{
-			name: 'D-Ship',
-			img: '/partners/d-ship.svg'
-		},
-		{
-			name: 'DS Nordon',
-			img: '/partners/ds-nordon.svg'
-		},
-		{
-			name: 'Fagioli',
-			img: '/partners/fagioli-logo.svg'
-		},
-		{
-			name: 'G&C',
-			img: '/partners/g-c-logo.svg'
-		},
-		{
-			name: 'J.E. Oswalt & Sons',
-			img: '/partners/j-e-oswalt-and-sons.svg'
-		},
-		{
-			name: 'Gensteam',
-			img: '/partners/gensteam-logo.svg'
-		},
-		{
-			name: 'Mitsubishi Power',
-			img: '/partners/mitsubishi-power.svg'
-		},
-		{
-			name: 'Port City Sabine',
-			img: '/partners/port-city-sabine-logo.svg'
-		},
-		{
-			name: 'QSL',
-			img: '/partners/qsl-logo.svg'
-		},
-		{
-			name: 'SC Ports',
-			img: '/partners/sc-ports-logo.svg'
-		},
-		{
-			name: 'SSA Marine',
-			img: '/partners/ssa-marine.svg'
-		},
-		{
-			name: 'Stevens Towing',
-			img: '/partners/stevens-towing.svg'
-		},
-		{
-			name: 'Texas International Freight',
-			img: '/partners/texas-international-freight.svg'
-		}
-	];
+	import { getTeamData } from '$site/lib/team/team.remote';
+	import { getFaqData } from '$site/lib/faq/faq.remote';
+	import { getPartnersData, type PartnerItem } from '$site/lib/partners/partners.remote';
 
 	// Stats
 	const stats = [
@@ -270,7 +142,7 @@
 		<div
 			class="mask-lr grid grid-cols-2 items-center justify-center gap-8 invert sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
 		>
-			{#each partnerLogos as partner}
+			{#each (getPartnersData().current ?? []) as partner (partner.id)}
 				<img
 					src={partner.img}
 					alt={partner.name}
@@ -307,7 +179,7 @@
 	<!-- team 
 	------------------------------------------>
 	<div class="team-container grid grid-cols-2 lg:grid-cols-4">
-		{#each teamMembers as team (team.id)}
+		{#each getTeamData().current as team (team.id)}
 			<Card
 				variant="profile"
 				{...team}
@@ -546,7 +418,7 @@
 		subtitle="Common questions asked from new partners"
 	/>
 	<Content class="flex flex-col">
-		{#each faqs as faq (faq.id)}
+		{#each getFaqData().current as faq (faq.id)}
 			<Toggle
 				variant="panel"
 				label={faq.label}
