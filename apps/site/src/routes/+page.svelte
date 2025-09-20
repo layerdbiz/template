@@ -142,7 +142,7 @@
 		<div
 			class="mask-lr grid grid-cols-2 items-center justify-center gap-8 invert sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
 		>
-			{#each (getPartnersData().current ?? []) as partner (partner.id)}
+			{#each getPartnersData().current ?? [] as partner (partner.id)}
 				<img
 					src={partner.img}
 					alt={partner.name}
