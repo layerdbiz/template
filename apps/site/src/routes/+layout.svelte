@@ -132,6 +132,15 @@
 				external
 				class="text-primary-50 hover:text-primary-200 -mx-2"
 			/>
+			<Button
+				lg
+				variant="icon"
+				href="https://wa.me/15705751179"
+				icon="icon-[mdi--whatsapp]"
+				ghost
+				external
+				class="text-primary-50 hover:text-primary-200 -mx-2"
+			/>
 		</div>
 		<!-- <div class="flex flex-col">
 		</div>

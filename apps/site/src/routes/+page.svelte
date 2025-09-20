@@ -30,7 +30,7 @@
 			id: 2,
 			title: 'Duncan Cooke',
 			subtitle: 'Project Engineer',
-			image: '/team/duncan-cooke.png'
+			image: '/team/duncan-cooke.webp'
 		},
 		{
 			id: 3,
@@ -337,7 +337,14 @@
 <!-- SERVICES 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
 <Section
-	divider
+	divider="both"
+	dividerTop={{
+		negative: true
+	}}
+	dividerBottom={{
+		svg: 'text-base-200-700',
+		negative: false
+	}}
 	class="bg-base-200-700 flex flex-col"
 >
 	<Title
@@ -357,7 +364,16 @@
 
 <!-- CONTACT 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
-<Section>
+<Section
+	divider="both"
+	dividerTop={{
+		svg: 'text-base-200-700',
+		negative: false
+	}}
+	dividerBottom={{
+		negative: false
+	}}
+>
 	<Title
 		id="Contact"
 		title="Contact Us"
@@ -439,6 +455,43 @@
 					p="Monday - Friday | 7:30am to 6:00pm"
 				/>
 			</div>
+			<!-- Hours -->
+			<div>
+				<Text
+					h3="Social"
+					class="bar-outside relative font-bold uppercase tracking-wider"
+				/>
+				<!-- Web -->
+				<div class="-ml-3 flex items-start justify-start">
+					<Button
+						lg
+						variant="icon"
+						href="https://www.facebook.com/TridentCubed"
+						icon="icon-[mdi--facebook]"
+						ghost
+						external
+						class="text-primary -mx-2"
+					/>
+					<Button
+						lg
+						variant="icon"
+						href="https://www.linkedin.com/company/trident-cubed-solutions"
+						icon="icon-[mdi--linkedin]"
+						ghost
+						external
+						class="text-primary -mx-2"
+					/>
+					<Button
+						lg
+						variant="icon"
+						href="https://wa.me/15705751179"
+						icon="icon-[mdi--whatsapp]"
+						ghost
+						external
+						class="text-primary -mx-2"
+					/>
+				</div>
+			</div>
 		</div>
 
 		<!-- Contact Form
@@ -490,7 +543,7 @@
 	<Title
 		id="FAQ"
 		title="FAQ"
-		subtitle="Hit us up"
+		subtitle="Common questions asked from new partners"
 	/>
 	<Content class="flex flex-col">
 		{#each faqs as faq (faq.id)}
@@ -533,7 +586,7 @@
 		primary
 		label="Contact sales"
 		class="row-span-2 min-w-72 place-self-end self-center"
-		href="#"
+		href="#Contact"
 	/>
 </Section>
 

@@ -2,11 +2,6 @@ import { resolve } from "path";
 import adapter from "@sveltejs/adapter-auto";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
-// Detect if running in Storybook context
-const isStorybook = !!process.env.STORYBOOK ||
-	process.argv.some((a) => a.includes("storybook")) ||
-	process.env.npm_lifecycle_script?.includes("storybook");
-
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	// Consult https://svelte.dev/docs/kit/integrations
@@ -39,7 +34,7 @@ const config = {
 	},
 	compilerOptions: {
 		experimental: {
-			async: isStorybook ? false : true,
+			async: true,
 		},
 	},
 	vitePlugin: {
