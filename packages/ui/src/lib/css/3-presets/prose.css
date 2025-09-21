@@ -69,7 +69,21 @@ h2.prose:not(:where(.not-prose, .not-prose *)) {
 	margin-top: 2em;
 	margin-bottom: 1em;
 	line-height: 1.3333333;
+	position: relative;
 }
+/* 
+.prose :where(h2):not(:where(.not-prose, .not-prose *))::after,
+h2.prose:not(:where(.not-prose, .not-prose *))::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	right: auto;
+	left: -1rem;
+	display: block;
+	width: 5px;
+	background: var(--color-primary);
+} */
+
 .prose :where(h2 strong):not(:where(.not-prose, .not-prose *)),
 h2 strong.prose:not(:where(.not-prose, .not-prose *)) {
 	font-weight: 800;
@@ -99,6 +113,7 @@ h4.prose:not(:where(.not-prose, .not-prose *)) {
 }
 .prose :where(p):not(:where(.not-prose, .not-prose *)),
 p.prose:not(:where(.not-prose, .not-prose *)) {
+	text-wrap: pretty;
 	margin-top: 1.25em;
 	margin-bottom: 1.25em;
 }

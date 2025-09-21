@@ -40,7 +40,10 @@
 	const proseClasses = $derived(prose ? 'prose ' : '');
 </script>
 
-<Component {...props} class="content mx-auto {proseClasses} {props.class}">
+<Component
+	{...props}
+	class="content mx-auto {proseClasses} {props.class}"
+>
 	{#snippet component({ props })}
 		<div {...props}>
 			{#if content === 'children'}

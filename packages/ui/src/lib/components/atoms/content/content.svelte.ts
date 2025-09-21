@@ -618,11 +618,9 @@ and ensures everything looks cohesive regardless of the HTML complexity.</p>
 `;
 
 export const small = `
-<h1>Simple Text Content</h1>
-<h2>Perfect for Basic Articles</h2>
+<h3>Key Benefits</h3>
 <p>This is ideal for simple text-based content that needs clean, readable typography without complex layouts.</p>
 
-<h3>Key Benefits</h3>
 <p>Clean typography, proper spacing, and excellent readability make this perfect for:</p>
 <ul>
     <li>Blog posts and articles</li>

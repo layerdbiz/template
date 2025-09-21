@@ -19,6 +19,8 @@
 	import { getTeamData } from '$lib/team/team.remote';
 	import { getFaqData } from '$lib/faq/faq.remote';
 	import { getPartnersData, type PartnerProps } from '$lib/partners/partners.remote';
+	import { getServicesData } from '$lib/services/services.remote';
+	import { getTestimonialsData } from '$lib/testimonials/testimonials.remote';
 
 	// Stats
 	const stats = [
@@ -73,7 +75,7 @@
 				size={mq.md ? 'xl' : 'sm'}
 				primary
 				variant="icon text"
-				icon="icon-[mdi--play-circle]"
+				icon="icon-[mdi--play-circle-outline]"
 				label="Learn More"
 				class="w-full flex-1 lg:min-w-72"
 				href="#About"
@@ -104,7 +106,10 @@
 		class="mask-t-from-0% mask-t-to-50% origin-bottom overflow-hidden"
 		overlay="bg-radial from-transparent to-black from-0% to-100% scale-x-125"
 	/>
-
+	<Image
+		bg
+		overlay="bg-black/30"
+	/>
 	<!-- GRADIENT WRAPPER
 	------------------------------------------>
 	<div
@@ -130,7 +135,7 @@
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
 <Section
 	id="Partners"
-	class="bg-dark-dark text-light-dark z-0 flex flex-col pt-20"
+	class="bg-dark-dark text-light-dark z-0 flex flex-col overflow-clip pt-20"
 	container="!gap-10"
 	divider="bottom"
 	dividerBottom={{ svg: 'text-base-50-950' }}
@@ -156,16 +161,17 @@
 
 	<!-- testimonials -->
 	<Container
-		class="mask-lr bleed grid grid-cols-3 items-center justify-center gap-14 overflow-x-clip pb-20"
+		class="mask-lr bleed grid grid-cols-1 items-center justify-center gap-14 overflow-x-clip pb-20 lg:grid-cols-3"
 	>
-		<Card
-			total="3"
-			class="nth-[2]:opacity-100 nth-[2]:scale-100 scale-70 dark max-w-xl pl-14 opacity-25"
-			variant="testimonial"
-			title="Justin ONeill"
-			subtitle="Arc Marine"
-			description="Trident has been an invaluable partner in managing our complex logistics needs. Their expertise and dedication have significantly improved our operational efficiency."
-		/>
+		{#each getTestimonialsData().current ?? [] as testimonial (testimonial.id)}
+			<Card
+				class="nth-[2]:opacity-100 nth-[2]:scale-100 scale-70 dark max-w-xl pl-14 opacity-25"
+				variant="testimonial"
+				title={testimonial.title}
+				subtitle={testimonial.subtitle}
+				description={testimonial.description}
+			/>
+		{/each}
 	</Container>
 </Section>
 
@@ -187,26 +193,130 @@
 		{#each getTeamData().current as team (team.id)}
 			<Card
 				variant="profile"
-				{...team}
+				title={team.title}
+				subtitle={team.subtitle}
+				image={team.image}
+				icon={team.icon}
 			/>
 		{/each}
 	</div>
 
 	<!-- about 
 	------------------------------------------>
+
+	<!-- The Story Behind Trident -->
 	<Container
-		total="3"
 		class="flex flex-col items-center justify-between gap-20 lg:flex-row even:lg:flex-row-reverse"
 	>
 		<Content
 			type="text"
 			class="w-full"
-		/>
+		>
+			<!-- Title -->
+			<h2 class="bar-outside">The Story Behind Trident</h2>
+			<p>
+				Trident Cubed was formed by a team of veteran mariners and engineers who saw a gap between
+				what cargo owners were promised on paper and what actually happens at the hook, quay, and
+				road. Founded in 2020 and headquartered in Houston, we built the company around one simple
+				idea: put seasoned decision-makers on the pier—people who can read a stow plan, speak to the
+				crane, and solve problems before they become delays.
+			</p>
+			<!-- Description -->
+			<h3>Mission</h3>
+			<p>
+				Our mission is to deliver safe, compliant, and efficient movement of project and breakbulk
+				cargo—end to end. We combine port-captaincy, marine surveying, and transport engineering so
+				clients get one accountable team that plans the work, supervises the lift, and documents the
+				result.
+			</p>
+			<h3>Principles</h3>
+			<p>
+				Plan precisely. Communicate clearly. Document relentlessly. Those are the rules that guide
+				every job we take, whether it’s a single heavy-lift or a multi-modal move across ports,
+				barges, rail, and road.
+			</p>
+		</Content>
 		<Image
-			class="aspect-video lg:aspect-square"
-			src="/photos/houston-night.jpg"
+			class="sticky top-32 aspect-video lg:aspect-square"
+			src="/photos/team.webp"
 			mask
-			overlay="bg-radial from-transparent to-black from-20% to-100% "
+			overlay="to-black from-20% to-100%"
+		/>
+	</Container>
+
+	<!-- What We Do, Start to Finish -->
+	<Container
+		class="flex flex-col items-center justify-between gap-20 lg:flex-row even:lg:flex-row-reverse"
+	>
+		<Content
+			type="text"
+			class="w-full"
+		>
+			<!-- Title -->
+			<h2 class="bar-outside">What We Do, Start to Finish</h2>
+			<p>
+				Trident Cubed provides Port Captain and Supercargo supervision, Marine Warranty and
+				condition surveys, and cargo transport engineering. From method statements and lift plans to
+				on-site execution and sign-off, we translate drawings into safe, repeatable operations that
+				keep terminals moving and schedules intact.
+			</p>
+			<!-- Description -->
+			<h3>Operational Discipline</h3>
+			<p>
+				Every operation is built on verified calculations, pre-lift briefings, and live supervision.
+				We coordinate with stevedores, terminal ops, trucking and barge teams, aligning gear,
+				sequencing, and weather windows so the cargo touches the ground exactly once.
+			</p>
+			<h3>Compliance & Documentation</h3>
+			<p>
+				We work to the CTU Code, OEM rigging limits, and carrier requirements, capturing the trail
+				with checklists, photos, and reports clients can hand to insurers and auditors without
+				rework. If something changes on site, we issue controlled updates and keep everyone aligned.
+			</p>
+		</Content>
+		<Image
+			class="sticky top-32 aspect-video lg:aspect-square"
+			src="/photos/trident-cubed-cargo-operations.png"
+			mask
+			overlay="to-black from-20% to-100%"
+		/>
+	</Container>
+
+	<!-- Why Partners Choose Trident -->
+	<Container
+		class="flex flex-col items-center justify-between gap-20 lg:flex-row even:lg:flex-row-reverse"
+	>
+		<Content
+			type="text"
+			class="w-full"
+		>
+			<!-- Title -->
+			<h2 class="bar-outside">Why Partners Choose Trident</h2>
+			<p>
+				Clients bring us in because they need outcomes: fewer surprises on the pier, cleaner
+				handoffs between modes, and reports that stand up to scrutiny. Our founding partners have
+				decades on deck and in the field, and that experience shows up in faster decisions and
+				shorter quay time.
+			</p>
+			<!-- Description -->
+			<h3>Results You Can Measure</h3>
+			<p>
+				We reduce idle crane minutes through better sequencing, prevent re-stows with methodical
+				load readiness checks, and close out jobs with complete evidence—so claims are avoided and
+				lessons learned become standard practice on the next move.
+			</p>
+			<h3>Your Cargo, Our Accountability</h3>
+			<p>
+				From first survey to final lash, we act as a single point of accountability. If it lifts,
+				rolls, barges, rails, or trucks, Trident Cubed plans it, supervises it, and documents it— so
+				your team can focus on the rest of the mission with confidence.
+			</p>
+		</Content>
+		<Image
+			class="sticky top-32 aspect-video lg:aspect-square"
+			src="/photos/trident-cubed-secured-cargo.png"
+			mask
+			overlay="to-black from-20% to-100%"
 		/>
 	</Container>
 </Section>
@@ -229,13 +339,18 @@
 		title="Services"
 		subtitle="The Standard in Marine Surveying & Port Captain Services"
 	/>
-	<div class="services-container">
-		<Card
-			class="overflow-hidden"
-			glass
-			variant="service"
-			total="12"
-		/>
+	<div class="services-container grid gap-6">
+		{#each getServicesData().current ?? [] as service (service.id)}
+			<Card
+				glass
+				class="overflow-clip"
+				variant="service"
+				title={service.title}
+				description={service.description}
+				image={service.image}
+				label={service.label}
+			/>
+		{/each}
 	</div>
 </Section>
 
@@ -473,8 +588,7 @@
 
 	:global {
 		.services-container {
-			@apply grid gap-4;
-			grid-template-columns: repeat(auto-fit, minmax(25ch, 1fr));
+			grid-template-columns: repeat(auto-fit, minmax(30ch, 1fr));
 		}
 	}
 </style>

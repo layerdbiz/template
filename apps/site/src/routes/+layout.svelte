@@ -114,7 +114,7 @@
 				year="2020"
 				name="Trident Cubed Solutions"
 				type="llc"
-				class="text-primary-200 !py-0 text-sm"
+				class="text-primary-50 !py-0 text-sm"
 			/>
 		</div>
 		<div class="mt-2 flex lg:mt-0">

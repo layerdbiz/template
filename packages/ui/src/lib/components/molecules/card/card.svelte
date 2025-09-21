@@ -39,10 +39,13 @@
 		...props
 	}: CardProps = $props();
 
+	// Extract image source from either string or ImageProps object
+	let imageSrc = $derived(typeof image === 'string' ? image : image?.src || undefined);
+
 	// Computed mask style with dynamic URL
 	let maskStyle = $derived(
-		image
-			? `mask: url(${image}); -webkit-mask: url(${image}); mask-size: contain; -webkit-mask-size: contain;`
+		imageSrc
+			? `mask: url(${imageSrc}); -webkit-mask: url(${imageSrc}); mask-size: contain; -webkit-mask-size: contain;`
 			: ''
 	);
 </script>
@@ -54,25 +57,50 @@
 <!-- Service -->
 {#snippet service()}
 	<!-- Header section with label -->
-	<div class="service card-service min-h-35 relative overflow-hidden px-4 py-3">
-		<Image bg />
+	<div class="service card-service min-h-50 relative overflow-hidden px-4 py-3">
+		<!-- 		
 		<Image
 			bg
+			src={imageSrc}
 			overlay="bg-gradient-to-t from-primary to-transparent from-0% to-30%"
+		/> -->
+
+		<Image
+			bg
+			src={imageSrc}
+			class="opacity-100 transition duration-300 group-hover:opacity-0"
+			image="grayscale-100 contrast-300 transition duration-300"
+			overlay="bg-primary-600/50"
 		/>
+
+		<Image
+			bg
+			src={imageSrc}
+			class="opacity-0 transition duration-300 group-hover:opacity-100"
+			image="contrast-125 brightness-125 group-hover:scale-110 transition duration-300 will-change-transform"
+			overlay="bg-linear-170 to-primary from-transparent from-60%"
+		/>
+
+		<!-- 
 		<Text
 			noprose
 			p={label}
 			class="card-label absolute bottom-2 right-2 rounded bg-black/80 px-2 py-0.5 text-sm text-white"
-		/>
+		/> -->
 	</div>
 
 	<!-- Content section -->
-	<div class="card-content space-y-2 p-4">
-		<Text
-			class="card-title text-base-950-50 text-balance text-lg font-semibold"
-			h3={title}
-		/>
+	<div class="card-content space-y-2 px-6 py-6">
+		<div class="inline-flex items-center gap-1.5">
+			<Text
+				class="card-title text-base-950-50 group-hover:text-primary text-balance text-xl font-semibold"
+				h3={title}
+			/>
+			<Icon
+				icon="icon-[mdi--arrow-right]"
+				class="text-primary text-xl"
+			/>
+		</div>
 		<Text
 			class="card-description text-base-600-300 text-balance text-sm leading-relaxed"
 			p={description}
@@ -93,7 +121,7 @@
 		<figure class="-z-1 reflect absolute bottom-0">
 			<img
 				class="w-full"
-				src={image}
+				src={imageSrc}
 				alt={title}
 			/>
 
@@ -163,7 +191,7 @@
 ::::::::::::::::::::::::::::::::::::::::::::: -->
 <Component
 	{...props}
-	class="card block rounded-xl {props.class}"
+	class="card group block rounded-xl {props.class}"
 >
 	{#snippet component({ props })}
 		<div {...props}>
