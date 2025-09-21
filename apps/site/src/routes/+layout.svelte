@@ -95,6 +95,7 @@
 		<Button
 			size={mq.md ? 'sm' : 'lg'}
 			primary
+			variant="icon text"
 			icon="person"
 			label="Sign In"
 			class="w-full lg:w-14"
@@ -106,14 +107,17 @@
 	{@render children()}
 </main>
 <Footer class="dark relative overflow-clip py-10">
-	<Container class="mt-6 flex translate-y-6 flex-col items-center justify-end">
-		<Copyright
-			year="2020"
-			name="Trident Cubed Solutions"
-			type="llc"
-			class="text-primary-200 !py-1 text-sm"
-		/>
-		<div class="-ml-3 flex items-start justify-start">
+	<Container class="mt-6 flex translate-y-6 flex-col items-center md:flex-row md:justify-between">
+		<div class="flex flex-col items-center justify-center gap-4 md:flex-row md:items-center">
+			<Logo class="size-11" />
+			<Copyright
+				year="2020"
+				name="Trident Cubed Solutions"
+				type="llc"
+				class="text-primary-200 !py-0 text-sm"
+			/>
+		</div>
+		<div class="mt-2 flex lg:mt-0">
 			<Button
 				lg
 				variant="icon"
@@ -142,26 +146,13 @@
 				class="text-primary-50 hover:text-primary-200 -mx-2"
 			/>
 		</div>
-		<!-- <div class="flex flex-col">
-		</div>
-		<div class="flex items-start justify-center">
-			<Link
-				href="#"
-				class="text-primary-50 hover:text-primary-200 !w-auto text-sm">Privacy Policy</Link
-			>
-			<span class="mx-2">|</span>
-			<Link
-				href="#"
-				class="text-primary-50 hover:text-primary-200 !w-auto text-sm">Terms of Service</Link
-			>
-		</div> -->
 	</Container>
 
 	<!-- blue radial gradient -->
 	<Image
 		bg
 		class="mask-t-from-0% mask-t-to-100% absolute bottom-0 mx-auto size-full"
-		overlay="bg-radial from-primary to-transparent from-0% to-80% bg-black scale-y-200  translate-y-1/2"
+		overlay="bg-radial from-primary to-transparent from-0% to-80% bg-black scale-y-200 translate-y-1/2"
 	/>
 </Footer>
 

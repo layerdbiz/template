@@ -39,7 +39,7 @@
 	const currentYear = $derived(currentDate.getFullYear());
 	const startYear = $derived(year ? parseInt(year.toString()) : currentYear);
 	const yearRange = $derived(
-		startYear < currentYear ? `${startYear}–${currentYear}` : `${currentYear}`
+		startYear < currentYear ? `${startYear} — ${currentYear}` : `${currentYear}`
 	);
 
 	const businessTypes: Record<BusinessType, string> = {

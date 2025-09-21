@@ -5,7 +5,7 @@ interface TeamMember {
 	title: string;
 	subtitle: string;
 	image: string;
-	linkedin: string;
+	icon: string; // Changed from linkedin to icon to match Card component
 }
 
 export const getTeamData = prerender(async () => {
@@ -27,7 +27,7 @@ export const getTeamData = prerender(async () => {
 		title: member.name, // API 'name' maps to Card 'title'
 		subtitle: member.title, // API 'title' maps to Card 'subtitle'
 		image: member.src, // API 'src' maps to Card 'image'
-		linkedin: member.linkedin,
+		icon: member.linkedin, // API 'linkedin' maps to Card 'icon' (for LinkedIn URL)
 	}));
 
 	console.log("✅ Team members prerendered:", validMembers.length, "members");

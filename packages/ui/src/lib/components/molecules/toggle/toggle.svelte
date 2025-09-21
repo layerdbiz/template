@@ -531,7 +531,9 @@
 			variant: 'text',
 			class: combinedClass,
 			// Use the label prop as button label, or fall back to button.label
-			label: label || button.label
+			label: label || button.label,
+			// Pass toggle state to button for icon toggling functionality
+			toggled: isToggleOpen
 		};
 
 		// Merge with user-provided button config, with user config taking priority
@@ -873,5 +875,15 @@
 	/* Specifically target label elements with panel class */
 	:global(label.toggle-trigger--panel) {
 		@apply block w-full;
+	}
+
+	/* Panel-specific button styling - allow text wrapping and top alignment */
+	:global(.toggle--panel .btn) {
+		@apply items-start whitespace-normal !rounded-none !py-4 leading-normal;
+	}
+
+	:global(.toggle--panel .btn .btn-label),
+	:global(.toggle--panel .toggle-content) {
+		@apply pr-8 md:pr-12;
 	}
 </style>

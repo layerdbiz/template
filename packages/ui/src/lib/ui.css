@@ -79,7 +79,7 @@
 }
 
 @utility mask-lr {
-	@apply mask-alpha mask-r-from-black mask-r-from-80% mask-r-to-transparent mask-l-from-black mask-l-from-80% mask-l-to-transparent;
+	@apply mask-alpha mask-r-from-black mask-r-from-70% mask-r-to-transparent mask-l-from-black mask-l-from-80% mask-l-to-transparent;
 }
 
 @utility text-trim {

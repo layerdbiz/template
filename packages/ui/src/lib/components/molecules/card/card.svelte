@@ -103,12 +103,14 @@
 			></div>
 		</figure>
 
-		<i class="icon-[devicon--linkedin] text-md mb-1 sm:text-xl lg:text-2xl"></i>
-
 		{#if icon}
 			<Button
 				variant="icon"
-				class=""
+				icon="icon-[devicon--linkedin] hover:brightness-120 transition duration-200"
+				href={icon}
+				external
+				ghost
+				class="-mb-2"
 			/>
 		{/if}
 

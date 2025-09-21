@@ -68,8 +68,8 @@
 
 	// Process hybrid icon prop to extract name, theme, and additional classes
 	const processedIcon = $derived(() => {
-		// Check if className contains "icon-[theme--name]" pattern first
-		const iconPattern = /^icon-\[([^-]+)--([^\]]+)\]$/;
+		// Pattern to match icon-[theme--name] anywhere in the string
+		const iconPattern = /icon-\[([^-]+)--([^\]]+)\]/;
 		const classMatch = className && className.match(iconPattern);
 
 		if (classMatch) {
@@ -78,6 +78,7 @@
 				name: '',
 				theme: '',
 				class: className,
+				extraClasses: '',
 				useRawClass: true
 			};
 		}
@@ -88,6 +89,7 @@
 				name: icon.name || '',
 				theme: icon.theme || theme,
 				class: icon.class || '',
+				extraClasses: '',
 				useRawClass: false
 			};
 		}
@@ -98,11 +100,16 @@
 			const match = icon.match(iconPattern);
 
 			if (match) {
-				// Use the full string as-is for the class
+				// Split the string to separate icon class from additional classes
+				const parts = icon.trim().split(/\s+/);
+				const iconClass = parts[0]; // The icon-[...] part
+				const additionalClasses = parts.slice(1).join(' '); // Everything else
+
 				return {
 					name: '',
 					theme: '',
-					class: icon,
+					class: iconClass,
+					extraClasses: additionalClasses,
 					useRawClass: true
 				};
 			}
@@ -116,6 +123,7 @@
 					name: '',
 					theme: '',
 					class: `icon-[${icon}]`,
+					extraClasses: '',
 					useRawClass: true
 				};
 			}
@@ -125,6 +133,7 @@
 				name: icon,
 				theme: theme,
 				class: '',
+				extraClasses: '',
 				useRawClass: false
 			};
 		}
@@ -134,6 +143,7 @@
 			name: name,
 			theme: theme,
 			class: '',
+			extraClasses: '',
 			useRawClass: false
 		};
 	});
@@ -142,6 +152,7 @@
 	const finalName = $derived(processedIcon().useRawClass ? '' : processedIcon().name);
 	const finalTheme = $derived(processedIcon().useRawClass ? '' : processedIcon().theme);
 	const finalClass = $derived(processedIcon().class);
+	const extraClasses = $derived(processedIcon().extraClasses || '');
 	const useRawClass = $derived(processedIcon().useRawClass);
 
 	// Fallback icons only for 'all' mode, not for 'remote' mode
@@ -186,11 +197,8 @@
 {:else}
 	<i
 		class="{useRawClass
-			? finalClass
-			: `icon ${finalName ? `icon-${finalName}` : ''} ${finalClass}`} {useRawClass &&
-		finalClass === className
-			? ''
-			: className}"
+			? `${finalClass} ${extraClasses}`.trim()
+			: `icon ${finalName ? `icon-${finalName}` : ''} ${finalClass}`} {className}"
 		data-icon-theme={useRawClass ? undefined : finalTheme}
 		{role}
 		aria-hidden={ariaHidden}

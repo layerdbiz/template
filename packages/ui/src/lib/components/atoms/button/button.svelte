@@ -556,12 +556,11 @@
 
 		&:where(.btn-variant-icon-text) {
 			/* Icon + text: left aligned like legacy btn-wrapper */
-			@apply items-center justify-start text-left;
+			@apply items-center justify-start pr-4 text-left;
 		}
 
 		&:where(.btn-variant-text-icon) {
-			/* Text + icon: left aligned like legacy btn-wrapper */
-			@apply items-center justify-start text-left;
+			@apply items-center justify-start pl-5 text-left md:pl-10;
 		}
 
 		&:where(.btn-variant-icon-text-icon) {
@@ -633,7 +632,7 @@
 
 	/* keep text-trim inline */
 	.btn-label {
-		@apply text-trim w-full;
+		@apply w-full;
 	}
 
 	/* bigger icon, still cap-aligned so centering stays true */

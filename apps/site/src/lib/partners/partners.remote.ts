@@ -1,6 +1,6 @@
 import { prerender } from "$app/server";
 
-export interface PartnerItem {
+export interface PartnerProps {
 	id: string;
 	name: string;
 	img: string;
@@ -32,7 +32,7 @@ export const getPartnersData = prerender(async () => {
 			.filter((partner: any) =>
 				partner && partner.id && partner.name && partner.src
 			)
-			.map((partner: any): PartnerItem => ({
+			.map((partner: any): PartnerProps => ({
 				id: String(partner.id),
 				name: partner.name, // API 'name' maps to component 'name'
 				img: partner.src, // API 'src' maps to component 'img'

@@ -16,9 +16,9 @@
 		Flex,
 		Input
 	} from '@layerd/ui';
-	import { getTeamData } from '$site/lib/team/team.remote';
-	import { getFaqData } from '$site/lib/faq/faq.remote';
-	import { getPartnersData, type PartnerItem } from '$site/lib/partners/partners.remote';
+	import { getTeamData } from '$lib/team/team.remote';
+	import { getFaqData } from '$lib/faq/faq.remote';
+	import { getPartnersData, type PartnerProps } from '$lib/partners/partners.remote';
 
 	// Stats
 	const stats = [
@@ -70,16 +70,20 @@
 		<!-- buttons -->
 		<div class="flex w-full gap-2 lg:w-auto lg:gap-6">
 			<Button
-				size={mq.md ? 'xl' : 'md'}
+				size={mq.md ? 'xl' : 'sm'}
 				primary
+				variant="icon text"
+				icon="icon-[mdi--play-circle]"
 				label="Learn More"
 				class="w-full flex-1 lg:min-w-72"
 				href="#About"
 			/>
 			<Button
-				size={mq.md ? 'xl' : 'md'}
+				size={mq.md ? 'xl' : 'sm'}
 				base
-				label="Contact sales"
+				variant="text icon"
+				icon="icon-[mdi--chevron-right]"
+				label="Contact Sales"
 				class="w-full flex-1 lg:min-w-72"
 				href="#Contact"
 			/>
@@ -138,24 +142,25 @@
 	/>
 
 	<!-- partners -->
-	<Container class="flex select-none flex-col items-center justify-around gap-14 pb-20">
-		<div
-			class="mask-lr grid grid-cols-2 items-center justify-center gap-8 invert sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
-		>
-			{#each getPartnersData().current ?? [] as partner (partner.id)}
-				<img
-					src={partner.img}
-					alt={partner.name}
-					class="h-8 w-auto max-w-32 shrink-0 place-self-center self-center object-contain lg:min-h-16"
-				/>
-			{/each}
-		</div>
+	<Container
+		class="mask-lr grid select-none grid-cols-2 items-center justify-center gap-8 pb-20 invert sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
+	>
+		{#each getPartnersData().current ?? [] as partner (partner.id)}
+			<img
+				src={partner.img}
+				alt={partner.name}
+				class="h-8 w-auto max-w-32 shrink-0 place-self-center self-center object-contain lg:min-h-16"
+			/>
+		{/each}
 	</Container>
 
 	<!-- testimonials -->
-	<Container class="flex flex-col items-center justify-center gap-14 pb-20 ">
+	<Container
+		class="mask-lr bleed grid grid-cols-3 items-center justify-center gap-14 overflow-x-clip pb-20"
+	>
 		<Card
-			class="dark max-w-xl pl-14"
+			total="3"
+			class="nth-[2]:opacity-100 nth-[2]:scale-100 scale-70 dark max-w-xl pl-14 opacity-25"
 			variant="testimonial"
 			title="Justin ONeill"
 			subtitle="Arc Marine"
@@ -424,13 +429,14 @@
 				label={faq.label}
 				class="border-base-300-700 border-b last:border-0"
 				button={{
-					icon: 'chevron-right',
-					iconEndToggle: 'home',
+					icon: 'icon-[mdi--chevron-right] transition-transform duration-200 rotate-0 text-2xl',
+					iconToggle:
+						'icon-[mdi--chevron-right] text-primary transition-transform duration-200 rotate-90 text-2xl',
 					variant: 'text icon',
 					width: 'full',
 					padding: 'none',
 					appearance: 'ghost',
-					class: '!font-black !py-4  rounded-none hover:text-primary'
+					class: '!font-black hover:[&_.btn-icon]:text-primary'
 				}}
 			>
 				<p>{faq.content}</p>
@@ -456,7 +462,7 @@
 	<Button
 		size="xl"
 		primary
-		label="Contact sales"
+		label="Contact Sales"
 		class="row-span-2 min-w-72 place-self-end self-center"
 		href="#Contact"
 	/>

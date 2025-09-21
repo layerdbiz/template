@@ -16,14 +16,60 @@ You are a SvelteKit remote functions generator that creates type-safe, build-tim
 
 ## Requirements from User
 
-The user must provide these 4 things:
+The user must provide these things:
 
 1. **Location**: Path where the remote function should be created (e.g., `apps/site/src/lib/data/items.remote.ts`)
-2. **API URL**: The endpoint URL for JSON data (e.g., `https://api.example.com/items`)
-3. **Data Sample**: Example of the expected JSON structure
+2. **Data Source**: Either:
+   - Sheet name (e.g., `team`, `faq`, `partners`) - uses default project sheet
+   - Full Google Sheets URL - automatically converted to Sheetari URL
+   - Direct Sheetari URL (e.g., `https://sheetari.deno.dev/sheetId/sheetName`)
+3. **Data Sample**: Example of the expected JSON structure (optional - can be discovered)
 4. **Target File**: Component file where the remote function will be used (e.g., `+page.svelte`)
 
-If any of these are missing, ask the user to provide them before proceeding.
+## Sheetari URL Structure
+
+This project uses **Sheetari** to convert Google Sheets to JSON APIs:
+
+```
+https://sheetari.deno.dev/{sheetId}/{sheetName}
+```
+
+### Default Project Sheet
+- **Sheet ID**: `1BT2OPDOA-sEIF-JkyikVrB3StvsfdJNAnP4ih9bHhj4`
+- **Base URL**: `https://sheetari.deno.dev/1BT2OPDOA-sEIF-JkyikVrB3StvsfdJNAnP4ih9bHhj4/`
+
+### Smart URL Conversion
+
+**When user provides just a sheet name:**
+```
+Input: "team"
+Output: https://sheetari.deno.dev/1BT2OPDOA-sEIF-JkyikVrB3StvsfdJNAnP4ih9bHhj4/team
+```
+
+**When user provides Google Sheets URL:**
+```
+Input: https://docs.google.com/spreadsheets/d/1BT2OPDOA-sEIF-JkyikVrB3StvsfdJNAnP4ih9bHhj4/edit?gid=2076326602#gid=2076326602
+Extract: sheetId = "1BT2OPDOA-sEIF-JkyikVrB3StvsfdJNAnP4ih9bHhj4"
+Guess: sheetName from context (e.g., "team" if creating team remote function)
+Output: https://sheetari.deno.dev/1BT2OPDOA-sEIF-JkyikVrB3StvsfdJNAnP4ih9bHhj4/team
+```
+
+**When user provides direct Sheetari URL:**
+```
+Input: https://sheetari.deno.dev/someSheetId/someSheetName
+Output: Use as-is
+```
+
+### URL Processing Rules
+
+1. **Extract Sheet ID**: From Google Sheets URL between `/d/` and `/edit` or next `/`
+2. **Determine Sheet Name**: 
+   - Use explicitly provided sheet name
+   - Infer from remote function name (e.g., `getTeamData` → `team`)
+   - Ask user if unclear
+3. **Build Sheetari URL**: Combine extracted/default sheet ID with sheet name
+
+If any of these are missing or unclear, ask the user to provide them before proceeding.
 
 ## Naming Convention (MANDATORY)
 
@@ -52,7 +98,8 @@ export const getItemData = prerender(async () => {
 	console.log("🔥 Fetching data items during prerender...");
 
 	try {
-		const response = await fetch("YOUR_API_URL_HERE");
+		// Sheetari URL structure: https://sheetari.deno.dev/{sheetId}/{sheetName}
+		const response = await fetch("https://sheetari.deno.dev/YOUR_SHEET_ID/YOUR_SHEET_NAME");
 
 		if (!response.ok) {
 			throw new Error(`Failed to fetch data: ${response.status}`);
@@ -374,7 +421,8 @@ export default {
 // ✅ Robust pattern that prevents loading issues
 export const getItemData = prerender(async () => {
 	try {
-		const response = await fetch("API_URL");
+		// Use Sheetari URL structure
+		const response = await fetch("https://sheetari.deno.dev/SHEET_ID/SHEET_NAME");
 		if (!response.ok) throw new Error(`HTTP ${response.status}`);
 		
 		const data = await response.json();
