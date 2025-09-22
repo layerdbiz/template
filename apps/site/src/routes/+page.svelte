@@ -175,12 +175,12 @@
 			{/snippet}
 		</svelte:boundary>
 	{:else}
-		<!-- Mobile: Slider with 3 visible items and autoscroll -->
+		<!-- Mobile: Slider with autoscroll (improved speed) -->
 		<Slider
 			class="mask-x-lg bleed overflow-hidden"
 			show={3}
 			loop={true}
-			autoscroll
+			autoscroll={0.25}
 			container="gap-4"
 			slide="flex-none"
 		>

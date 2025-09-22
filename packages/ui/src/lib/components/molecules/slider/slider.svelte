@@ -42,7 +42,7 @@
 	const isAutoscroll = $derived(autoscroll !== false && autoscroll !== 0);
 	const autoscrollSpeed = $derived(() => {
 		if (autoscroll === false || autoscroll === 0) return 0;
-		if (autoscroll === true) return 0.25; // Default speed
+		if (autoscroll === true) return 2; // Use default from documentation
 		return Number(autoscroll); // Custom speed
 	});
 
@@ -78,13 +78,17 @@
 	// Embla options
 	let options: EmblaOptionsType = $derived({
 		loop: loop || isAutoscroll, // Auto-enable loop for autoscroll
-		align: 'center', // Center the active slide
+		align: 'center',
 		slidesToScroll: 1,
-		containScroll: isAutoscroll ? false : 'trimSnaps', // Disable containScroll for autoscroll
-		watchDrag: !isAutoscroll, // Disable dragging when autoscroll is enabled
-		// Configure Embla to look for our slide wrapper class instead of auto-detecting
-		container: '.embla__container',
-		slides: '.embla__slide',
+		// Simplify options for autoscroll
+		...(isAutoscroll
+			? {
+					containScroll: false,
+					watchDrag: false
+				}
+			: {
+					containScroll: 'trimSnaps'
+				}),
 		// Use dynamic responsive breakpoints
 		breakpoints: responsiveBreakpoints()
 	});
@@ -106,12 +110,11 @@
 			pluginList.push(
 				AutoScroll({
 					speed: autoscrollSpeed(),
-					startDelay: 1000,
-					stopOnInteraction: false,
-					stopOnMouseEnter: false,
-					stopOnFocusIn: false
+					startDelay: 1000, // Use default from documentation
+					stopOnInteraction: false
 				})
 			);
+			console.log('AutoScroll plugin added with speed:', autoscrollSpeed(), 'startDelay: 1000ms');
 		}
 
 		return pluginList;
@@ -131,7 +134,27 @@
 	function onInit(event: any) {
 		emblaApi = event.detail;
 		isInitialized = true;
-		// Embla is now initialized and ready
+
+		console.log('Embla initialized with config:', {
+			autoscroll: autoscroll,
+			isAutoscroll: isAutoscroll,
+			plugins: plugins().map((p) => p.constructor.name),
+			options: options
+		});
+
+		// Debug AutoScroll plugin specifically
+		if (isAutoscroll && emblaApi) {
+			const autoScrollPlugin = emblaApi.plugins().autoScroll;
+			if (autoScrollPlugin) {
+				console.log('AutoScroll plugin found:', autoScrollPlugin);
+				// Check if it's playing after initialization
+				setTimeout(() => {
+					console.log('AutoScroll isPlaying:', autoScrollPlugin.isPlaying());
+				}, 2000);
+			} else {
+				console.error('AutoScroll plugin not found in emblaApi.plugins()');
+			}
+		}
 	}
 
 	// Reactive effect to wrap children when content changes
@@ -329,7 +352,7 @@
 	{...props}
 	class="slider embla select-none overflow-hidden {isAutoscroll ? '' : 'cursor-grab'} {props.class}"
 >
-	{#snippet component({ props })}
+	{#snippet component({ props }: { props: any })}
 		<div
 			{...props}
 			use:emblaCarouselSvelte={emblaConfig}
