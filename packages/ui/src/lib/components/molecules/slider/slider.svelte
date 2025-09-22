@@ -82,6 +82,9 @@
 		slidesToScroll: 1,
 		containScroll: isAutoscroll ? false : 'trimSnaps', // Disable containScroll for autoscroll
 		watchDrag: !isAutoscroll, // Disable dragging when autoscroll is enabled
+		// Configure Embla to look for our slide wrapper class instead of auto-detecting
+		container: '.embla__container',
+		slides: '.embla__slide',
 		// Use dynamic responsive breakpoints
 		breakpoints: responsiveBreakpoints()
 	});
@@ -123,16 +126,86 @@
 	// API reference
 	let emblaApi: any = $state(null);
 	let containerRef: HTMLDivElement | null = $state(null);
+	let isInitialized = $state(false);
 
 	function onInit(event: any) {
 		emblaApi = event.detail;
-
-		// After Embla initializes, wrap each child in embla__slide
-		if (containerRef) {
-			updateSlideClasses();
-			wrapChildrenInSlides();
-		}
+		isInitialized = true;
+		// Embla is now initialized and ready
 	}
+
+	// Reactive effect to wrap children when content changes
+	$effect(() => {
+		if (containerRef) {
+			// Use a MutationObserver to detect when children are added
+			const observer = new MutationObserver((mutations) => {
+				let shouldUpdate = false;
+
+				mutations.forEach((mutation) => {
+					if (mutation.type === 'childList') {
+						// Check if non-loading content was added
+						mutation.addedNodes.forEach((node) => {
+							if (node.nodeType === Node.ELEMENT_NODE) {
+								const element = node as Element;
+								const text = element.textContent?.toLowerCase() || '';
+								// Skip loading states and placeholder content
+								if (
+									!element.classList.contains('animate-pulse') &&
+									!text.includes('loading') &&
+									text.trim() !== ''
+								) {
+									shouldUpdate = true;
+								}
+							}
+						});
+
+						// Also check if loading content was removed (transition from loading to real content)
+						mutation.removedNodes.forEach((node) => {
+							if (node.nodeType === Node.ELEMENT_NODE) {
+								const element = node as Element;
+								const text = element.textContent?.toLowerCase() || '';
+								if (element.classList.contains('animate-pulse') || text.includes('loading')) {
+									shouldUpdate = true;
+								}
+							}
+						});
+					}
+				});
+
+				if (shouldUpdate) {
+					// Delay to ensure DOM is settled after async data transition
+					setTimeout(() => {
+						wrapChildrenInSlides();
+					}, 100);
+				}
+			});
+
+			observer.observe(containerRef, {
+				childList: true,
+				subtree: true // Watch deeper for content changes
+			});
+
+			// Initial check for existing content
+			const hasRealContent = Array.from(containerRef.children).some((child) => {
+				const text = child.textContent?.toLowerCase() || '';
+				return (
+					!child.classList.contains('animate-pulse') &&
+					!text.includes('loading') &&
+					text.trim() !== ''
+				);
+			});
+
+			if (hasRealContent) {
+				updateSlideClasses();
+				// Delay initial wrapping to ensure Embla is ready
+				setTimeout(() => {
+					wrapChildrenInSlides();
+				}, 50);
+			}
+
+			return () => observer.disconnect();
+		}
+	});
 
 	// Handle window resize to update slide classes
 	$effect(() => {
@@ -194,33 +267,56 @@
 	}
 
 	function wrapChildrenInSlides() {
-		if (!containerRef) return;
+		if (!containerRef || !isInitialized) return;
 
-		// Get all direct children of the container
-		const children = Array.from(containerRef.children);
+		// Get all direct children of the container that are NOT already embla__slide wrappers
+		const children = Array.from(containerRef.children).filter(
+			(child) => !child.classList.contains('embla__slide')
+		);
 
-		// Wrap each child that doesn't already have embla__slide class
-		children.forEach((child) => {
-			if (!child.classList.contains('embla__slide')) {
-				// Create slide wrapper
-				const slideWrapper = document.createElement('div');
-				slideWrapper.className = `embla__slide ${slideClasses} ${slide}`.trim();
+		// If no unwrapped children, nothing to do
+		if (children.length === 0) return;
 
-				// Insert wrapper before child and move child into wrapper
-				containerRef!.insertBefore(slideWrapper, child);
-				slideWrapper.appendChild(child);
+		// Skip if children are loading placeholders
+		const hasLoadingContent = children.some((child) => {
+			const text = child.textContent?.toLowerCase() || '';
+			return (
+				child.classList.contains('animate-pulse') || text.includes('loading') || text.trim() === ''
+			);
+		});
+
+		if (hasLoadingContent) return;
+
+		// Remove any existing empty embla__slide wrappers
+		const existingSlides = containerRef.querySelectorAll('.embla__slide');
+		existingSlides.forEach((slide) => {
+			if (slide.children.length === 0) {
+				slide.remove();
 			}
 		});
 
-		// Update classes on existing slides
-		const slides = containerRef.querySelectorAll('.embla__slide');
-		slides.forEach((slideElement: Element) => {
-			slideElement.className = `embla__slide ${slideClasses} ${slide}`.trim();
+		// Wrap each unwrapped child in embla__slide
+		children.forEach((child) => {
+			// Create slide wrapper
+			const slideWrapper = document.createElement('div');
+			slideWrapper.className = `embla__slide ${slideClasses} ${slide}`.trim();
+
+			// Insert wrapper before child and move child into wrapper
+			containerRef!.insertBefore(slideWrapper, child);
+			slideWrapper.appendChild(child);
 		});
 
 		// Reinitialize Embla to recognize the new slide structure
-		if (emblaApi) {
-			emblaApi.reInit();
+		if (emblaApi && containerRef) {
+			// Use a small delay to ensure DOM updates are complete
+			setTimeout(() => {
+				emblaApi.reInit();
+				console.log(
+					'Embla reinitialized with',
+					containerRef!.querySelectorAll('.embla__slide').length,
+					'slides'
+				);
+			}, 10);
 		}
 	}
 </script>

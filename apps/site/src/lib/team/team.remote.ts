@@ -1,6 +1,6 @@
 import { prerender } from "$app/server";
 
-interface TeamMember {
+export interface TeamMember {
 	id: string;
 	title: string;
 	subtitle: string;

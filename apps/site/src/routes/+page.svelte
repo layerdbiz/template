@@ -150,15 +150,30 @@
 	<!-- partners -->
 	{#if mq.lg}
 		<!-- Desktop: 8 cols x 2 rows grid -->
-		<div class="mask-x-lg lg:mask-[unset] grid grid-cols-8 gap-8 pb-20 invert">
-			{#each getPartnersData().current ?? [] as partner (partner.id)}
-				<img
-					src={partner.img}
-					alt={partner.name}
-					class="h-12 w-auto place-self-center object-contain"
-				/>
-			{/each}
-		</div>
+		<svelte:boundary>
+			<div class="mask-x-lg lg:mask-[unset] grid grid-cols-8 gap-8 pb-20 invert">
+				{#await getPartnersData()}
+					<!-- Loading state -->
+					{#each Array(16) as _}
+						<div class="h-12 w-auto animate-pulse rounded bg-gray-300"></div>
+					{/each}
+				{:then partners}
+					{#each partners as partner (partner.id)}
+						<img
+							src={partner.img}
+							alt={partner.name}
+							class="h-12 w-auto place-self-center object-contain"
+						/>
+					{/each}
+				{/await}
+			</div>
+
+			{#snippet pending()}
+				<div class="flex items-center justify-center pb-20">
+					<p class="text-base-300">Loading partners...</p>
+				</div>
+			{/snippet}
+		</svelte:boundary>
 	{:else}
 		<!-- Mobile: Slider with 3 visible items and autoscroll -->
 		<Slider
@@ -169,13 +184,28 @@
 			container="gap-4"
 			slide="flex-none"
 		>
-			{#each getPartnersData().current ?? [] as partner (partner.id)}
-				<img
-					src={partner.img}
-					alt={partner.name}
-					class="h-12 w-auto object-contain invert"
-				/>
-			{/each}
+			<svelte:boundary>
+				{#await getPartnersData()}
+					<!-- Loading state -->
+					{#each Array(6) as _}
+						<div class="h-12 w-auto flex-none animate-pulse rounded bg-gray-300"></div>
+					{/each}
+				{:then partners}
+					{#each partners as partner (partner.id)}
+						<img
+							src={partner.img}
+							alt={partner.name}
+							class="h-12 w-auto object-contain invert"
+						/>
+					{/each}
+				{/await}
+
+				{#snippet pending()}
+					<div class="flex items-center justify-center">
+						<p class="text-base-300">Loading partners...</p>
+					</div>
+				{/snippet}
+			</svelte:boundary>
 		</Slider>
 	{/if}
 
@@ -187,15 +217,36 @@
 		loop={true}
 		duration={7000}
 	>
-		{#each getTestimonialsData().current ?? [] as testimonial (testimonial.id)}
-			<Card
-				class="dark pl-7 transition-all duration-300 lg:pl-14"
-				variant="testimonial"
-				title={testimonial.title}
-				subtitle={testimonial.subtitle}
-				description={testimonial.description}
-			/>
-		{/each}
+		<svelte:boundary>
+			{#await getTestimonialsData()}
+				<!-- Loading state for testimonials -->
+				{#each Array(3) as _}
+					<Card
+						class="dark animate-pulse pl-7 transition-all duration-300 lg:pl-14"
+						variant="testimonial"
+						title="Loading..."
+						subtitle="Loading..."
+						description="Loading testimonial content..."
+					/>
+				{/each}
+			{:then testimonials}
+				{#each testimonials as testimonial (testimonial.id)}
+					<Card
+						class="dark pl-7 transition-all duration-300 lg:pl-14"
+						variant="testimonial"
+						title={testimonial.title}
+						subtitle={testimonial.subtitle}
+						description={testimonial.description}
+					/>
+				{/each}
+			{/await}
+
+			{#snippet pending()}
+				<div class="flex items-center justify-center">
+					<p class="text-base-300">Loading testimonials...</p>
+				</div>
+			{/snippet}
+		</svelte:boundary>
 	</Slider>
 </Section>
 
@@ -221,15 +272,36 @@
 		duration={4000}
 		disabled="lg"
 	>
-		{#each getTeamData().current as team (team.id)}
-			<Card
-				variant="profile"
-				title={team.title}
-				subtitle={team.subtitle}
-				image={team.image}
-				icon={team.icon}
-			/>
-		{/each}
+		<svelte:boundary>
+			{#await getTeamData()}
+				<!-- Loading state for team -->
+				{#each Array(4) as _}
+					<Card
+						variant="profile"
+						title="Loading..."
+						subtitle="Loading..."
+						image="https://picsum.photos/id/420/240/360"
+						icon="carbon:user"
+					/>
+				{/each}
+			{:then team}
+				{#each team as member (member.id)}
+					<Card
+						variant="profile"
+						title={member.title}
+						subtitle={member.subtitle}
+						image={member.image}
+						icon={member.icon}
+					/>
+				{/each}
+			{/await}
+
+			{#snippet pending()}
+				<div class="flex items-center justify-center">
+					<p class="text-base-600">Loading team...</p>
+				</div>
+			{/snippet}
+		</svelte:boundary>
 	</Slider>
 	<!-- about 
 	------------------------------------------>
@@ -370,17 +442,40 @@
 		subtitle="The Standard in Marine Surveying & Port Captain Services"
 	/>
 	<div class="services-container grid gap-6">
-		{#each getServicesData().current ?? [] as service (service.id)}
-			<Card
-				glass
-				class="overflow-clip"
-				variant="service"
-				title={service.title}
-				description={service.description}
-				image={service.image}
-				label={service.label}
-			/>
-		{/each}
+		<svelte:boundary>
+			{#await getServicesData()}
+				<!-- Loading state for services -->
+				{#each Array(6) as _}
+					<Card
+						glass
+						class="animate-pulse overflow-clip"
+						variant="service"
+						title="Loading..."
+						description="Loading service information..."
+						image="https://picsum.photos/id/420/240/360"
+						label="Loading"
+					/>
+				{/each}
+			{:then services}
+				{#each services as service (service.id)}
+					<Card
+						glass
+						class="overflow-clip"
+						variant="service"
+						title={service.title}
+						description={service.description}
+						image={service.image}
+						label={service.label}
+					/>
+				{/each}
+			{/await}
+
+			{#snippet pending()}
+				<div class="col-span-full flex items-center justify-center p-8">
+					<p class="text-base-600">Loading services...</p>
+				</div>
+			{/snippet}
+		</svelte:boundary>
 	</div>
 </Section>
 
@@ -568,25 +663,56 @@
 		subtitle="Common questions asked from new partners"
 	/>
 	<Content class="flex flex-col">
-		{#each getFaqData().current as faq (faq.id)}
-			<Toggle
-				variant="panel"
-				label={faq.label}
-				class="border-base-300-700 border-b last:border-0"
-				button={{
-					icon: 'icon-[mdi--chevron-right] transition-transform duration-200 rotate-0 text-2xl',
-					iconToggle:
-						'icon-[mdi--chevron-right] text-primary transition-transform duration-200 rotate-90 text-2xl',
-					variant: 'text icon',
-					width: 'full',
-					padding: 'none',
-					appearance: 'ghost',
-					class: '!font-black hover:[&_.btn-icon]:text-primary'
-				}}
-			>
-				<p>{faq.content}</p>
-			</Toggle>
-		{/each}
+		<svelte:boundary>
+			{#await getFaqData()}
+				<!-- Loading state for FAQ -->
+				{#each Array(5) as _}
+					<Toggle
+						variant="panel"
+						label="Loading question..."
+						class="border-base-300-700 animate-pulse border-b last:border-0"
+						button={{
+							icon: 'icon-[mdi--chevron-right] transition-transform duration-200 rotate-0 text-2xl',
+							iconToggle:
+								'icon-[mdi--chevron-right] text-primary transition-transform duration-200 rotate-90 text-2xl',
+							variant: 'text icon',
+							width: 'full',
+							padding: 'none',
+							appearance: 'ghost',
+							class: '!font-black hover:[&_.btn-icon]:text-primary'
+						}}
+					>
+						<p>Loading answer...</p>
+					</Toggle>
+				{/each}
+			{:then faqs}
+				{#each faqs as faq (faq.id)}
+					<Toggle
+						variant="panel"
+						label={faq.label}
+						class="border-base-300-700 border-b last:border-0"
+						button={{
+							icon: 'icon-[mdi--chevron-right] transition-transform duration-200 rotate-0 text-2xl',
+							iconToggle:
+								'icon-[mdi--chevron-right] text-primary transition-transform duration-200 rotate-90 text-2xl',
+							variant: 'text icon',
+							width: 'full',
+							padding: 'none',
+							appearance: 'ghost',
+							class: '!font-black hover:[&_.btn-icon]:text-primary'
+						}}
+					>
+						<p>{faq.content}</p>
+					</Toggle>
+				{/each}
+			{/await}
+
+			{#snippet pending()}
+				<div class="flex items-center justify-center p-8">
+					<p class="text-base-600">Loading FAQ...</p>
+				</div>
+			{/snippet}
+		</svelte:boundary>
 	</Content>
 </Section>
 

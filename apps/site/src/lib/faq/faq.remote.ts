@@ -1,6 +1,6 @@
 import { prerender } from "$app/server";
 
-interface FaqItem {
+export interface FaqItem {
 	id: string;
 	label: string;
 	content: string;
