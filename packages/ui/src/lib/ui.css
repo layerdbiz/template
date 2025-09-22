@@ -58,17 +58,38 @@
 	--theme-radius: 9999px;
 	--theme-radius-box: 1.5rem;
 	--theme-radius-button: 10em;
+
+	/* container padding values */
+	--spacing-container-mobile: 1rem; /* px-4 = 1rem */
+	--spacing-container-desktop: 2rem; /* px-8 = 2rem */
 }
 
 @layer utilities {
 	.container {
-		@apply mx-auto max-w-7xl px-4 md:px-8;
+		@apply mx-auto max-w-7xl pl-[var(--spacing-container-mobile)] pr-[var(--spacing-container-mobile)] md:pl-[var(--spacing-container-desktop)] md:pr-[var(--spacing-container-desktop)];
 	}
 
+	/* Full viewport bleed */
 	.bleed {
 		@apply relative end-[calc(50%-50svw)] start-[calc(50%-50svw)] w-[100svw] max-w-[unset];
 	}
+
+	/* Container-aware bleed - always bleeds to container edges */
+	.bleed-container {
+		@apply relative left-[calc(-1*var(--spacing-container-mobile))] right-[calc(-1*var(--spacing-container-mobile))] w-[calc(100%+2*var(--spacing-container-mobile))] max-w-[unset] md:left-[calc(-1*var(--spacing-container-desktop))] md:right-[calc(-1*var(--spacing-container-desktop))] md:w-[calc(100%+2*var(--spacing-container-desktop))];
+	}
+
+	/* Mobile-only container bleed - resets to normal on desktop */
+	.bleed-mobile {
+		@apply relative left-[calc(-1*var(--spacing-container-mobile))] right-[calc(-1*var(--spacing-container-mobile))] w-[calc(100%+2*var(--spacing-container-mobile))] max-w-[unset] lg:static lg:left-auto lg:right-auto lg:w-auto lg:max-w-none;
+	}
+
+	/* Reset bleed back to contained */
+	.bleed-unset {
+		@apply relative end-full start-full w-full max-w-full;
+	}
 }
+
 @utility text-md {
 	font-size: 1rem;
 	line-height: 1.5rem;
@@ -79,7 +100,27 @@
 }
 
 @utility mask-lr {
-	@apply mask-alpha mask-r-from-black mask-r-from-70% mask-r-to-transparent mask-l-from-black mask-l-from-80% mask-l-to-transparent;
+	@apply mask-alpha mask-r-from-black mask-r-to-transparent mask-l-from-black mask-l-to-transparent;
+}
+
+@utility mask-x-xs {
+	@apply mask-lr mask-r-from-95% mask-l-from-95%;
+}
+
+@utility mask-x-sm {
+	@apply mask-lr mask-r-from-90% mask-l-from-90%;
+}
+
+@utility mask-x-md {
+	@apply mask-lr mask-r-from-80% mask-l-from-80%;
+}
+
+@utility mask-x-lg {
+	@apply mask-lr mask-r-from-70% mask-l-from-70%;
+}
+
+@utility mask-x-xl {
+	@apply mask-lr mask-r-from-60% mask-l-from-60%;
 }
 
 @utility text-trim {

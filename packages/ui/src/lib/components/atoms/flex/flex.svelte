@@ -3,7 +3,7 @@
 	 * @tags ui
 	 * @layout horizontal
 	 */
-	import { Component, type ComponentProps, type ComponentReturn } from '@layerd/ui';
+	import { Component, type ComponentProps } from '@layerd/ui';
 
 	export interface FlexProps extends ComponentProps {
 		text?: string;
@@ -38,7 +38,7 @@
 	{...props}
 	class="flex {props.class}"
 >
-	{#snippet component({ props }: { props: ComponentReturn })}
+	{#snippet component(props)}
 		<div {...props}>
 			{#if children}
 				{@render children()}
@@ -56,30 +56,5 @@
 <style lang="postcss">
 	@reference "@layerd/ui/ui.css";
 
-	.flex {
-		@apply flex;
-
-		@variant state {
-			@variant before {
-				@apply opacity-20;
-			}
-		}
-
-		/* sizes (md stays text-md) */
-		&:where(.xs) {
-			/* @apply text-xs; */
-		}
-		&:where(.sm) {
-			/* @apply text-sm; */
-		}
-		&:where(.md) {
-			/* @apply text-md; */
-		}
-		&:where(.lg) {
-			/* @apply text-lg; */
-		}
-		&:where(.xl) {
-			/* @apply text-2xl; */
-		}
-	}
+	/* Dont add any style here. Always use tailwind classes in the markup. */
 </style>

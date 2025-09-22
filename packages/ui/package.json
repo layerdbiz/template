@@ -94,6 +94,11 @@
 		"@iconify-json/solar": "^1.2.4",
 		"@iconify-json/streamline-logos": "^1.2.0",
 		"@sveltejs/kit": "^2.42.2",
+		"embla-carousel": "^8.6.0",
+		"embla-carousel-auto-scroll": "^8.6.0",
+		"embla-carousel-autoplay": "^8.6.0",
+		"embla-carousel-class-names": "^8.6.0",
+		"embla-carousel-svelte": "^8.6.0",
 		"mode-watcher": "^1.1.0",
 		"runed": "^0.31.1"
 	},

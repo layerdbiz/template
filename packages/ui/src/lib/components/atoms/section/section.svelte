@@ -120,7 +120,7 @@
 				negative={true}
 			/>
 
-			<Container class="flex flex-col gap-20  py-20 {layout} {container}">
+			<Container class="not-last:py-20 flex flex-col gap-20 {layout} {container}">
 				{#if children}
 					{@render children()}
 				{:else}

@@ -9,6 +9,7 @@
 		Icon,
 		Button,
 		Content,
+		Link,
 		type ComponentProps,
 		type ImageProps
 	} from '@layerd/ui';
@@ -57,18 +58,11 @@
 <!-- Service -->
 {#snippet service()}
 	<!-- Header section with label -->
-	<div class="service card-service min-h-50 relative overflow-hidden px-4 py-3">
-		<!-- 		
+	<div class="min-h-50 relative overflow-hidden px-4 py-3">
 		<Image
 			bg
 			src={imageSrc}
-			overlay="bg-gradient-to-t from-primary to-transparent from-0% to-30%"
-		/> -->
-
-		<Image
-			bg
-			src={imageSrc}
-			class="opacity-100 transition duration-300 group-hover:opacity-0"
+			class="card-service--img-gray opacity-100 transition duration-300 group-hover:opacity-0 group-focus:opacity-0 group-active:opacity-0"
 			image="grayscale-100 contrast-300 transition duration-300"
 			overlay="bg-primary-600/50"
 		/>
@@ -76,8 +70,8 @@
 		<Image
 			bg
 			src={imageSrc}
-			class="opacity-0 transition duration-300 group-hover:opacity-100"
-			image="contrast-125 brightness-125 group-hover:scale-110 transition duration-300 will-change-transform"
+			class="card-service--img-color opacity-0 transition duration-300 group-hover:opacity-100 group-focus:opacity-100 group-active:opacity-100"
+			image="contrast-125 brightness-125 group-hover:scale-110 group-active:scale-110 group-focus:scale-110 transition duration-300 will-change-transform"
 			overlay="bg-linear-170 to-primary from-transparent from-60%"
 		/>
 
@@ -115,8 +109,7 @@
 <!-- Profile -->
 {#snippet profile()}
 	<div
-		class="image relative flex flex-col items-center justify-end rounded-lg pb-2 md:pb-6 lg:pb-4"
-		style="aspect-ratio: 1 / 1;"
+		class="image relative flex aspect-square flex-col items-center justify-end rounded-lg pb-2 md:pb-6 lg:pb-4"
 	>
 		<figure class="-z-1 reflect absolute bottom-0">
 			<img
@@ -129,30 +122,36 @@
 				class="bg-linear-to-b pointer-events-none absolute inset-0 from-transparent from-60% to-black to-100%"
 				style={maskStyle}
 			></div>
+			<div
+				class="bg-linear-to-b to-primary/50 pointer-events-none absolute inset-0 from-transparent from-60% to-100% opacity-0 transition duration-200 will-change-auto group-hover:opacity-100"
+				style={maskStyle}
+			></div>
 		</figure>
 
-		{#if icon}
-			<Button
-				variant="icon"
-				icon="icon-[devicon--linkedin] hover:brightness-120 transition duration-200"
-				href={icon}
-				external
-				ghost
-				class="-mb-2"
-			/>
-		{/if}
+		<Link
+			href={icon}
+			external
+			class="group flex flex-col items-center justify-end !px-0 pb-2 md:pb-6 lg:pb-4"
+		>
+			{#if icon}
+				<Icon
+					icon="icon-[devicon--linkedin] group-hover:brightness-120 transition duration-200 text-2xl"
+					class=""
+				/>
+			{/if}
 
-		<Text
-			h4={title}
-			class="text-light-light text-[x-small] sm:text-xl md:text-xl lg:text-xl"
-		/>
-
-		{#if subtitle}
 			<Text
-				class="text-base-300 text-[x-small] sm:text-sm md:text-sm lg:text-sm"
-				p={subtitle}
+				h4={title}
+				class="text-light-light text-xl"
 			/>
-		{/if}
+
+			{#if subtitle}
+				<Text
+					class="text-base-300 group-hover:text-primary-100 text-sm"
+					p={subtitle}
+				/>
+			{/if}
+		</Link>
 	</div>
 {/snippet}
 
@@ -161,7 +160,7 @@
 	<!-- Quote content -->
 	{#if description}
 		<blockquote
-			class="relative mb-6 inline-block text-balance font-serif text-xl leading-[1.2] lg:text-4xl"
+			class="relative mb-6 inline-block text-pretty font-serif text-lg leading-[1.2] before:absolute before:-left-[1.25ch] before:content-['❝'] after:content-['❞'] md:text-xl lg:text-3xl"
 		>
 			{description}
 
@@ -190,11 +189,16 @@
 <!-- Template 
 ::::::::::::::::::::::::::::::::::::::::::::: -->
 <Component
+	observe
 	{...props}
-	class="card group block rounded-xl {props.class}"
+	class="card card-{variant} group block rounded-xl {props.class}"
 >
 	{#snippet component({ props })}
-		<div {...props}>
+		<div
+			{...props}
+			tabindex="0"
+			role="button"
+		>
 			{#if children && !variant}
 				{@render children()}
 			{:else if variant === 'profile'}
@@ -210,4 +214,13 @@
 
 <style lang="postcss">
 	@reference "@layerd/ui/ui.css";
+
+	:global {
+		.card-service.active .card-service--img-gray {
+			@apply transition duration-200 max-sm:opacity-0;
+		}
+		.card-service.active .card-service--img-color {
+			@apply transition duration-200 max-sm:opacity-100;
+		}
+	}
 </style>

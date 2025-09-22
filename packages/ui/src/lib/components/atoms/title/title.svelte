@@ -32,7 +32,7 @@
 				class="text-center text-6xl font-black tracking-tight md:text-[14vw] lg:text-[12vw] xl:text-[8vw]"
 			> -->
 			<h1
-				class="text-center text-5xl font-black uppercase tracking-tight md:text-6xl lg:text-7xl xl:text-8xl"
+				class="text-center text-4xl font-black uppercase tracking-tight md:text-6xl lg:text-7xl xl:text-8xl"
 			>
 				{title}
 			</h1>

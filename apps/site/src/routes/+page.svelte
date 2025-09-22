@@ -14,7 +14,8 @@
 		Number,
 		Toggle,
 		Flex,
-		Input
+		Input,
+		Slider
 	} from '@layerd/ui';
 	import { getTeamData } from '$lib/team/team.remote';
 	import { getFaqData } from '$lib/faq/faq.remote';
@@ -136,7 +137,7 @@
 <Section
 	id="Partners"
 	class="bg-dark-dark text-light-dark z-0 flex flex-col overflow-clip pt-20"
-	container="!gap-10"
+	container="!gap-10 !p-0"
 	divider="bottom"
 	dividerBottom={{ svg: 'text-base-50-950' }}
 >
@@ -147,32 +148,55 @@
 	/>
 
 	<!-- partners -->
-	<Container
-		class="mask-lr grid select-none grid-cols-2 items-center justify-center gap-8 pb-20 invert sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"
-	>
-		{#each getPartnersData().current ?? [] as partner (partner.id)}
-			<img
-				src={partner.img}
-				alt={partner.name}
-				class="h-8 w-auto max-w-32 shrink-0 place-self-center self-center object-contain lg:min-h-16"
-			/>
-		{/each}
-	</Container>
+	{#if mq.lg}
+		<!-- Desktop: 8 cols x 2 rows grid -->
+		<div class="mask-x-lg lg:mask-[unset] grid grid-cols-8 gap-8 pb-20 invert">
+			{#each getPartnersData().current ?? [] as partner (partner.id)}
+				<img
+					src={partner.img}
+					alt={partner.name}
+					class="h-12 w-auto place-self-center object-contain"
+				/>
+			{/each}
+		</div>
+	{:else}
+		<!-- Mobile: Slider with 3 visible items and autoscroll -->
+		<Slider
+			class="mask-x-lg bleed overflow-hidden"
+			show={3}
+			loop={true}
+			autoscroll
+			container="gap-4"
+			slide="flex-none"
+		>
+			{#each getPartnersData().current ?? [] as partner (partner.id)}
+				<img
+					src={partner.img}
+					alt={partner.name}
+					class="h-12 w-auto object-contain invert"
+				/>
+			{/each}
+		</Slider>
+	{/if}
 
 	<!-- testimonials -->
-	<Container
-		class="mask-lr bleed grid grid-cols-1 items-center justify-center gap-14 overflow-x-clip pb-20 lg:grid-cols-3"
+	<Slider
+		class="mask-x-md lg:mask-x-lg bleed overflow-x-clip pb-20"
+		variant="autoplay"
+		show={3}
+		loop={true}
+		duration={7000}
 	>
 		{#each getTestimonialsData().current ?? [] as testimonial (testimonial.id)}
 			<Card
-				class="nth-[2]:opacity-100 nth-[2]:scale-100 scale-70 dark max-w-xl pl-14 opacity-25"
+				class="dark pl-7 transition-all duration-300 lg:pl-14"
 				variant="testimonial"
 				title={testimonial.title}
 				subtitle={testimonial.subtitle}
 				description={testimonial.description}
 			/>
 		{/each}
-	</Container>
+	</Slider>
 </Section>
 
 <!-- ABOUT 
@@ -189,7 +213,14 @@
 
 	<!-- team 
 	------------------------------------------>
-	<div class="team-container grid grid-cols-2 lg:grid-cols-4">
+	<Slider
+		class="bleed-container mask-x-sm lg:mask-[unset] pb-10 lg:cursor-auto"
+		variant="autoplay"
+		show={4}
+		loop={true}
+		duration={4000}
+		disabled="lg"
+	>
 		{#each getTeamData().current as team (team.id)}
 			<Card
 				variant="profile"
@@ -199,8 +230,7 @@
 				icon={team.icon}
 			/>
 		{/each}
-	</div>
-
+	</Slider>
 	<!-- about 
 	------------------------------------------>
 
@@ -276,7 +306,7 @@
 		</Content>
 		<Image
 			class="sticky top-32 aspect-video lg:aspect-square"
-			src="/photos/trident-cubed-cargo-operations.png"
+			src="/photos/heavy-lift.webp"
 			mask
 			overlay="to-black from-20% to-100%"
 		/>
@@ -589,6 +619,20 @@
 	:global {
 		.services-container {
 			grid-template-columns: repeat(auto-fit, minmax(30ch, 1fr));
+		}
+
+		/* Slider active state styling */
+		.embla__slide {
+			.card-testimonial {
+				@apply scale-60 opacity-25 transition-all duration-300;
+			}
+		}
+
+		.embla__slide.active {
+			/* Active/snapped slide */
+			.card-testimonial {
+				@apply scale-100 opacity-100;
+			}
 		}
 	}
 </style>
