@@ -1,5 +1,6 @@
 <script>
 	import '../app.css';
+	import { page } from '$app/state';
 	import {
 		Metadata,
 		Theme,
@@ -40,6 +41,58 @@
 		{ href: '#FAQ', label: 'FAQ' }
 	];
 </script>
+
+<svelte:head>
+	<title>Trident Cubed | Marine Surveying & Engineering Services</title>
+	<meta
+		name="description"
+		content="Trident Cubed provides global marine surveying, engineering, and port captain services. Based in Houston with 96+ years combined expertise, we operate across 2,000+ ports worldwide."
+	/>
+	<meta
+		name="keywords"
+		content="marine surveying, port captain, marine engineering, cargo inspections, logistics, marine warranty surveyors, Houston maritime services, global port operations"
+	/>
+	<meta
+		property="og:title"
+		content="Trident Cubed | Marine Surveying & Engineering Services"
+	/>
+	<meta
+		property="og:description"
+		content="Trident Cubed delivers trusted expertise in marine surveys, engineering planning, and port captain supervision. Comprehensive services across 2,000+ ports worldwide."
+	/>
+	<meta
+		property="og:type"
+		content="website"
+	/>
+	<meta
+		name="viewport"
+		content="width=device-width, initial-scale=1"
+	/>
+	<link
+		rel="icon"
+		href="/favicon.svg"
+	/>
+	<meta
+		property="og:url"
+		content={page.url.href}
+	/>
+	<meta
+		property="og:image"
+		content="{page.url.origin}/og.png"
+	/>
+	<meta
+		property="og:image:width"
+		content="1200"
+	/>
+	<meta
+		property="og:image:height"
+		content="630"
+	/>
+	<meta
+		property="og:image:alt"
+		content="Trident Cubed - Marine Surveying & Engineering Services"
+	/>
+</svelte:head>
 
 <!-- <Metadata /> -->
 <Header
@@ -95,9 +148,10 @@
 		<Button
 			size={mq.md ? 'sm' : 'lg'}
 			primary
+			href="tel:+15705751179"
 			variant="icon text"
-			icon="person"
-			label="Sign In"
+			icon="icon-[mdi--phone]"
+			label="Call Us"
 			class="w-full lg:w-14"
 		/>
 	</Nav>
