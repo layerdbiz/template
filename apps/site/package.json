@@ -14,7 +14,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"devDependencies": {
-		"@csstools/postcss-light-dark-function": "^2.0.10",
+		"@csstools/postcss-light-dark-function": "^2.0.11",
 		"@layerd/config-svelte": "workspace:*",
 		"@layerd/config-vite": "workspace:*",
 		"@sveltejs/adapter-auto": "^6.1.0",
@@ -22,17 +22,17 @@
 		"@sveltejs/vite-plugin-svelte": "^6.2.0",
 		"@sveltejs/vite-plugin-svelte-inspector": "^5.0.1",
 		"@tailwindcss/forms": "^0.5.10",
-		"@tailwindcss/typography": "^0.5.16",
+		"@tailwindcss/typography": "^0.5.18",
 		"@tailwindcss/vite": "^4.1.13",
-		"svelte": "^5.39.2",
+		"svelte": "^5.39.4",
 		"svelte-check": "^4.3.1",
 		"tailwindcss": "^4.1.13",
 		"typescript": "^5.9.2",
-		"vite": "^7.1.6",
+		"vite": "^7.1.7",
 		"vite-plugin-devtools-json": "^1.0.0"
 	},
 	"dependencies": {
-		"@iconify-json/devicon": "^1.2.43",
+		"@iconify-json/devicon": "^1.2.44",
 		"@layerd/ui": "workspace:*"
 	}
 }
