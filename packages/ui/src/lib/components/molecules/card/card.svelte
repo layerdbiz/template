@@ -62,16 +62,16 @@
 		<Image
 			bg
 			src={imageSrc}
-			class="card-service--img-gray opacity-100 transition duration-300 group-hover:opacity-0 group-focus:opacity-0 group-active:opacity-0"
-			image="grayscale-100 contrast-300 transition duration-300"
+			class="card-service-class--img-gray opacity-100 transition duration-300 group-hover:opacity-0"
+			image="card-service-image--img-gray grayscale-100 contrast-300 transition duration-300"
 			overlay="bg-primary-600/50"
 		/>
 
 		<Image
 			bg
 			src={imageSrc}
-			class="card-service--img-color opacity-0 transition duration-300 group-hover:opacity-100 group-focus:opacity-100 group-active:opacity-100"
-			image="contrast-125 brightness-125 group-hover:scale-110 group-active:scale-110 group-focus:scale-110 transition duration-300 will-change-transform"
+			class="card-service-class--img-color opacity-0 transition duration-300 group-hover:opacity-100"
+			image="card-service-image--img-color contrast-125 brightness-125 group-hover:scale-110 transition duration-300 will-change-transform"
 			overlay="bg-linear-170 to-primary from-transparent from-60%"
 		/>
 
@@ -189,7 +189,10 @@
 <!-- Template 
 ::::::::::::::::::::::::::::::::::::::::::::: -->
 <Component
-	observe
+	observe={{
+		threshold: 0.1,
+		rootMargin: '-45% 0px -45% 0px'
+	}}
 	{...props}
 	class="card card-{variant} group block rounded-xl {props.class}"
 >
@@ -216,11 +219,14 @@
 	@reference "@layerd/ui/ui.css";
 
 	:global {
-		.card-service.active .card-service--img-gray {
-			@apply transition duration-200 max-sm:opacity-0;
+		.card-service.active .card-service-class--img-gray {
+			@apply max-sm:opacity-0;
 		}
-		.card-service.active .card-service--img-color {
-			@apply transition duration-200 max-sm:opacity-100;
+		.card-service.active .card-service-class--img-color {
+			@apply max-sm:opacity-100;
+		}
+		.card-service.active .card-service-image--img-color {
+			@apply max-sm:scale-110;
 		}
 	}
 </style>
