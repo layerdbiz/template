@@ -158,7 +158,38 @@
 </Header>
 
 <main class="container flex flex-col">
-	{@render children()}
+	<svelte:boundary>
+		{@render children()}
+
+		{#snippet pending()}
+			<div class="flex min-h-svh items-center justify-center">
+				<div class="flex flex-col items-center gap-4">
+					<div
+						class="border-primary size-8 animate-spin rounded-full border-2 border-t-transparent"
+					></div>
+					<p class="text-base-600">Loading...</p>
+				</div>
+			</div>
+		{/snippet}
+
+		{#snippet failed(error, retry)}
+			<div class="flex min-h-svh items-center justify-center">
+				<div class="flex flex-col items-center gap-4 text-center">
+					<p class="text-rose-600">
+						Error loading content: {error instanceof Error
+							? error.message
+							: 'An unexpected error occurred'}
+					</p>
+					<button
+						onclick={retry}
+						class="bg-primary hover:bg-primary/80 rounded px-4 py-2 text-white"
+					>
+						Retry
+					</button>
+				</div>
+			</div>
+		{/snippet}
+	</svelte:boundary>
 </main>
 <Footer class="dark relative overflow-clip py-10">
 	<Container class="mt-6 flex translate-y-6 flex-col items-center md:flex-row md:justify-between">

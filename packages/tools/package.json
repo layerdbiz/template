@@ -30,8 +30,8 @@
 		"test": "barrels"
 	},
 	"devDependencies": {
-		"@types/node": "^24.5.2",
-		"typescript": "^5.9.2"
+		"@types/node": "^24.6.2",
+		"typescript": "^5.9.3"
 	},
 	"dependencies": {
 		"chokidar": "^4.0.3",

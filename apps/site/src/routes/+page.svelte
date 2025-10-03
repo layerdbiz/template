@@ -113,18 +113,12 @@
 	<Container class="z-0 flex select-none flex-col items-center justify-around gap-14">
 		<!-- title -->
 		<div class="text-base-50 flex flex-col gap-2 text-center">
-			<svelte:boundary>
-				<h1 class="order-2 text-balance text-xl font-bold leading-tight lg:text-6xl">
-					<span>{(await getSection('Home'))?.title ?? 'Hero Title'}</span>
-				</h1>
-				<h2 class="text-base-200 order-1 text-[x-small] uppercase tracking-widest lg:text-sm">
-					{(await getSection('Home'))?.subtitle ?? 'Hero Subtitle'}
-				</h2>
-
-				{#snippet pending()}
-					<!-- Loading hero content -->
-				{/snippet}
-			</svelte:boundary>
+			<h1 class="order-2 text-balance text-xl font-bold leading-tight lg:text-6xl">
+				<span>{(await getSection('Home'))?.title ?? 'Hero Title'}</span>
+			</h1>
+			<h2 class="text-base-200 order-1 text-[x-small] uppercase tracking-widest lg:text-sm">
+				{(await getSection('Home'))?.subtitle ?? 'Hero Subtitle'}
+			</h2>
 
 			<!-- stats -->
 			<div
@@ -217,45 +211,24 @@
 	divider="bottom"
 	dividerBottom={{ svg: 'text-base-50-950' }}
 >
-	<svelte:boundary>
-		<Text
-			class="text-base-300 text-center"
-			h4={(await getSection('Partners'))?.subtitle ?? 'Partners Subtitle'}
-			icon={false}
-		/>
-
-		{#snippet pending()}
-			<!-- Loading partners subtitle -->
-		{/snippet}
-	</svelte:boundary>
+	<Text
+		class="text-base-300 text-center"
+		h4={(await getSection('Partners'))?.subtitle ?? 'Partners Subtitle'}
+		icon={false}
+	/>
 
 	<!-- partners -->
 	{#if mq.lg}
 		<!-- Desktop: 8 cols x 2 rows grid -->
-		<svelte:boundary>
-			<div class="mask-x-lg lg:mask-[unset] grid grid-cols-8 gap-8 pb-20 invert">
-				{#await getPartnersData()}
-					<!-- Loading state -->
-					{#each Array(16) as _}
-						<div class="h-12 w-auto animate-pulse rounded bg-gray-300"></div>
-					{/each}
-				{:then partners}
-					{#each partners as partner (partner.id)}
-						<img
-							src={partner.img}
-							alt={partner.name}
-							class="h-12 w-auto place-self-center object-contain"
-						/>
-					{/each}
-				{/await}
-			</div>
-
-			{#snippet pending()}
-				<div class="flex items-center justify-center pb-20">
-					<p class="text-base-300">Loading partners...</p>
-				</div>
-			{/snippet}
-		</svelte:boundary>
+		<div class="mask-x-lg lg:mask-[unset] grid grid-cols-8 gap-8 pb-20 invert">
+			{#each await getPartnersData() as partner (partner.id)}
+				<img
+					src={partner.img}
+					alt={partner.name}
+					class="h-12 w-auto place-self-center object-contain"
+				/>
+			{/each}
+		</div>
 	{:else}
 		<!-- Mobile: Slider with autoscroll (improved speed) -->
 		<Slider
@@ -266,28 +239,13 @@
 			container="gap-4"
 			slide="flex-none"
 		>
-			<svelte:boundary>
-				{#await getPartnersData()}
-					<!-- Loading state -->
-					{#each Array(6) as _}
-						<div class="h-12 w-auto flex-none animate-pulse rounded bg-gray-300"></div>
-					{/each}
-				{:then partners}
-					{#each partners as partner (partner.id)}
-						<img
-							src={partner.img}
-							alt={partner.name}
-							class="h-12 w-auto object-contain invert"
-						/>
-					{/each}
-				{/await}
-
-				{#snippet pending()}
-					<div class="flex items-center justify-center">
-						<p class="text-base-300">Loading partners...</p>
-					</div>
-				{/snippet}
-			</svelte:boundary>
+			{#each await getPartnersData() as partner (partner.id)}
+				<img
+					src={partner.img}
+					alt={partner.name}
+					class="h-12 w-auto object-contain invert"
+				/>
+			{/each}
 		</Slider>
 	{/if}
 
@@ -299,36 +257,15 @@
 		loop={true}
 		duration={7000}
 	>
-		<svelte:boundary>
-			{#await getTestimonialsData()}
-				<!-- Loading state for testimonials -->
-				{#each Array(3) as _}
-					<Card
-						class="dark animate-pulse pl-7 transition-all duration-300 lg:pl-14"
-						variant="testimonial"
-						title="Loading..."
-						subtitle="Loading..."
-						description="Loading testimonial content..."
-					/>
-				{/each}
-			{:then testimonials}
-				{#each testimonials as testimonial (testimonial.id)}
-					<Card
-						class="dark pl-7 transition-all duration-300 lg:pl-14"
-						variant="testimonial"
-						title={testimonial.title}
-						subtitle={testimonial.subtitle}
-						description={testimonial.description}
-					/>
-				{/each}
-			{/await}
-
-			{#snippet pending()}
-				<div class="flex items-center justify-center">
-					<p class="text-base-300">Loading testimonials...</p>
-				</div>
-			{/snippet}
-		</svelte:boundary>
+		{#each await getTestimonialsData() as testimonial (testimonial.id)}
+			<Card
+				class="dark pl-7 transition-all duration-300 lg:pl-14"
+				variant="testimonial"
+				title={testimonial.title}
+				subtitle={testimonial.subtitle}
+				description={testimonial.description}
+			/>
+		{/each}
 	</Slider>
 </Section>
 
@@ -338,17 +275,11 @@
 	divider
 	class="flex flex-col"
 >
-	<svelte:boundary>
-		<Title
-			id="About"
-			title={(await getSection('About'))?.title ?? 'About Title'}
-			subtitle={(await getSection('About'))?.subtitle ?? 'About Subtitle'}
-		/>
-
-		{#snippet pending()}
-			<!-- Loading about title -->
-		{/snippet}
-	</svelte:boundary>
+	<Title
+		id="About"
+		title={(await getSection('About'))?.title ?? 'About Title'}
+		subtitle={(await getSection('About'))?.subtitle ?? 'About Subtitle'}
+	/>
 
 	<!-- team 
 	------------------------------------------>
@@ -360,36 +291,15 @@
 		duration={4000}
 		disabled="lg"
 	>
-		<svelte:boundary>
-			{#await getTeamData()}
-				<!-- Loading state for team -->
-				{#each Array(4) as _}
-					<Card
-						variant="profile"
-						title="Loading..."
-						subtitle="Loading..."
-						image="https://picsum.photos/id/420/240/360"
-						icon="carbon:user"
-					/>
-				{/each}
-			{:then team}
-				{#each team as member (member.id)}
-					<Card
-						variant="profile"
-						title={member.title}
-						subtitle={member.subtitle}
-						image={member.image}
-						icon={member.icon}
-					/>
-				{/each}
-			{/await}
-
-			{#snippet pending()}
-				<div class="flex items-center justify-center">
-					<p class="text-base-600">Loading team...</p>
-				</div>
-			{/snippet}
-		</svelte:boundary>
+		{#each await getTeamData() as member (member.id)}
+			<Card
+				variant="profile"
+				title={member.title}
+				subtitle={member.subtitle}
+				image={member.image}
+				icon={member.icon}
+			/>
+		{/each}
 	</Slider>
 	<!-- about 
 	------------------------------------------>
@@ -435,52 +345,23 @@
 	}}
 	class="bg-base-200-700 flex flex-col"
 >
-	<svelte:boundary>
-		<Title
-			id="Services"
-			title={(await getSection('Services'))?.title ?? 'Services Title'}
-			subtitle={(await getSection('Services'))?.subtitle ?? 'Services Subtitle'}
-		/>
-
-		{#snippet pending()}
-			<!-- Loading services title -->
-		{/snippet}
-	</svelte:boundary>
+	<Title
+		id="Services"
+		title={(await getSection('Services'))?.title ?? 'Services Title'}
+		subtitle={(await getSection('Services'))?.subtitle ?? 'Services Subtitle'}
+	/>
 	<div class="services-container grid gap-6">
-		<svelte:boundary>
-			{#await getServicesData()}
-				<!-- Loading state for services -->
-				{#each Array(6) as _}
-					<Card
-						glass
-						class="animate-pulse overflow-clip"
-						variant="service"
-						title="Loading..."
-						description="Loading service information..."
-						image="https://picsum.photos/id/420/240/360"
-						label="Loading"
-					/>
-				{/each}
-			{:then services}
-				{#each services as service (service.id)}
-					<Card
-						glass
-						class="overflow-clip"
-						variant="service"
-						title={service.title}
-						description={service.description}
-						image={service.image}
-						label={service.label}
-					/>
-				{/each}
-			{/await}
-
-			{#snippet pending()}
-				<div class="col-span-full flex items-center justify-center p-8">
-					<p class="text-base-600">Loading services...</p>
-				</div>
-			{/snippet}
-		</svelte:boundary>
+		{#each await getServicesData() as service (service.id)}
+			<Card
+				glass
+				class="overflow-clip"
+				variant="service"
+				title={service.title}
+				description={service.description}
+				image={service.image}
+				label={service.label}
+			/>
+		{/each}
 	</div>
 </Section>
 
@@ -496,17 +377,11 @@
 		negative: false
 	}}
 >
-	<svelte:boundary>
-		<Title
-			id="Contact"
-			title={(await getSection('Contact'))?.title ?? 'Contact Title'}
-			subtitle={(await getSection('Contact'))?.subtitle ?? 'Contact Subtitle'}
-		/>
-
-		{#snippet pending()}
-			<!-- Loading contact title -->
-		{/snippet}
-	</svelte:boundary>
+	<Title
+		id="Contact"
+		title={(await getSection('Contact'))?.title ?? 'Contact Title'}
+		subtitle={(await getSection('Contact'))?.subtitle ?? 'Contact Subtitle'}
+	/>
 
 	<Container
 		class="relative flex flex-col items-stretch justify-center gap-32 lg:flex-row lg:items-start"
@@ -741,68 +616,31 @@
 	dividerBottom={{ svg: 'text-base-950' }}
 	class="bg-base-200-700 flex flex-col gap-5"
 >
-	<svelte:boundary>
-		<Title
-			id="FAQ"
-			title={(await getSection('FAQ'))?.title ?? 'FAQ Title'}
-			subtitle={(await getSection('FAQ'))?.subtitle ?? 'FAQ Subtitle'}
-		/>
-
-		{#snippet pending()}
-			<!-- Loading FAQ title -->
-		{/snippet}
-	</svelte:boundary>
+	<Title
+		id="FAQ"
+		title={(await getSection('FAQ'))?.title ?? 'FAQ Title'}
+		subtitle={(await getSection('FAQ'))?.subtitle ?? 'FAQ Subtitle'}
+	/>
 	<Content class="flex flex-col">
-		<svelte:boundary>
-			{#await getFaqData()}
-				<!-- Loading state for FAQ -->
-				{#each Array(5) as _}
-					<Toggle
-						variant="panel"
-						label="Loading question..."
-						class="border-base-300-700 animate-pulse border-b last:border-0"
-						button={{
-							icon: 'icon-[mdi--chevron-right] transition-transform duration-200 rotate-0 text-2xl',
-							iconToggle:
-								'icon-[mdi--chevron-right] text-primary transition-transform duration-200 rotate-90 text-2xl',
-							variant: 'text icon',
-							width: 'full',
-							padding: 'none',
-							appearance: 'ghost',
-							class: '!font-black hover:[&_.btn-icon]:text-primary'
-						}}
-					>
-						<p>Loading answer...</p>
-					</Toggle>
-				{/each}
-			{:then faqs}
-				{#each faqs as faq (faq.id)}
-					<Toggle
-						variant="panel"
-						label={faq.label}
-						class="border-base-300-700 border-b last:border-0"
-						button={{
-							icon: 'icon-[mdi--chevron-right] transition-transform duration-200 rotate-0 text-2xl',
-							iconToggle:
-								'icon-[mdi--chevron-right] text-primary transition-transform duration-200 rotate-90 text-2xl',
-							variant: 'text icon',
-							width: 'full',
-							padding: 'none',
-							appearance: 'ghost',
-							class: '!font-black hover:[&_.btn-icon]:text-primary'
-						}}
-					>
-						<p>{faq.content}</p>
-					</Toggle>
-				{/each}
-			{/await}
-
-			{#snippet pending()}
-				<div class="flex items-center justify-center p-8">
-					<p class="text-base-600">Loading FAQ...</p>
-				</div>
-			{/snippet}
-		</svelte:boundary>
+		{#each await getFaqData() as faq (faq.id)}
+			<Toggle
+				variant="panel"
+				label={faq.label}
+				class="border-base-300-700 border-b last:border-0"
+				button={{
+					icon: 'icon-[mdi--chevron-right] transition-transform duration-200 rotate-0 text-2xl',
+					iconToggle:
+						'icon-[mdi--chevron-right] text-primary transition-transform duration-200 rotate-90 text-2xl',
+					variant: 'text icon',
+					width: 'full',
+					padding: 'none',
+					appearance: 'ghost',
+					class: '!font-black hover:[&_.btn-icon]:text-primary'
+				}}
+			>
+				<p>{faq.content}</p>
+			</Toggle>
+		{/each}
 	</Content>
 </Section>
 
@@ -812,20 +650,14 @@
 	class="dark flex flex-col py-0 text-center lg:items-start lg:justify-start lg:text-left"
 	container="!gap-6 !pt-0 lg:!gap-6 flex w-full flex-col items-center lg:grid lg:grid-flow-col lg:grid-rows-2"
 >
-	<svelte:boundary>
-		<Text
-			class="text-balance text-4xl md:text-pretty md:text-6xl"
-			h1={(await getSection('CTA'))?.title ?? 'CTA Title'}
-		/>
-		<Text
-			class="text-pretty md:max-w-xl md:text-balance"
-			p={(await getSection('CTA'))?.subtitle ?? 'CTA Subtitle'}
-		/>
-
-		{#snippet pending()}
-			<!-- Loading CTA content -->
-		{/snippet}
-	</svelte:boundary>
+	<Text
+		class="text-balance text-4xl md:text-pretty md:text-6xl"
+		h1={(await getSection('CTA'))?.title ?? 'CTA Title'}
+	/>
+	<Text
+		class="text-pretty md:max-w-xl md:text-balance"
+		p={(await getSection('CTA'))?.subtitle ?? 'CTA Subtitle'}
+	/>
 	<Button
 		size="xl"
 		primary

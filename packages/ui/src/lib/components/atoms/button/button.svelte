@@ -529,16 +529,16 @@
 			@apply -z-1 bg-dark-light absolute inset-0 opacity-0 transition content-[''];
 		}
 
-		@variant state {
-			@variant before {
+		&:is(:hover, :focus-visible, :active) {
+			&::before {
 				@apply opacity-20;
 			}
 		}
 
 		/* Disable state effects for ghost buttons */
 		&:where([class*='theme-ghost']) {
-			@variant state {
-				@variant before {
+			&:is(:hover, :focus-visible, :active) {
+				&::before {
 					@apply opacity-0;
 				}
 			}

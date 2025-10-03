@@ -3,7 +3,12 @@
 @plugin "@iconify/tailwind4";
 
 /* Custom States */
-@custom-variant state (&:is(:hover, :focus-visible, :active));
+/* 
+@custom-variant state {
+	&:is(:hover, :focus-visible, :active) {
+		@slot;
+	}
+} */
 
 /* 1. Theme */
 @import './css/1-theme/colors.css';
