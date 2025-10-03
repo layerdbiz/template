@@ -93,6 +93,7 @@
 		"@iconify-json/mdi": "^1.2.3",
 		"@iconify-json/solar": "^1.2.4",
 		"@iconify-json/streamline-logos": "^1.2.0",
+		"@iconify-json/svg-spinners": "^1.2.4",
 		"@sveltejs/kit": "^2.42.2",
 		"embla-carousel": "^8.6.0",
 		"embla-carousel-auto-scroll": "^8.6.0",

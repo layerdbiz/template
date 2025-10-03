@@ -14,7 +14,7 @@
 			| string
 			| {
 					name?: string;
-					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
+					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | 'svg-spinners' | string;
 					class?: string;
 			  };
 		/** Legacy name prop for backward compatibility */
@@ -39,7 +39,7 @@
 			| 'chevron-down'
 			| string;
 		/** Override the global icon theme for this specific icon */
-		theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
+		theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | 'svg-spinners' | string;
 		/** Show all available icons */
 		all?: boolean;
 		/** Show remote icons (requires icons prop to be provided) */
@@ -194,6 +194,56 @@
 			></i>
 		{/each}
 	</div>
+{:else if finalName === 'spinner'}
+	<!-- Custom spinner SVG -->
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		width="1em"
+		height="1em"
+		viewBox="0 0 24 24"
+		class="{finalClass} {className}"
+		{role}
+		aria-hidden={ariaHidden}
+		aria-label={ariaLabel}
+		{...props}
+	>
+		<g stroke="currentColor">
+			<circle
+				cx="12"
+				cy="12"
+				r="9.5"
+				fill="none"
+				stroke-linecap="round"
+				stroke-width="3"
+			>
+				<animate
+					attributeName="stroke-dasharray"
+					calcMode="spline"
+					dur="1.5s"
+					keySplines="0.42,0,0.58,1;0.42,0,0.58,1;0.42,0,0.58,1"
+					keyTimes="0;0.475;0.95;1"
+					repeatCount="indefinite"
+					values="0 150;42 150;42 150;42 150"
+				/>
+				<animate
+					attributeName="stroke-dashoffset"
+					calcMode="spline"
+					dur="1.5s"
+					keySplines="0.42,0,0.58,1;0.42,0,0.58,1;0.42,0,0.58,1"
+					keyTimes="0;0.475;0.95;1"
+					repeatCount="indefinite"
+					values="0;-16;-59;-59"
+				/>
+			</circle>
+			<animateTransform
+				attributeName="transform"
+				dur="2s"
+				repeatCount="indefinite"
+				type="rotate"
+				values="0 12 12;360 12 12"
+			/>
+		</g>
+	</svg>
 {:else}
 	<i
 		class="{useRawClass

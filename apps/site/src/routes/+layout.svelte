@@ -66,7 +66,7 @@
 	/>
 	<meta
 		name="viewport"
-		content="width=device-width, initial-scale=1"
+		content="width=device-width, initial-scale=1, user-scalable=no"
 	/>
 	<link
 		rel="icon"
@@ -90,7 +90,7 @@
 	/>
 	<meta
 		property="og:image:alt"
-		content="Trident Cubed - Marine Surveying & Engineering Services"
+		content="Trident Cubed | Marine Surveying & Engineering Services"
 	/>
 </svelte:head>
 

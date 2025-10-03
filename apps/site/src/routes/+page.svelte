@@ -22,6 +22,16 @@
 	import { getPartnersData, type PartnerProps } from '$lib/partners/partners.remote';
 	import { getServicesData } from '$lib/services/services.remote';
 	import { getTestimonialsData } from '$lib/testimonials/testimonials.remote';
+	import { getAboutData } from '$lib/about/about.remote';
+	import { getSectionsData } from '$lib/sections/sections.remote';
+	import { submitContactData } from '$lib/contact/contact.remote';
+	import { validateField } from '$lib/contact/validation';
+
+	// Helper function for cleaner section access with await
+	async function getSection(name: string) {
+		const sections = await getSectionsData();
+		return sections.find((s) => s.section === name);
+	}
 
 	// Stats
 	const stats = [
@@ -30,6 +40,66 @@
 		{ value: 11, label: 'Locations' },
 		{ value: 69, label: 'Ports' }
 	];
+
+	// Form clearing logic
+	let formElement: HTMLFormElement;
+	let isSubmitting = $state(false);
+	let isSent = $state(false);
+
+	// Form field values (still needed for form clearing)
+	let nameValue = $state('');
+	let phoneValue = $state('');
+	let emailValue = $state('');
+	let messageValue = $state('');
+
+	// Validation error states (for visual feedback)
+	let nameError = $state('');
+	let phoneError = $state('');
+	let emailError = $state('');
+	let messageError = $state('');
+
+	// Validation functions (for onblur feedback)
+	function validateName() {
+		const result = validateField('name', nameValue);
+		nameError = result.error || '';
+		return result.isValid;
+	}
+
+	function validatePhone() {
+		const result = validateField('phone', phoneValue);
+		phoneError = result.error || '';
+		return result.isValid;
+	}
+
+	function validateEmail() {
+		const result = validateField('email', emailValue);
+		emailError = result.error || '';
+		return result.isValid;
+	}
+
+	function validateMessage() {
+		const result = validateField('message', messageValue);
+		messageError = result.error || '';
+		return result.isValid;
+	}
+
+	// Clear form when submission is successful
+	$effect(() => {
+		const result = submitContactData.result;
+		if (result?.success && formElement) {
+			formElement.reset();
+			// Reset field values
+			nameValue = '';
+			phoneValue = '';
+			emailValue = '';
+			messageValue = '';
+			// Clear errors
+			nameError = '';
+			phoneError = '';
+			emailError = '';
+			messageError = '';
+		}
+	});
 </script>
 
 <!-- HERO 
@@ -43,12 +113,18 @@
 	<Container class="z-0 flex select-none flex-col items-center justify-around gap-14">
 		<!-- title -->
 		<div class="text-base-50 flex flex-col gap-2 text-center">
-			<h1 class="order-2 text-balance text-xl font-bold leading-tight lg:text-6xl">
-				<span>We are Port Captains, Surveyors and Transport Engineers</span>
-			</h1>
-			<h2 class="text-base-200 order-1 text-[x-small] uppercase tracking-widest lg:text-sm">
-				Logistics Support Partner
-			</h2>
+			<svelte:boundary>
+				<h1 class="order-2 text-balance text-xl font-bold leading-tight lg:text-6xl">
+					<span>{(await getSection('Home'))?.title ?? 'Hero Title'}</span>
+				</h1>
+				<h2 class="text-base-200 order-1 text-[x-small] uppercase tracking-widest lg:text-sm">
+					{(await getSection('Home'))?.subtitle ?? 'Hero Subtitle'}
+				</h2>
+
+				{#snippet pending()}
+					<!-- Loading hero content -->
+				{/snippet}
+			</svelte:boundary>
 
 			<!-- stats -->
 			<div
@@ -141,11 +217,17 @@
 	divider="bottom"
 	dividerBottom={{ svg: 'text-base-50-950' }}
 >
-	<Text
-		class="text-base-300 text-center"
-		h4="Trusted by over 200+ industry leaders"
-		icon={false}
-	/>
+	<svelte:boundary>
+		<Text
+			class="text-base-300 text-center"
+			h4={(await getSection('Partners'))?.subtitle ?? 'Partners Subtitle'}
+			icon={false}
+		/>
+
+		{#snippet pending()}
+			<!-- Loading partners subtitle -->
+		{/snippet}
+	</svelte:boundary>
 
 	<!-- partners -->
 	{#if mq.lg}
@@ -256,11 +338,17 @@
 	divider
 	class="flex flex-col"
 >
-	<Title
-		id="About"
-		title="Trident Cubed"
-		subtitle="The founding partners behind Trident Cubed"
-	/>
+	<svelte:boundary>
+		<Title
+			id="About"
+			title={(await getSection('About'))?.title ?? 'About Title'}
+			subtitle={(await getSection('About'))?.subtitle ?? 'About Subtitle'}
+		/>
+
+		{#snippet pending()}
+			<!-- Loading about title -->
+		{/snippet}
+	</svelte:boundary>
 
 	<!-- team 
 	------------------------------------------>
@@ -306,121 +394,32 @@
 	<!-- about 
 	------------------------------------------>
 
-	<!-- The Story Behind Trident -->
-	<Container
-		class="flex flex-col items-center justify-between gap-20 lg:flex-row even:lg:flex-row-reverse"
-	>
-		<Content
-			type="text"
-			class="w-full"
+	{#each getAboutData().current ?? [] as section (section.id)}
+		<Container
+			class="flex flex-col items-center justify-between gap-20 lg:flex-row even:lg:flex-row-reverse"
 		>
-			<!-- Title -->
-			<h2 class="bar-outside">The Story Behind Trident</h2>
-			<p>
-				Trident Cubed was formed by a team of veteran mariners and engineers who saw a gap between
-				what cargo owners were promised on paper and what actually happens at the hook, quay, and
-				road. Founded in 2020 and headquartered in Houston, we built the company around one simple
-				idea: put seasoned decision-makers on the pier—people who can read a stow plan, speak to the
-				crane, and solve problems before they become delays.
-			</p>
-			<!-- Description -->
-			<h3>Mission</h3>
-			<p>
-				Our mission is to deliver safe, compliant, and efficient movement of project and breakbulk
-				cargo—end to end. We combine port-captaincy, marine surveying, and transport engineering so
-				clients get one accountable team that plans the work, supervises the lift, and documents the
-				result.
-			</p>
-			<h3>Principles</h3>
-			<p>
-				Plan precisely. Communicate clearly. Document relentlessly. Those are the rules that guide
-				every job we take, whether it’s a single heavy-lift or a multi-modal move across ports,
-				barges, rail, and road.
-			</p>
-		</Content>
-		<Image
-			class="sticky top-32 aspect-video lg:aspect-square"
-			src="/photos/team.webp"
-			mask
-			overlay="to-black from-20% to-100%"
-		/>
-	</Container>
+			<Content
+				type="text"
+				class="w-full"
+			>
+				<!-- Title -->
+				<h2 class="bar-outside">{section.title}</h2>
+				<p>{section.description}</p>
 
-	<!-- What We Do, Start to Finish -->
-	<Container
-		class="flex flex-col items-center justify-between gap-20 lg:flex-row even:lg:flex-row-reverse"
-	>
-		<Content
-			type="text"
-			class="w-full"
-		>
-			<!-- Title -->
-			<h2 class="bar-outside">What We Do, Start to Finish</h2>
-			<p>
-				Trident Cubed provides Port Captain and Supercargo supervision, Marine Warranty and
-				condition surveys, and cargo transport engineering. From method statements and lift plans to
-				on-site execution and sign-off, we translate drawings into safe, repeatable operations that
-				keep terminals moving and schedules intact.
-			</p>
-			<!-- Description -->
-			<h3>Operational Discipline</h3>
-			<p>
-				Every operation is built on verified calculations, pre-lift briefings, and live supervision.
-				We coordinate with stevedores, terminal ops, trucking and barge teams, aligning gear,
-				sequencing, and weather windows so the cargo touches the ground exactly once.
-			</p>
-			<h3>Compliance & Documentation</h3>
-			<p>
-				We work to the CTU Code, OEM rigging limits, and carrier requirements, capturing the trail
-				with checklists, photos, and reports clients can hand to insurers and auditors without
-				rework. If something changes on site, we issue controlled updates and keep everyone aligned.
-			</p>
-		</Content>
-		<Image
-			class="sticky top-32 aspect-video lg:aspect-square"
-			src="/photos/heavy-lift.webp"
-			mask
-			overlay="to-black from-20% to-100%"
-		/>
-	</Container>
-
-	<!-- Why Partners Choose Trident -->
-	<Container
-		class="flex flex-col items-center justify-between gap-20 lg:flex-row even:lg:flex-row-reverse"
-	>
-		<Content
-			type="text"
-			class="w-full"
-		>
-			<!-- Title -->
-			<h2 class="bar-outside">Why Partners Choose Trident</h2>
-			<p>
-				Clients bring us in because they need outcomes: fewer surprises on the pier, cleaner
-				handoffs between modes, and reports that stand up to scrutiny. Our founding partners have
-				decades on deck and in the field, and that experience shows up in faster decisions and
-				shorter quay time.
-			</p>
-			<!-- Description -->
-			<h3>Results You Can Measure</h3>
-			<p>
-				We reduce idle crane minutes through better sequencing, prevent re-stows with methodical
-				load readiness checks, and close out jobs with complete evidence—so claims are avoided and
-				lessons learned become standard practice on the next move.
-			</p>
-			<h3>Your Cargo, Our Accountability</h3>
-			<p>
-				From first survey to final lash, we act as a single point of accountability. If it lifts,
-				rolls, barges, rails, or trucks, Trident Cubed plans it, supervises it, and documents it— so
-				your team can focus on the rest of the mission with confidence.
-			</p>
-		</Content>
-		<Image
-			class="sticky top-32 aspect-video lg:aspect-square"
-			src="/photos/trident-cubed-secured-cargo.png"
-			mask
-			overlay="to-black from-20% to-100%"
-		/>
-	</Container>
+				<!-- Subsections -->
+				{#each section.subsections as subsection}
+					<h3>{subsection.title}</h3>
+					<p>{subsection.content}</p>
+				{/each}
+			</Content>
+			<Image
+				class="sticky top-32 aspect-video lg:aspect-square"
+				src={section.image}
+				mask
+				overlay="to-black from-20% to-100%"
+			/>
+		</Container>
+	{/each}
 </Section>
 
 <!-- SERVICES 
@@ -436,11 +435,17 @@
 	}}
 	class="bg-base-200-700 flex flex-col"
 >
-	<Title
-		id="Services"
-		title="Services"
-		subtitle="The Standard in Marine Surveying & Port Captain Services"
-	/>
+	<svelte:boundary>
+		<Title
+			id="Services"
+			title={(await getSection('Services'))?.title ?? 'Services Title'}
+			subtitle={(await getSection('Services'))?.subtitle ?? 'Services Subtitle'}
+		/>
+
+		{#snippet pending()}
+			<!-- Loading services title -->
+		{/snippet}
+	</svelte:boundary>
 	<div class="services-container grid gap-6">
 		<svelte:boundary>
 			{#await getServicesData()}
@@ -491,11 +496,17 @@
 		negative: false
 	}}
 >
-	<Title
-		id="Contact"
-		title="Contact Us"
-		subtitle="We serve domestic and international waters"
-	/>
+	<svelte:boundary>
+		<Title
+			id="Contact"
+			title={(await getSection('Contact'))?.title ?? 'Contact Title'}
+			subtitle={(await getSection('Contact'))?.subtitle ?? 'Contact Subtitle'}
+		/>
+
+		{#snippet pending()}
+			<!-- Loading contact title -->
+		{/snippet}
+	</svelte:boundary>
 
 	<Container
 		class="relative flex flex-col items-stretch justify-center gap-32 lg:flex-row lg:items-start"
@@ -614,38 +625,111 @@
 		<!-- Contact Form
 		---------------------------------------------------->
 		<form
-			class="contact-form sticky order-1 lg:top-32 lg:order-2"
-			action=""
+			bind:this={formElement}
+			class="contact-form w-xs sticky order-1 max-w-xs lg:top-32 lg:order-2"
+			{...submitContactData.enhance(async ({ submit, form }) => {
+				try {
+					// HTML5 validation will prevent submission if fields are invalid
+					isSubmitting = true;
+					// Add 2 second delay to show loading state
+					await new Promise((resolve) => setTimeout(resolve, 2000));
+					await submit();
+
+					// Show sent state
+					isSubmitting = false;
+					isSent = true;
+
+					// Revert to idle state after 4 seconds
+					setTimeout(() => {
+						isSent = false;
+					}, 4000);
+				} catch (error) {
+					console.error('Form submission error:', error);
+					isSubmitting = false;
+				}
+			})}
 		>
 			<Input
+				bind:value={nameValue}
 				icon="icon-[mdi--account]"
 				variant="icon label"
 				label="Name"
+				required={true}
+				pattern="[a-zA-Z\\s\\-\\.\\']+"
+				minlength={2}
+				maxlength={50}
+				error={nameError}
+				isValid={!nameError}
+				onblur={validateName}
 			/>
-			<!-- 			
 			<Input
+				bind:value={phoneValue}
+				type="tel"
 				icon="icon-[mdi--phone]"
 				variant="icon label"
 				label="Phone"
-			/> -->
+				required={true}
+				pattern="[\\+\\d\\s\\-\\(\\)]+"
+				minlength={7}
+				maxlength={20}
+				error={phoneError}
+				isValid={!phoneError}
+				onblur={validatePhone}
+			/>
 			<Input
+				bind:value={emailValue}
+				type="email"
 				icon="icon-[mdi--email]"
 				variant="icon label"
 				label="Email"
+				required={true}
+				error={emailError}
+				isValid={!emailError}
+				onblur={validateEmail}
 			/>
 			<Input
+				bind:value={messageValue}
 				icon="icon-[mdi--pencil]"
 				variant="icon label"
 				label="Message"
 				textarea
+				required={true}
+				minlength={10}
+				maxlength={500}
+				error={messageError}
+				isValid={!messageError}
+				onblur={validateMessage}
 			/>
 			<Button
+				color={isSent ? 'accent' : 'primary'}
+				type="submit"
 				size="lg"
-				primary
-				label="Submit"
-				class="mt-10 min-w-full !rounded-xl"
-				href="#"
+				label={isSent ? 'Sent!' : isSubmitting ? 'Sending...' : 'Send'}
+				icon={isSent ? 'icon-[mdi--check]' : isSubmitting ? 'spinner' : 'icon-[mdi--send]'}
+				variant="text icon"
+				class="submit-button mt-10 min-w-full !rounded-xl disabled:cursor-not-allowed disabled:opacity-50"
+				disabled={isSubmitting || isSent}
 			/>
+			<!-- Success/Error Messages -->
+			{#await submitContactData.result}
+				<!-- Loading state handled by button -->
+			{:then result}
+				{#if result?.success}
+					<div class="my-10 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4">
+						<Text
+							class="text-md text-emerald-600"
+							p={result.message}
+						/>
+					</div>
+				{:else if result && !result.success}
+					<div class="my-10 rounded-lg border border-rose-500/20 bg-rose-500/10 p-4">
+						<Text
+							class="text-md text-rose-600"
+							p={result.message}
+						/>
+					</div>
+				{/if}
+			{/await}
 		</form>
 	</Container>
 </Section>
@@ -657,11 +741,17 @@
 	dividerBottom={{ svg: 'text-base-950' }}
 	class="bg-base-200-700 flex flex-col gap-5"
 >
-	<Title
-		id="FAQ"
-		title="FAQ"
-		subtitle="Common questions asked from new partners"
-	/>
+	<svelte:boundary>
+		<Title
+			id="FAQ"
+			title={(await getSection('FAQ'))?.title ?? 'FAQ Title'}
+			subtitle={(await getSection('FAQ'))?.subtitle ?? 'FAQ Subtitle'}
+		/>
+
+		{#snippet pending()}
+			<!-- Loading FAQ title -->
+		{/snippet}
+	</svelte:boundary>
 	<Content class="flex flex-col">
 		<svelte:boundary>
 			{#await getFaqData()}
@@ -722,14 +812,20 @@
 	class="dark flex flex-col py-0 text-center lg:items-start lg:justify-start lg:text-left"
 	container="!gap-6 !pt-0 lg:!gap-6 flex w-full flex-col items-center lg:grid lg:grid-flow-col lg:grid-rows-2"
 >
-	<Text
-		class="text-balance text-4xl md:text-pretty md:text-6xl"
-		h1="Ready to become a partner?"
-	/>
-	<Text
-		class="text-pretty md:max-w-xl md:text-balance"
-		p="Join forces with Trident Cubed and gain a partner backed by 100+ years of combined experience."
-	/>
+	<svelte:boundary>
+		<Text
+			class="text-balance text-4xl md:text-pretty md:text-6xl"
+			h1={(await getSection('CTA'))?.title ?? 'CTA Title'}
+		/>
+		<Text
+			class="text-pretty md:max-w-xl md:text-balance"
+			p={(await getSection('CTA'))?.subtitle ?? 'CTA Subtitle'}
+		/>
+
+		{#snippet pending()}
+			<!-- Loading CTA content -->
+		{/snippet}
+	</svelte:boundary>
 	<Button
 		size="xl"
 		primary
@@ -759,6 +855,15 @@
 			.card-testimonial {
 				@apply scale-100 opacity-100;
 			}
+		}
+
+		/* Form validation styling */
+		.contact-form:invalid .submit-button {
+			@apply pointer-events-none cursor-not-allowed opacity-50;
+		}
+
+		.contact-form:valid .submit-button {
+			@apply pointer-events-auto cursor-pointer opacity-100;
 		}
 	}
 </style>

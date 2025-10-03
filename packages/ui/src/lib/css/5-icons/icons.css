@@ -57,6 +57,11 @@
 	}
 }
 
+[data-icons='svg-spinners'] {
+	.ring-resize {
+		@apply icon-[mdi--home];
+	}
+}
 [data-icons='mdi'] {
 	.icon-home {
 		@apply icon-[mdi--home];

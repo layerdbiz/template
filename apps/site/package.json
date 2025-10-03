@@ -32,7 +32,9 @@
 		"vite-plugin-devtools-json": "^1.0.0"
 	},
 	"dependencies": {
+		"@iconify-json/svg-spinners": "^1.2.4",
 		"@iconify-json/devicon": "^1.2.44",
-		"@layerd/ui": "workspace:*"
+		"@layerd/ui": "workspace:*",
+		"valibot": "^1.1.0"
 	}
 }

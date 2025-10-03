@@ -18,6 +18,8 @@
 		disabled?: boolean;
 		readonly?: boolean;
 		pattern?: string;
+		minlength?: number;
+		maxlength?: number;
 		textarea?: boolean;
 		autocomplete?:
 			| 'on'
@@ -33,6 +35,14 @@
 		autocorrect?: 'on' | 'off';
 		autocapitalize?: 'on' | 'off' | 'words' | 'characters';
 		spellcheck?: boolean;
+
+		// Validation properties
+		error?: string;
+		isValid?: boolean;
+
+		// Event handlers
+		onblur?: () => void;
+		oninput?: () => void;
 
 		// Icon properties - HYBRID APPROACH (handled by Icon component)
 		/**
@@ -63,8 +73,14 @@
 		disabled = false,
 		readonly = false,
 		pattern = undefined,
+		minlength = undefined,
+		maxlength = undefined,
 		textarea = false,
 		spellcheck = false,
+		error = undefined,
+		isValid = true,
+		onblur = undefined,
+		oninput = undefined,
 		icon = undefined,
 		variant = 'label',
 		children = undefined,
@@ -73,6 +89,49 @@
 
 	// Generate unique id if not provided
 	const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+
+	// Auto-generate name from label if not provided
+	const inputName = $derived(name || label.toLowerCase().replace(/\s+/g, ''));
+
+	// Error state management
+	let isShaking = $state(false);
+	let hasError = $state(false);
+
+	// Update error state reactively
+	$effect(() => {
+		hasError = !isValid && !!error;
+	});
+
+	// Trigger shake animation when error changes
+	$effect(() => {
+		if (hasError) {
+			isShaking = true;
+			setTimeout(() => {
+				isShaking = false;
+			}, 600); // Match CSS animation duration
+		}
+	});
+
+	// Handle input changes to immediately clear errors when valid
+	function handleInput() {
+		// Call user-provided oninput handler if exists
+		if (oninput) {
+			oninput();
+		}
+
+		// If there was an error but field is now valid, clear error state immediately
+		if (hasError && isValid) {
+			hasError = false;
+		}
+	}
+
+	// Also handle keyup specifically to ensure immediate clearing
+	function handleKeyup() {
+		// Clear error state immediately when field becomes valid
+		if (hasError && isValid) {
+			hasError = false;
+		}
+	}
 
 	// Textarea autosize setup
 	let textareaEl = $state<HTMLTextAreaElement | null>(null);
@@ -153,25 +212,32 @@
 			bind:this={textareaEl}
 			bind:value
 			{placeholder}
-			{name}
+			name={inputName}
 			id={inputId}
 			{required}
 			{disabled}
 			{readonly}
+			{minlength}
+			{maxlength}
 			autocomplete="off"
 			autocapitalize="off"
 			{spellcheck}
+			{onblur}
+			oninput={handleInput}
+			onkeyup={handleKeyup}
 			class="
 				-mt-1.25 mb-1.25
 				text-base-900-50
-				block min-h-32
+				autofill:text-base-900-50 placeholder:text-base-400-600
+				block
+				min-h-32
 				w-full
 				resize-none
 				border-0
 				bg-transparent
 				px-4
 				py-2
-				outline-none
+				outline-none autofill:!bg-transparent
 				{className}
 			"
 		></textarea>
@@ -180,24 +246,31 @@
 			{type}
 			bind:value
 			{placeholder}
-			{name}
+			name={inputName}
 			id={inputId}
 			{required}
 			{disabled}
 			{readonly}
 			{pattern}
+			{minlength}
+			{maxlength}
 			autocomplete="off"
 			autocorrect="off"
 			autocapitalize="off"
 			{spellcheck}
+			{onblur}
+			oninput={handleInput}
+			onkeyup={handleKeyup}
 			class="
 				-mt-1.25 mb-1.25
 				text-base-900-50
-				block
-				w-full border-0 bg-transparent
+				autofill:text-base-900-50
+				placeholder:text-base-400-600 block w-full
+				border-0
+				bg-transparent
 				px-4
 				py-2
-				outline-none
+				outline-none autofill:!bg-transparent
 				{className}
 			"
 		/>
@@ -213,6 +286,8 @@
 	{#snippet component({ props }: { props: ComponentReturn })}
 		<fieldset
 			{...props}
+			class:input-error={hasError}
+			class:input-shake={isShaking}
 			class="
 					border-base-200-700
 					text-base-300-700
@@ -254,6 +329,13 @@
 				{@render labelVariant()}
 			{/if}
 		</fieldset>
+
+		<!-- Error Message -->
+		{#if hasError}
+			<div class="mt-2 px-4">
+				<p class="text-sm text-rose-500">{error}</p>
+			</div>
+		{/if}
 	{/snippet}
 </Component>
 
@@ -261,6 +343,16 @@
 	@reference "@layerd/ui/ui.css";
 
 	fieldset {
+		/* Error state styles - Base error styling that applies always */
+		&.input-error {
+			@apply border-rose-500 bg-rose-500 text-rose-700 shadow-rose-100;
+		}
+
+		/* Shake animation */
+		&.input-shake {
+			animation: shake 0.22s ease-in-out;
+		}
+
 		/* icon, border: focused + value */
 		@variant focus-within {
 			@apply border-primary text-primary bg-transparent opacity-100 shadow-none;
@@ -269,11 +361,37 @@
 			@variant has-[input:not(:placeholder-shown),textarea:not(:placeholder-shown)] {
 				@apply border-primary text-primary bg-transparent opacity-100 shadow-none;
 			}
+
+			/* Override error styles when focused - keep error state */
+			&.input-error {
+				@apply border-rose-500 bg-rose-50 text-rose-500 shadow-rose-100;
+			}
 		}
 
 		/* icon, border: unfocused + value */
 		@variant has-[input:not(:placeholder-shown),textarea:not(:placeholder-shown)] {
 			@apply text-primary-700 border-primary-700 bg-transparent shadow-none;
+
+			/* Override for error state when unfocused + value */
+			&.input-error {
+				@apply border-rose-500 bg-rose-50 text-rose-600 shadow-rose-100;
+			}
+		}
+
+		/* Base icon styling */
+		:global(.input-icon) {
+			@apply transition-colors duration-200;
+		}
+
+		/* Error state icon styling */
+		&.input-error :global(.input-icon) {
+			@apply text-rose-500;
+		}
+
+		/* Error state input text colors */
+		&.input-error input,
+		&.input-error textarea {
+			@apply text-rose-900 placeholder:text-rose-400;
 		}
 
 		legend {
@@ -291,6 +409,41 @@
 			@variant group-has-[input:not(:placeholder-shown),textarea:not(:placeholder-shown)] {
 				@apply text-primary-500 translate-x-0 translate-y-0 text-xs;
 			}
+		}
+	}
+
+	/* Error state legend styling - MOVED OUTSIDE and AFTER fieldset to have higher specificity */
+	fieldset.input-error legend {
+		@apply text-rose-500;
+
+		/* Keep legend rose even when focused if there's an error */
+		@variant group-focus-within {
+			@apply translate-x-0 translate-y-0 text-xs text-rose-500;
+		}
+
+		/* Keep legend rose when has value */
+		@variant group-has-[input:not(:placeholder-shown),textarea:not(:placeholder-shown)] {
+			@apply translate-x-0 translate-y-0 text-xs text-rose-500;
+		}
+	}
+
+	@keyframes shake {
+		0%,
+		100% {
+			transform: translateX(0);
+		}
+		10%,
+		30%,
+		50%,
+		70%,
+		90% {
+			transform: translateX(-8px);
+		}
+		20%,
+		40%,
+		60%,
+		80% {
+			transform: translateX(8px);
 		}
 	}
 </style>
