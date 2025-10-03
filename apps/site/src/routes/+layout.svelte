@@ -7,6 +7,7 @@
 		Header,
 		Footer,
 		Copyright,
+		Section,
 		Container,
 		Nav,
 		Button,
@@ -146,7 +147,7 @@
 			class="justify-self-start lg:justify-self-center"
 		/>
 		<Button
-			size={mq.md ? 'sm' : 'lg'}
+			size="sm"
 			primary
 			href="tel:+15705751179"
 			variant="icon text"
@@ -162,14 +163,48 @@
 		{@render children()}
 
 		{#snippet pending()}
-			<div class="flex min-h-svh items-center justify-center">
-				<div class="flex flex-col items-center gap-4">
-					<div
-						class="border-primary size-8 animate-spin rounded-full border-2 border-t-transparent"
-					></div>
-					<p class="text-base-600">Loading...</p>
+			<Section
+				id="Home"
+				class="z-2 flex min-h-svh flex-col items-center"
+			>
+				<!-- photo vignette 
+				------------------------------------------>
+				<Image
+					src="/photos/houston-night.jpg"
+					bg="fixed"
+					overlay="bg-radial -from-black to-black to-85%"
+				/>
+				<!-- bottom black radial 
+				------------------------------------------>
+				<Image
+					bg
+					class="mask-t-from-0% mask-t-to-50% origin-bottom overflow-hidden"
+					overlay="bg-radial from-transparent to-black from-0% to-100% scale-x-125"
+				/>
+				<Image
+					bg
+					overlay="bg-black/30"
+				/>
+				<!-- GRADIENT WRAPPER
+				------------------------------------------>
+				<div
+					class="-z-1 scale-y-60 pointer-events-none absolute inset-0 top-auto isolate size-full origin-bottom blur-xl"
+				>
+					<!-- top blue radial -->
+					<Image
+						bg
+						class="mask-t-from-0% mask-t-to-70% absolute top-0 size-full overflow-hidden"
+						overlay="bg-radial from-transparent to-primary from-20% to-100% "
+					/>
+
+					<!-- bottom blue radial -->
+					<Image
+						bg
+						class="mask-b-from-0% mask-b-to-70% top-full size-full overflow-hidden"
+						overlay="bg-radial from-transparent to-primary from-20% to-100% "
+					/>
 				</div>
-			</div>
+			</Section>
 		{/snippet}
 
 		{#snippet failed(error, retry)}
@@ -191,6 +226,7 @@
 		{/snippet}
 	</svelte:boundary>
 </main>
+
 <Footer class="dark relative overflow-clip py-10">
 	<Container class="mt-6 flex translate-y-6 flex-col items-center md:flex-row md:justify-between">
 		<div class="flex flex-col items-center justify-center gap-4 md:flex-row md:items-center">

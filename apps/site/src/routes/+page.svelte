@@ -110,7 +110,7 @@
 >
 	<!-- hero content
 	------------------------------------------>
-	<Container class="z-0 flex select-none flex-col items-center justify-around gap-14">
+	<Container class="fade-in z-0 flex select-none flex-col items-center justify-around gap-14">
 		<!-- title -->
 		<div class="text-base-50 flex flex-col gap-2 text-center">
 			<h1 class="order-2 text-balance text-xl font-bold leading-tight lg:text-6xl">
@@ -304,7 +304,7 @@
 	<!-- about 
 	------------------------------------------>
 
-	{#each getAboutData().current ?? [] as section (section.id)}
+	{#each await getAboutData() as section (section.id)}
 		<Container
 			class="flex flex-col items-center justify-between gap-20 lg:flex-row even:lg:flex-row-reverse"
 		>
@@ -696,6 +696,20 @@
 
 		.contact-form:valid .submit-button {
 			@apply pointer-events-auto cursor-pointer opacity-100;
+		}
+
+		/* Content fade-in animation */
+		.fade-in {
+			opacity: 0;
+			transform: translateY(10px);
+			animation: fadeInUp 0.8s ease-in-out forwards;
+		}
+
+		@keyframes fadeInUp {
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
 		}
 	}
 </style>
