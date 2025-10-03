@@ -13,8 +13,6 @@ export interface AboutSection {
 }
 
 export const getAboutData = prerender(async () => {
-	console.log("🔥 Fetching about data during prerender...");
-
 	try {
 		// Sheetari URL structure: https://sheetari.deno.dev/{sheetId}/{sheetName}
 		const response = await fetch(
@@ -29,7 +27,6 @@ export const getAboutData = prerender(async () => {
 
 		// Validate data is an array
 		if (!Array.isArray(data)) {
-			console.error("❌ API returned non-array data:", data);
 			return [];
 		}
 
@@ -58,10 +55,8 @@ export const getAboutData = prerender(async () => {
 				],
 			}));
 
-		console.log("✅ About data prerendered:", validSections.length, "sections");
 		return validSections;
 	} catch (error) {
-		console.error("❌ Error fetching about data:", error);
 		// Return empty array as fallback to prevent crashes
 		return [];
 	}

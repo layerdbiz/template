@@ -8,8 +8,6 @@ export interface PartnerProps {
 }
 
 export const getPartnersData = prerender(async () => {
-	console.log("🔥 Fetching partner logos during prerender...");
-
 	try {
 		const response = await fetch(
 			"https://sheetari.deno.dev/1BT2OPDOA-sEIF-JkyikVrB3StvsfdJNAnP4ih9bHhj4/partners",
@@ -23,7 +21,6 @@ export const getPartnersData = prerender(async () => {
 
 		// Validate data is an array
 		if (!Array.isArray(data)) {
-			console.error("❌ Partners API returned non-array data:", data);
 			return [];
 		}
 
@@ -39,14 +36,8 @@ export const getPartnersData = prerender(async () => {
 				url: partner.url || undefined, // API 'url' maps to component 'url' (optional)
 			}));
 
-		console.log(
-			"✅ Partner logos prerendered:",
-			validPartners.length,
-			"partners",
-		);
 		return validPartners;
 	} catch (error) {
-		console.error("❌ Error fetching partners:", error);
 		// Return empty array as fallback
 		return [];
 	}

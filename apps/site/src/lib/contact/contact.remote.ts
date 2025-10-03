@@ -51,9 +51,6 @@ const contactFormSchema = v.object({
 export const submitContactData = form(
 	contactFormSchema,
 	async ({ name, phone, email, message }) => {
-		console.log("🔥 Submitting contact form...");
-		console.log("📝 Form data received:", { name, phone, email, message });
-
 		try {
 			// Submit to Zapier webhook (existing endpoint)
 			const response = await fetch(
@@ -73,11 +70,8 @@ export const submitContactData = form(
 			);
 
 			if (!response.ok) {
-				console.error(`❌ Zapier webhook failed: ${response.status}`);
 				throw new Error(`Zapier webhook failed: ${response.status}`);
 			}
-
-			console.log("✅ Contact form submitted successfully");
 
 			// Return success result
 			return {
@@ -85,8 +79,6 @@ export const submitContactData = form(
 				message: "A sales agent will be reaching out soon.",
 			} as ContactFormResult;
 		} catch (error) {
-			console.error("❌ Error submitting contact form:", error);
-
 			// Return error result (don't throw to avoid error page)
 			return {
 				success: false,

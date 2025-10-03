@@ -6,8 +6,6 @@ interface IconData {
 }
 
 export const getIcons = prerender(async () => {
-	console.log("🔥 Fetching icons during prerender...");
-
 	const response = await fetch(
 		"https://sheetari.deno.dev/1F6j_yQLz6ozaa9HzeOp_6leCZCaIIZNCK1LbZCdxnBE/+icons",
 	);
@@ -24,7 +22,6 @@ export const getIcons = prerender(async () => {
 		entry.category && typeof entry.category === "string"
 	);
 
-	console.log("✅ Icons prerendered:", validIcons.length, "icons");
 	return validIcons;
 }, {
 	// This is crucial for no-argument prerender functions

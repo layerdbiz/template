@@ -11,8 +11,6 @@ export interface TestimonialData {
 }
 
 export const getTestimonialsData = prerender(async () => {
-	console.log("🔥 Fetching testimonials data during prerender...");
-
 	try {
 		// Sheetari URL structure: https://sheetari.deno.dev/{sheetId}/{sheetName}
 		const response = await fetch(
@@ -27,7 +25,6 @@ export const getTestimonialsData = prerender(async () => {
 
 		// Validate data is an array
 		if (!Array.isArray(data)) {
-			console.error("❌ API returned non-array data:", data);
 			return [];
 		}
 
@@ -45,14 +42,8 @@ export const getTestimonialsData = prerender(async () => {
 				company: item.company,
 			}));
 
-		console.log(
-			"✅ Testimonials data prerendered:",
-			validTestimonials.length,
-			"items",
-		);
 		return validTestimonials;
 	} catch (error) {
-		console.error("❌ Error fetching testimonials data:", error);
 		// Return empty array as fallback to prevent crashes
 		return [];
 	}

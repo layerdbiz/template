@@ -1,4 +1,4 @@
-import { query } from "$app/server";
+import { prerender } from "$app/server";
 
 export interface TeamMember {
 	id: string;
@@ -8,9 +8,7 @@ export interface TeamMember {
 	icon: string; // Changed from linkedin to icon to match Card component
 }
 
-export const getTeamData = query(async () => {
-	console.log("🔥 Fetching team members...");
-
+export const getTeamData = prerender(async () => {
 	const response = await fetch(
 		"https://sheetari.deno.dev/1BT2OPDOA-sEIF-JkyikVrB3StvsfdJNAnP4ih9bHhj4/team",
 	);
@@ -30,6 +28,8 @@ export const getTeamData = query(async () => {
 		icon: member.linkedin, // API 'linkedin' maps to Card 'icon' (for LinkedIn URL)
 	}));
 
-	console.log("✅ Team members loaded:", validMembers.length, "members");
 	return validMembers;
+}, {
+	// This is crucial for no-argument prerender functions
+	inputs: () => [undefined],
 });

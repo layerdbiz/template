@@ -114,7 +114,6 @@
 					stopOnInteraction: false
 				})
 			);
-			console.log('AutoScroll plugin added with speed:', autoscrollSpeed(), 'startDelay: 1000ms');
 		}
 
 		return pluginList;
@@ -135,23 +134,10 @@
 		emblaApi = event.detail;
 		isInitialized = true;
 
-		console.log('Embla initialized with config:', {
-			autoscroll: autoscroll,
-			isAutoscroll: isAutoscroll,
-			plugins: plugins().map((p) => p.constructor.name),
-			options: options
-		});
-
 		// Debug AutoScroll plugin specifically
 		if (isAutoscroll && emblaApi) {
 			const autoScrollPlugin = emblaApi.plugins().autoScroll;
-			if (autoScrollPlugin) {
-				console.log('AutoScroll plugin found:', autoScrollPlugin);
-				// Check if it's playing after initialization
-				setTimeout(() => {
-					console.log('AutoScroll isPlaying:', autoScrollPlugin.isPlaying());
-				}, 2000);
-			} else {
+			if (!autoScrollPlugin) {
 				console.error('AutoScroll plugin not found in emblaApi.plugins()');
 			}
 		}
@@ -334,11 +320,6 @@
 			// Use a small delay to ensure DOM updates are complete
 			setTimeout(() => {
 				emblaApi.reInit();
-				console.log(
-					'Embla reinitialized with',
-					containerRef!.querySelectorAll('.embla__slide').length,
-					'slides'
-				);
 			}, 10);
 		}
 	}

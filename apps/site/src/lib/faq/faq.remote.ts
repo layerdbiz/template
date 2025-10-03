@@ -8,8 +8,6 @@ export interface FaqItem {
 }
 
 export const getFaqData = prerender(async () => {
-	console.log("🔥 Fetching FAQ items during prerender...");
-
 	const response = await fetch(
 		"https://sheetari.deno.dev/1BT2OPDOA-sEIF-JkyikVrB3StvsfdJNAnP4ih9bHhj4/faq",
 	);
@@ -28,7 +26,6 @@ export const getFaqData = prerender(async () => {
 		category: faq.category,
 	}));
 
-	console.log("✅ FAQ items prerendered:", validFaqs.length, "items");
 	return validFaqs;
 }, {
 	// CRITICAL: Required for no-argument prerender functions due to async SSR limitations

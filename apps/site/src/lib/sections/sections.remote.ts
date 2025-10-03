@@ -9,8 +9,6 @@ export interface SectionData {
 }
 
 export const getSectionsData = prerender(async () => {
-	console.log("🔥 Fetching sections data during prerender...");
-
 	try {
 		// Sheetari URL structure: https://sheetari.deno.dev/{sheetId}/{sheetName}
 		const response = await fetch(
@@ -25,7 +23,6 @@ export const getSectionsData = prerender(async () => {
 
 		// Validate data is an array
 		if (!Array.isArray(data)) {
-			console.error("❌ API returned non-array data:", data);
 			return [];
 		}
 
@@ -39,14 +36,8 @@ export const getSectionsData = prerender(async () => {
 				subtitle: item.subtitle || "", // Section subtitle
 			}));
 
-		console.log(
-			"✅ Sections data prerendered:",
-			validSections.length,
-			"sections",
-		);
 		return validSections;
 	} catch (error) {
-		console.error("❌ Error fetching sections data:", error);
 		// Return empty array as fallback to prevent crashes
 		return [];
 	}
