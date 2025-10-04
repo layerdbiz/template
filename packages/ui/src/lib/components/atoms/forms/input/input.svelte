@@ -41,8 +41,8 @@
 		isValid?: boolean;
 
 		// Event handlers
-		onblur?: () => void;
-		oninput?: () => void;
+		onblur?: (event?: Event) => void;
+		oninput?: (event?: Event) => void;
 
 		// Icon properties - HYBRID APPROACH (handled by Icon component)
 		/**
@@ -113,10 +113,24 @@
 	});
 
 	// Handle input changes to immediately clear errors when valid
-	function handleInput() {
+	function handleInput(event: Event) {
 		// Call user-provided oninput handler if exists
 		if (oninput) {
 			oninput();
+		}
+
+		// For textareas with patterns, manually validate since HTML5 pattern doesn't work on textarea
+		if (textarea && pattern) {
+			const target = event.target as HTMLTextAreaElement;
+			const regex = new RegExp(`^${pattern}$`);
+			const isPatternValid = regex.test(target.value);
+
+			// Set custom validity for textarea pattern validation
+			if (target.value && !isPatternValid) {
+				target.setCustomValidity('Please match the requested format.');
+			} else {
+				target.setCustomValidity('');
+			}
 		}
 
 		// If there was an error but field is now valid, clear error state immediately
@@ -126,10 +140,46 @@
 	}
 
 	// Also handle keyup specifically to ensure immediate clearing
-	function handleKeyup() {
+	function handleKeyup(event: Event) {
+		// For textareas with patterns, manually validate since HTML5 pattern doesn't work on textarea
+		if (textarea && pattern) {
+			const target = event.target as HTMLTextAreaElement;
+			const regex = new RegExp(`^${pattern}$`);
+			const isPatternValid = regex.test(target.value);
+
+			// Set custom validity for textarea pattern validation
+			if (target.value && !isPatternValid) {
+				target.setCustomValidity('Please match the requested format.');
+			} else {
+				target.setCustomValidity('');
+			}
+		}
+
 		// Clear error state immediately when field becomes valid
 		if (hasError && isValid) {
 			hasError = false;
+		}
+	}
+
+	// Handle blur events for pattern validation
+	function handleBlur(event: Event) {
+		// For textareas with patterns, manually validate since HTML5 pattern doesn't work on textarea
+		if (textarea && pattern) {
+			const target = event.target as HTMLTextAreaElement;
+			const regex = new RegExp(`^${pattern}$`);
+			const isPatternValid = regex.test(target.value);
+
+			// Set custom validity for textarea pattern validation
+			if (target.value && !isPatternValid) {
+				target.setCustomValidity('Please match the requested format.');
+			} else {
+				target.setCustomValidity('');
+			}
+		}
+
+		// Call user-provided onblur handler if exists
+		if (onblur) {
+			onblur(event);
 		}
 	}
 
@@ -222,13 +272,14 @@
 			autocomplete="off"
 			autocapitalize="off"
 			{spellcheck}
-			{onblur}
+			onblur={handleBlur}
 			oninput={handleInput}
 			onkeyup={handleKeyup}
 			class="
 				-mt-1.25 mb-1.25
 				text-base-900-50
-				autofill:text-base-900-50 placeholder:text-base-400-600
+				
+				placeholder:text-base-400-600
 				block
 				min-h-32
 				w-full
@@ -237,7 +288,13 @@
 				bg-transparent
 				px-4
 				py-2
-				outline-none autofill:!bg-transparent
+				outline-none
+				autofill:[-webkit-box-shadow:0_0_0_30px_theme(colors.base.50)_inset_!important]
+				autofill:[-webkit-text-fill-color:theme(colors.base.900)_!important]
+				autofill:[transition:background-color_5000s_ease-in-out_0s_!important]
+
+				dark:autofill:[-webkit-box-shadow:0_0_0_30px_theme(colors.base.900)_inset_!important]
+				dark:autofill:[-webkit-text-fill-color:theme(colors.base.50)_!important]
 				{className}
 			"
 		></textarea>
@@ -258,19 +315,26 @@
 			autocorrect="off"
 			autocapitalize="off"
 			{spellcheck}
-			{onblur}
+			onblur={handleBlur}
 			oninput={handleInput}
 			onkeyup={handleKeyup}
 			class="
 				-mt-1.25 mb-1.25
 				text-base-900-50
-				autofill:text-base-900-50
-				placeholder:text-base-400-600 block w-full
+				placeholder:text-base-400-600
+				block
+				w-full
 				border-0
 				bg-transparent
 				px-4
 				py-2
-				outline-none autofill:!bg-transparent
+				outline-none
+				autofill:[-webkit-box-shadow:0_0_0_30px_theme(colors.base.50)_inset_!important]
+				autofill:[-webkit-text-fill-color:theme(colors.base.900)_!important]
+				autofill:[transition:background-color_5000s_ease-in-out_0s_!important]
+				
+				dark:autofill:[-webkit-box-shadow:0_0_0_30px_theme(colors.base.900)_inset_!important]
+				dark:autofill:[-webkit-text-fill-color:theme(colors.base.50)_!important]
 				{className}
 			"
 		/>
@@ -437,13 +501,13 @@
 		50%,
 		70%,
 		90% {
-			transform: translateX(-8px);
+			transform: translateX(-4px);
 		}
 		20%,
 		40%,
 		60%,
 		80% {
-			transform: translateX(8px);
+			transform: translateX(4px);
 		}
 	}
 </style>

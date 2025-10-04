@@ -384,7 +384,7 @@
 	/>
 
 	<Container
-		class="relative flex flex-col items-stretch justify-center gap-32 lg:flex-row lg:items-start"
+		class="relative flex flex-col items-center justify-center gap-32 lg:flex-row lg:items-start"
 	>
 		<!-- Contact Info 
 		---------------------------------------------------->
@@ -530,7 +530,6 @@
 				variant="icon label"
 				label="Name"
 				required={true}
-				pattern="[a-zA-Z\\s\\-\\.\\']+"
 				minlength={2}
 				maxlength={50}
 				error={nameError}
@@ -544,9 +543,8 @@
 				variant="icon label"
 				label="Phone"
 				required={true}
-				pattern="[\\+\\d\\s\\-\\(\\)]+"
 				minlength={7}
-				maxlength={20}
+				maxlength={25}
 				error={phoneError}
 				isValid={!phoneError}
 				onblur={validatePhone}
@@ -558,6 +556,7 @@
 				variant="icon label"
 				label="Email"
 				required={true}
+				maxlength={254}
 				error={emailError}
 				isValid={!emailError}
 				onblur={validateEmail}
@@ -582,7 +581,7 @@
 				label={isSent ? 'Sent!' : isSubmitting ? 'Sending...' : 'Send'}
 				icon={isSent ? 'icon-[mdi--check]' : isSubmitting ? 'spinner' : 'icon-[mdi--send]'}
 				variant="text icon"
-				class="submit-button mt-10 min-w-full !rounded-xl disabled:cursor-not-allowed disabled:opacity-50"
+				class="submit-button mt-10 min-w-full !rounded-xl"
 				disabled={isSubmitting || isSent}
 			/>
 			<!-- Success/Error Messages -->
@@ -691,7 +690,7 @@
 
 		/* Form validation styling */
 		.contact-form:invalid .submit-button {
-			@apply pointer-events-none cursor-not-allowed opacity-50;
+			@apply pointer-events-none cursor-not-allowed;
 		}
 
 		.contact-form:valid .submit-button {
