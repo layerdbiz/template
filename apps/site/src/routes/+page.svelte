@@ -690,7 +690,7 @@
 
 		/* Form validation styling */
 		.contact-form:invalid .submit-button {
-			@apply pointer-events-none cursor-not-allowed;
+			@apply pointer-events-none cursor-not-allowed opacity-100;
 		}
 
 		.contact-form:valid .submit-button {
