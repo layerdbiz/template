@@ -153,11 +153,10 @@
 			/>
 			<Button
 				size={mq.md ? 'xl' : 'sm'}
-				base
 				variant="text icon"
 				icon="icon-[mdi--chevron-right]"
 				label="Contact Sales"
-				class="w-full flex-1 lg:min-w-72"
+				class="light w-full flex-1 lg:min-w-72"
 				href="#Contact"
 			/>
 		</div>

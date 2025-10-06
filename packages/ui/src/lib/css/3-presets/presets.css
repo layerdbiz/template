@@ -98,11 +98,12 @@
 /* glass */
 .theme-glass {
 	@apply text-base-950-950/90 isolate bg-white/50 shadow backdrop-blur-2xl transition-all duration-200;
+
 	&:is(.card) {
-		@apply rounded-box;
+		@apply rounded-box bg-base-50-950/80 shadow-base-950-50/10 shadow-2xs;
 	}
 	&:is(.card:hover, .card:active) {
-		@apply text-base-950-950/100 border-white/50 bg-white/80;
+		@apply text-base-950-950/100 border-white/50;
 	}
 }
 .theme-glass-invert {

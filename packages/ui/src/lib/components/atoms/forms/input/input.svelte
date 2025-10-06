@@ -421,14 +421,27 @@
 		@variant focus-within {
 			@apply border-primary text-primary bg-transparent opacity-100 shadow-none;
 
+			/* Base icon styling */
+			:global(.input-icon) {
+				@apply text-primary transition-colors duration-200;
+			}
 			/* icon, border: focused + value */
 			@variant has-[input:not(:placeholder-shown),textarea:not(:placeholder-shown)] {
 				@apply border-primary text-primary bg-transparent opacity-100 shadow-none;
+
+				/* Base icon styling */
+				:global(.input-icon) {
+					@apply text-primary transition-colors duration-200;
+				}
 			}
 
 			/* Override error styles when focused - keep error state */
 			&.input-error {
 				@apply border-rose-500 bg-rose-50 text-rose-500 shadow-rose-100;
+				/* Base icon styling */
+				:global(.input-icon) {
+					@apply text-rose-500 transition-colors duration-200;
+				}
 			}
 		}
 
@@ -440,11 +453,15 @@
 			&.input-error {
 				@apply border-rose-500 bg-rose-50 text-rose-600 shadow-rose-100;
 			}
+			/* Base icon styling */
+			:global(.input-icon) {
+				@apply text-primary transition-colors duration-200;
+			}
 		}
 
 		/* Base icon styling */
 		:global(.input-icon) {
-			@apply transition-colors duration-200;
+			@apply text-base/50 transition-colors duration-200;
 		}
 
 		/* Error state icon styling */
@@ -488,6 +505,10 @@
 		/* Keep legend rose when has value */
 		@variant group-has-[input:not(:placeholder-shown),textarea:not(:placeholder-shown)] {
 			@apply translate-x-0 translate-y-0 text-xs text-rose-500;
+		}
+		/* Base icon styling */
+		:global(.input-icon) {
+			/* @apply text-rose-500 transition-colors duration-200; */
 		}
 	}
 
