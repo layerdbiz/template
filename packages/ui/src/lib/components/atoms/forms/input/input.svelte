@@ -1,3 +1,5 @@
+<!-- https://play.tailwindcss.com/TqeaknIMOD?file=css -->
+
 <script lang="ts">
 	/**
 	 * @tags forms, input, textfield, icon, label
