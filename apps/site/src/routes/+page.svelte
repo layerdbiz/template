@@ -15,7 +15,8 @@
 		Toggle,
 		Flex,
 		Input,
-		Slider
+		Slider,
+		Globe
 	} from '@layerd/ui';
 	import { getTeamData } from '$lib/team/team.remote';
 	import { getFaqData } from '$lib/faq/faq.remote';
@@ -100,17 +101,40 @@
 			messageError = '';
 		}
 	});
+
+	const locations = [
+		{
+			location: 'New York',
+			lat: 40.7128,
+			lng: -74.006,
+			phone: '+1 (212) 555-0100',
+			email: 'ny@example.com'
+		}
+	];
+
+	const ports = [
+		{
+			port: 'Brooklyn Port',
+			city: 'Brooklyn',
+			location: 'New York',
+			lat: 40.6526,
+			lng: -74.0102
+		}
+	];
 </script>
 
 <!-- HERO 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
 <Section
 	id="Home"
-	class="z-2 flex min-h-svh flex-col items-center"
+	class="z-2 !flex min-h-svh !flex-col"
+	container="!flex flex-col items-center justify-start gap-14 !py-0 !pt-10"
 >
 	<!-- hero content
 	------------------------------------------>
-	<Container class="fade-in z-0 flex select-none flex-col items-center justify-around gap-14">
+	<section
+		class="fade-in z-1 pointer-events-none relative flex select-none flex-col items-center justify-start gap-10"
+	>
 		<!-- title -->
 		<div class="text-base-50 flex flex-col gap-2 text-center">
 			<h1 class="order-2 text-balance text-xl font-bold leading-tight lg:text-6xl">
@@ -141,7 +165,7 @@
 		</div>
 
 		<!-- buttons -->
-		<div class="flex w-full gap-2 lg:w-auto lg:gap-6">
+		<div class="pointer-events-auto flex w-full gap-2 lg:w-auto lg:gap-6">
 			<Button
 				size={mq.md ? 'xl' : 'sm'}
 				primary
@@ -160,20 +184,37 @@
 				href="#Contact"
 			/>
 		</div>
-	</Container>
+	</section>
+
+	<!-- globe -->
+	<div
+		class="fade-in bleed mask-b-from-90% mask-b-to-100% pointer-events-auto !absolute inset-0 overflow-clip"
+	>
+		<Globe
+			{locations}
+			{ports}
+			config={{
+				vignetteEnabled: true,
+				vignetteFadeStart: 0.2, // Start fade at 20% from bottom
+				vignetteFadeEnd: 0.9, // Complete fade at 90%
+				vignetteOpacity: 0.8 // 80% opacity for stronger shadow
+			}}
+		/>
+	</div>
 
 	<!-- photo vignette 
 	------------------------------------------>
 	<Image
 		src="/photos/houston-night.jpg"
 		bg="fixed"
+		class="-z-3 pointer-events-none"
 		overlay="bg-radial -from-black to-black to-85%"
 	/>
 	<!-- bottom black radial 
 	------------------------------------------>
 	<Image
 		bg
-		class="mask-t-from-0% mask-t-to-50% origin-bottom overflow-hidden"
+		class="mask-t-from-0% mask-t-to-50% pointer-events-none origin-bottom overflow-hidden"
 		overlay="bg-radial from-transparent to-black from-0% to-100% scale-x-125"
 	/>
 	<Image
@@ -183,7 +224,7 @@
 	<!-- GRADIENT WRAPPER
 	------------------------------------------>
 	<div
-		class="-z-1 scale-y-60 pointer-events-none absolute inset-0 top-auto isolate size-full origin-bottom blur-xl"
+		class="z-1 scale-y-60 pointer-events-none absolute inset-0 top-auto isolate size-full origin-bottom blur-xl"
 	>
 		<!-- top blue radial -->
 		<Image

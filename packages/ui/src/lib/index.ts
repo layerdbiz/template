@@ -43,6 +43,9 @@ export { default as Toggle, type ToggleProps } from "./components/molecules/togg
 
 // organisms
 export { default as Footer } from "./components/organisms/footer/footer.svelte";
+export { default as Globe } from "./components/organisms/globe/globe.svelte";
+export * from "./components/organisms/globe/globe.data.ts";
+export * from "./components/organisms/globe/globe.svelte.ts";
 export { default as Header } from "./components/organisms/header/header.svelte";
 
 // templates

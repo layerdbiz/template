@@ -66,5 +66,145 @@ Once dependencies are confirmed:
 - ✅ Check existing dependencies before installing
 - ✅ Maintain type safety
 - ✅ Follow the monorepo structure
+- ✅ Use `untrack()` for state reads/writes inside effects to avoid infinite loops
+- ✅ Compare `$state` proxy values by properties, not by reference (`===`/`!==`)
+- ✅ Wrap state writes in `untrack()` when they occur inside effects that also read that state
+- ✅ Use `untrack()` for config/derived reads inside effects to prevent reactive dependencies
 - ❌ Don't ask about dependencies that already exist
 - ❌ Don't use deprecated Svelte 4 syntax
+- ❌ Don't compare `$state` proxies with `===` or `!==` (causes `state_proxy_equality_mismatch`)
+- ❌ Don't read and write the same `$state` in an effect without `untrack()` (causes `effect_update_depth_exceeded`)
+
+## Common Svelte 5 Pitfalls & Solutions
+
+### 1. Infinite Loop (`effect_update_depth_exceeded`)
+
+**Problem:** Effect reads and writes the same state, creating an infinite loop.
+
+```typescript
+// ❌ WRONG - Creates infinite loop
+$effect(() => {
+  const cfg = mergedConfig; // reads derived state
+  // ... code that modifies state that mergedConfig depends on
+});
+```
+
+**Solution:** Use `untrack()` to read state without creating reactive dependencies:
+
+```typescript
+// ✅ CORRECT - Use untrack to prevent dependency
+$effect(() => {
+  const cfg = untrack(() => mergedConfig); // reads without dependency
+  // ... safe to modify state now
+});
+```
+
+### 2. State Proxy Comparison (`state_proxy_equality_mismatch`)
+
+**Problem:** Comparing `$state` proxies with `===` or `!==` doesn't work as expected.
+
+```typescript
+// ❌ WRONG - Compares proxy references
+let previousLocation = $state(null);
+const currentLocation = $derived(locations[index]);
+
+$effect(() => {
+  if (previousLocation !== currentLocation) { // ← Proxy comparison fails!
+    // ...
+  }
+});
+```
+
+**Solution:** Compare the actual property values instead of proxy references:
+
+```typescript
+// ✅ CORRECT - Compare actual values
+$effect(() => {
+  const locationChanged = 
+    prevLoc.location !== location.location ||
+    prevLoc.lat !== location.lat ||
+    prevLoc.lng !== location.lng;
+    
+  if (locationChanged) {
+    // ...
+  }
+});
+```
+
+### 3. Writing to State Inside Effects
+
+**Problem:** Writing to state inside an effect that reads that state causes loops.
+
+```typescript
+// ❌ WRONG - Reads and writes previousLocation
+$effect(() => {
+  const location = currentLocation; // reads state
+  previousLocation = location; // writes state - triggers effect again!
+});
+```
+
+**Solution:** Wrap state writes in `untrack()`:
+
+```typescript
+// ✅ CORRECT - Use untrack when writing to state
+$effect(() => {
+  const location = currentLocation; // reads state
+  untrack(() => {
+    previousLocation = location; // writes state without triggering effect
+  });
+});
+```
+
+### 4. Reading Derived/Config in Helper Functions
+
+**Problem:** Helper functions called from effects create reactive dependencies.
+
+```typescript
+// ❌ WRONG - Creates reactive dependency
+function emitArc(start, end) {
+  const cfg = mergedConfig; // creates dependency
+  const time = cfg.arcFlightTime;
+  // ...
+}
+
+$effect(() => {
+  emitArc(prevLoc, location); // effect depends on mergedConfig
+});
+```
+
+**Solution:** Use `untrack()` to read config without dependencies:
+
+```typescript
+// ✅ CORRECT - No reactive dependency
+function emitArc(start, end) {
+  const cfg = untrack(() => mergedConfig); // reads without dependency
+  const time = cfg.arcFlightTime;
+  // ...
+}
+```
+
+### 5. Passing Reactive Values as Parameters
+
+**Best Practice:** When possible, pass static/snapshot values instead of reactive proxies:
+
+```typescript
+// ✅ GOOD - Pass primitive values or use untrack
+const isSmall = mq.sm;
+const config = createDefaultConfig(width, height, isSmall);
+
+// Instead of reading mq.sm inside the function
+function createDefaultConfig(width, height, isSmallScreen) {
+  // Use isSmallScreen parameter instead of reading mq.sm directly
+}
+```
+
+## Quick Reference: When to Use `untrack()`
+
+| Scenario | Use `untrack()` | Example |
+|----------|----------------|---------|
+| Reading config/derived in effects | ✅ Yes | `const cfg = untrack(() => mergedConfig);` |
+| Writing to state inside effects | ✅ Yes | `untrack(() => { previousLocation = location; });` |
+| Reading state you'll modify | ✅ Yes | `const current = untrack(() => activeArcs);` |
+| Comparing proxies | ❌ No | Compare property values instead |
+| Initial reads in effects | ❌ Usually No | Let Svelte track dependencies naturally |
+| Inside event handlers | ❌ No | Event handlers don't create reactive dependencies |
