@@ -1,11 +1,11 @@
 /**
- * Media Query Utilities - Tailwind CSS Breakpoints
+ * Media Query Utilities - Max-Width Breakpoints
  *
- * Provides reactive media query utilities that match Tailwind's breakpoint system:
- * - sm: 640px (40rem)
- * - md: 768px (48rem)
- * - lg: 1024px (64rem)
- * - xl: 1280px (80rem)
+ * Provides reactive media query utilities using max-width logic:
+ * - sm: 0-639px (small screens only)
+ * - md: 0-767px (small to medium screens)
+ * - lg: 0-1023px (small to large screens)
+ * - xl: 0-1279px (small to extra large screens)
  * - portrait/vertical: Device orientation is portrait
  * - landscape/horizontal: Device orientation is landscape
  *
@@ -19,7 +19,11 @@
  * </script>
  *
  * {#if mq.sm}
- *   <p>Screen is >= 640px wide</p>
+ *   <p>Screen is 0-639px wide (mobile only)</p>
+ * {/if}
+ *
+ * {#if !mq.sm}
+ *   <p>Screen is 640px+ (desktop)</p>
  * {/if}
  *
  * {#if mq.portrait}
@@ -105,22 +109,28 @@ export const BREAKPOINTS = {
 } as const;
 
 /**
- * Pre-configured media query utilities for Tailwind breakpoints
+ * Pre-configured media query utilities with max-width logic
  * These can be used in templates: {#if mq.sm}
  * Uses native resize listener for reactivity
+ *
+ * BREAKING CHANGE: Now uses max-width logic (opposite of Tailwind)
+ * - mq.sm → 0-639px (small screens ONLY)
+ * - mq.md → 0-767px (small to medium screens)
+ * - mq.lg → 0-1023px (small to large screens)
+ * - mq.xl → 0-1279px (small to extra large screens)
  */
 export const mq = {
 	get sm() {
-		return viewport.width >= BREAKPOINTS.sm;
+		return viewport.width < BREAKPOINTS.sm;
 	},
 	get md() {
-		return viewport.width >= BREAKPOINTS.md;
+		return viewport.width < BREAKPOINTS.md;
 	},
 	get lg() {
-		return viewport.width >= BREAKPOINTS.lg;
+		return viewport.width < BREAKPOINTS.lg;
 	},
 	get xl() {
-		return viewport.width >= BREAKPOINTS.xl;
+		return viewport.width < BREAKPOINTS.xl;
 	},
 	get portrait() {
 		return viewport.height > viewport.width;
@@ -136,25 +146,25 @@ export const mq = {
 	},
 };
 
-// Individual exports for backwards compatibility
+// Individual exports for backwards compatibility (now using max-width)
 export const sm = {
 	get matches() {
-		return viewport.width >= BREAKPOINTS.sm;
+		return viewport.width < BREAKPOINTS.sm;
 	},
 };
 export const md = {
 	get matches() {
-		return viewport.width >= BREAKPOINTS.md;
+		return viewport.width < BREAKPOINTS.md;
 	},
 };
 export const lg = {
 	get matches() {
-		return viewport.width >= BREAKPOINTS.lg;
+		return viewport.width < BREAKPOINTS.lg;
 	},
 };
 export const xl = {
 	get matches() {
-		return viewport.width >= BREAKPOINTS.xl;
+		return viewport.width < BREAKPOINTS.xl;
 	},
 };
 
@@ -178,3 +188,37 @@ export const useBetween = (
 		`(min-width: ${minWidth}px) and (max-width: ${maxWidth}px)`;
 	return useMediaQuery(combinedQuery);
 };
+
+/**
+ * Predefined screen size threshold
+ */
+const SCREEN_THRESHOLD = 768; // md breakpoint
+
+/**
+ * Responsive value selector based on screen size
+ * Returns the first value for small screens (0-768px), second value for large screens (769px+)
+ *
+ * Usage:
+ * ```svelte
+ * <script>
+ *   import { screens } from '@layerd/ui';
+ * </script>
+ *
+ * <Globe
+ *   altitude={screens(0.15, 0)}
+ *   size={screens(2, 4)}
+ *   position={{
+ *     latitude: screens(21, 36)
+ *   }}
+ * />
+ * ```
+ *
+ * @param smallScreenValue - Value to return when viewport is <= 768px
+ * @param largeScreenValue - Value to return when viewport is > 768px
+ * @returns The appropriate value based on current viewport width
+ */
+export function screens<T>(smallScreenValue: T, largeScreenValue: T): T {
+	return viewport.width <= SCREEN_THRESHOLD
+		? smallScreenValue
+		: largeScreenValue;
+}

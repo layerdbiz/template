@@ -167,7 +167,7 @@
 		<!-- buttons -->
 		<div class="pointer-events-auto flex w-full gap-2 lg:w-auto lg:gap-6">
 			<Button
-				size={mq.md ? 'xl' : 'sm'}
+				size={mq.md ? 'sm' : 'xl'}
 				primary
 				variant="icon text"
 				icon="icon-[mdi--play-circle-outline]"
@@ -176,7 +176,7 @@
 				href="#About"
 			/>
 			<Button
-				size={mq.md ? 'xl' : 'sm'}
+				size={mq.md ? 'sm' : 'xl'}
 				variant="text icon"
 				icon="icon-[mdi--chevron-right]"
 				label="Contact Sales"
@@ -191,23 +191,82 @@
 		class="fade-in bleed mask-b-from-90% mask-b-to-100% pointer-events-auto !absolute inset-0 overflow-clip"
 	>
 		<Globe
-			{locations}
-			{ports}
-			config={{
-				// imgEarth: '/images/skins/earth-dark.jpg', // Commented out - using polygons instead
-
-				// Country Outlines (polygon borders)
-				polygonsData: '/data/countries.geojson',
-				polygonCapColor: 'rgba(255, 255, 255, 1)', // Transparent fill
-				polygonSideColor: 'rgba(255, 255, 255, 1)', // Transparent sides
-				polygonStrokeColor: 'rgba(255, 255, 255, 1)', // White outline
-				polygonAltitude: 0, // Slight altitude above globe
-
-				// Gradient Shadow Control
-				vignetteEnabled: false,
-				vignetteFadeStart: 0.0, // 0 = bottom of globe
-				vignetteFadeEnd: 0, // 0.6 = 60% up the globe
-				vignetteOpacity: 0 // 0-1 darkness strength
+			data={{
+				locations: locations,
+				ports: ports,
+				polygons: '/data/countries.geojson'
+			}}
+			globe={{
+				image: '/images/skins/earth-blue-marble.jpg',
+				width: typeof window !== 'undefined' ? window.innerWidth : 1920,
+				height: typeof window !== 'undefined' ? window.innerHeight : 1080,
+				left: 0,
+				top: mq.sm
+					? typeof window !== 'undefined'
+						? window.innerHeight * 0.9
+						: 972
+					: typeof window !== 'undefined'
+						? window.innerHeight * 1.72
+						: 1856
+			}}
+			atmosphere={{
+				show: true,
+				color: 'lightskyblue',
+				altitude: mq.sm ? 0.25 : 0.08
+			}}
+			vignette={{
+				enabled: true,
+				fadeStart: 0.3,
+				fadeEnd: 1.0,
+				opacity: 0.7
+			}}
+			position={{
+				altitude: mq.sm ? 0.8 : 0.2,
+				latitude: mq.sm ? 36 : 21
+			}}
+			points={{
+				altitude: 0.001,
+				color: 'rgba(0, 0, 255, 1)'
+			}}
+			labels={{
+				size: mq.sm ? 0.75 : 0.25,
+				dotRadius: mq.sm ? 0.3 : 0.1,
+				textColor: 'rgba(255, 255, 255, 1)',
+				dotColor: '#ffffff'
+			}}
+			rings={{
+				color: '#ffffff',
+				maxRadius: mq.sm ? 4 : 2,
+				propagationSpeed: mq.sm ? 4 : 2,
+				repeatPeriod: 1000,
+				altitude: 0
+			}}
+			arcs={{
+				relativeLength: 0.4,
+				flightTime: 2000,
+				numRings: 5,
+				stroke: mq.sm ? 0.2 : 0.05,
+				dashLength: 0.6,
+				dashGap: 2,
+				dashInitialGap: 1,
+				altitude: null,
+				altitudeAutoscale: mq.sm ? 0.3 : 0.2,
+				color: 'rgba(255, 255, 255, 1)'
+			}}
+			animation={{
+				duration: 1000
+			}}
+			autoplay={{
+				enabled: true,
+				interval: 7000,
+				pauseOnInteraction: true,
+				resumeDelay: 60000
+			}}
+			polygon={{
+				capColor: 'rgba(255, 255, 255, 1)',
+				sideColor: 'rgba(255, 255, 255, 1)',
+				strokeColor: 'rgba(255, 255, 255, 1)',
+				altitude: 0
 			}}
 		/>
 	</div>
@@ -268,7 +327,7 @@
 	/>
 
 	<!-- partners -->
-	{#if mq.lg}
+	{#if !mq.lg}
 		<!-- Desktop: 8 cols x 2 rows grid -->
 		<div class="mask-x-lg lg:mask-[unset] grid grid-cols-8 gap-8 pb-20 invert">
 			{#each await getPartnersData() as partner (partner.id)}

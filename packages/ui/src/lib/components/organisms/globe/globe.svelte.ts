@@ -4,6 +4,7 @@
  */
 
 import type Globe from "globe.gl";
+import { mq } from "@layerd/ui";
 
 // ============================================================================
 // Types
@@ -40,6 +41,122 @@ export interface Ring {
 	lng: number;
 }
 
+// ============================================================================
+// New Nested Configuration Interfaces
+// ============================================================================
+
+export interface GlobeDataConfig {
+	locations?: Location[];
+	ports?: Port[];
+	hexPolygons?: string;
+	polygons?: string;
+}
+
+export interface GlobeAppearanceConfig {
+	image?: string;
+	width?: number;
+	height?: number;
+	left?: number;
+	top?: number;
+}
+
+export interface GlobeAtmosphereConfig {
+	show?: boolean;
+	color?: string;
+	altitude?: number;
+}
+
+export interface GlobeHexPolygonConfig {
+	resolution?: number;
+	margin?: number;
+	color?: string | ((properties: any) => string);
+	altitude?: number;
+	curvatureResolution?: number;
+}
+
+export interface GlobePolygonConfig {
+	capColor?: string | ((properties: any) => string);
+	sideColor?: string | ((properties: any) => string);
+	strokeColor?: string | ((properties: any) => string);
+	altitude?: number;
+	capCurvatureResolution?: number;
+	sideResolution?: number;
+	transitionDuration?: number;
+}
+
+export interface GlobeVignetteConfig {
+	enabled?: boolean;
+	fadeStart?: number;
+	fadeEnd?: number;
+	opacity?: number;
+}
+
+export interface GlobePositionConfig {
+	altitude?: number;
+	latitude?: number;
+}
+
+export interface GlobePointsConfig {
+	altitude?: number;
+	color?: string;
+}
+
+export interface GlobeLabelsConfig {
+	size?: number;
+	dotRadius?: number;
+	textColor?: string;
+	dotColor?: string;
+	orientation?: "top" | "bottom" | "left" | "right";
+}
+
+export interface GlobeRingsConfig {
+	color?: string;
+	maxRadius?: number;
+	propagationSpeed?: number;
+	repeatPeriod?: number;
+	altitude?: number;
+}
+
+export interface GlobeArcsConfig {
+	relativeLength?: number;
+	flightTime?: number;
+	numRings?: number;
+	stroke?: number;
+	dashLength?: number;
+	dashGap?: number;
+	dashInitialGap?: number;
+	altitude?: number | null;
+	altitudeAutoscale?: number;
+	color?: string;
+}
+
+export interface GlobeAnimationConfig {
+	duration?: number;
+}
+
+export interface GlobeAutoPlayConfig {
+	enabled?: boolean;
+	interval?: number;
+	pauseOnInteraction?: boolean;
+	resumeDelay?: number;
+}
+
+export interface GlobeConfig {
+	data?: GlobeDataConfig;
+	globe?: GlobeAppearanceConfig;
+	atmosphere?: GlobeAtmosphereConfig;
+	hexPolygon?: GlobeHexPolygonConfig;
+	polygon?: GlobePolygonConfig;
+	vignette?: GlobeVignetteConfig;
+	position?: GlobePositionConfig;
+	points?: GlobePointsConfig;
+	labels?: GlobeLabelsConfig;
+	rings?: GlobeRingsConfig;
+	arcs?: GlobeArcsConfig;
+	animation?: GlobeAnimationConfig;
+	autoplay?: GlobeAutoPlayConfig;
+}
+
 export interface Label {
 	lat: number;
 	lng: number;
@@ -49,90 +166,26 @@ export interface Label {
 	orientation: "top" | "bottom" | "left" | "right";
 }
 
-export interface GlobeConfig {
-	// Data URLs
-	dataLocations?: string;
-	dataPorts?: string;
-
-	// Globe appearance
-	imgEarth?: string;
-	globeWidth?: number;
-	globeHeight?: number;
-	globeLeft?: number;
-	globeTop?: number;
-
-	// Hex Polygons (dot map visualization)
-	hexPolygonsData?: string; // URL or path to GeoJSON data
-	hexPolygonResolution?: number; // Resolution level (0-15, lower = fewer hexagons)
-	hexPolygonMargin?: number; // Margin between hexagons
-	hexPolygonColor?: string | ((properties: any) => string); // Hex color
-	hexPolygonAltitude?: number; // Altitude of hexagons
-	hexPolygonCurvatureResolution?: number; // Curvature resolution
-
-	// Polygon Outlines (country borders, etc.)
-	polygonsData?: string; // URL or path to GeoJSON data
-	polygonCapColor?: string | ((properties: any) => string); // Fill color (top cap)
-	polygonSideColor?: string | ((properties: any) => string); // Side color
-	polygonStrokeColor?: string | ((properties: any) => string); // Outline/stroke color
-	polygonAltitude?: number; // Altitude of polygons
-	polygonCapCurvatureResolution?: number; // Cap curvature resolution
-	polygonSideResolution?: number; // Side resolution
-	polygonsTransitionDuration?: number; // Transition duration in ms
-
-	// Vignette/Shadow
-	vignetteEnabled?: boolean;
-	vignetteFadeStart?: number; // 0-1, where fade begins (0 = bottom, 1 = top)
-	vignetteFadeEnd?: number; // 0-1, where fade ends
-	vignetteOpacity?: number; // 0-1, strength of the vignette
-
-	// Camera
-	povAltitude?: number;
-	povLatitude?: number;
-
-	// Points
-	pointAltitude?: number;
-	pointColor?: string;
-
-	// Labels
-	labelSize?: number;
-	labelDotRadius?: number;
-	labelTextColor?: string;
-	labelDotColor?: string;
-
-	// Rings
-	ringColorLocation?: string;
-	ringMaxRadius?: number;
-	ringPropagationSpeed?: number;
-	ringRepeatPeriod?: number;
-	ringAltitude?: number;
-
-	// Arcs
-	arcRelativeLength?: number;
-	arcFlightTime?: number;
-	arcNumRings?: number;
-	arcStroke?: number;
-	arcDashLength?: number;
-	arcDashGap?: number;
-	arcDashInitialGap?: number;
-	arcAltitude?: number | null;
-	arcAltitudeAutoscale?: number;
-	arcColor?: string;
-
-	// Animation
-	animationDuration?: number;
-
-	// Auto-play
-	autoPlay?: boolean;
-	autoPlayInterval?: number;
-	autoPlayPauseOnInteraction?: boolean;
-	autoPlayResumeDelay?: number;
-}
-
 export interface GlobeProps {
 	locations?: Location[];
 	ports?: Port[];
-	config?: Partial<GlobeConfig>;
+	config?: GlobeConfig;
 	class?: string;
+
+	// Direct prop overrides for convenience
+	data?: GlobeDataConfig;
+	globe?: GlobeAppearanceConfig;
+	atmosphere?: GlobeAtmosphereConfig;
+	hexPolygon?: GlobeHexPolygonConfig;
+	polygon?: GlobePolygonConfig;
+	vignette?: GlobeVignetteConfig;
+	position?: GlobePositionConfig;
+	points?: GlobePointsConfig;
+	labels?: GlobeLabelsConfig;
+	rings?: GlobeRingsConfig;
+	arcs?: GlobeArcsConfig;
+	animation?: GlobeAnimationConfig;
+	autoplay?: GlobeAutoPlayConfig;
 }
 
 // ============================================================================
@@ -140,117 +193,131 @@ export interface GlobeProps {
 // ============================================================================
 
 /**
- * Responsive value selector - returns appropriate value based on window width
- * Different from the global mq utility - this is for selecting static values
- * @internal
- */
-function selectResponsiveValue<T>(defaultValue: T, sm?: T, md?: T, lg?: T): T {
-	if (typeof window === "undefined") return defaultValue;
-
-	const breakpoints = [
-		{ query: "(min-width: 1024px)", value: lg },
-		{ query: "(min-width: 768px)", value: md },
-		{ query: "(min-width: 640px)", value: sm },
-	];
-
-	for (const { query, value } of breakpoints) {
-		if (value !== undefined && window.matchMedia(query).matches) {
-			return value;
-		}
-	}
-
-	return defaultValue;
-}
-
-/**
  * Creates default globe configuration with responsive values
- * NOTE: This function should NOT access reactive mq values to avoid infinite loops
- * Pass isSmallScreen as a parameter instead
+ * Uses mq.sm to determine if we're on a small screen
  */
 export function createDefaultConfig(
 	width: number = typeof window !== "undefined" ? window.innerWidth : 1920,
 	height: number = typeof window !== "undefined" ? window.innerHeight : 1080,
-	isSmallScreen: boolean = false,
 ): GlobeConfig {
-	// Responsive values based on screen size parameter (not reactive mq)
+	// Use mq.sm directly for responsive values (0-639px = small screen)
+	const isSmallScreen = mq.sm;
+
+	// Responsive values based on screen size
 	const globeWidth = width;
 	const globeHeight = height;
 	const globeLeft = 0;
-	const globeTop = isSmallScreen ? height * 1.72 : height * 0.9;
+	const globeTop = isSmallScreen ? height * 0.9 : height * 1.72;
 
 	// Camera settings
-	const povAltitude = isSmallScreen ? 0.2 : 0.8;
-	const povLatitude = isSmallScreen ? 21 : 36;
+	const povAltitude = isSmallScreen ? 0.8 : 0.2;
+	const povLatitude = isSmallScreen ? 36 : 21;
 
 	// Label settings
-	const labelSize = isSmallScreen ? 0.25 : 0.75;
-	const labelDotRadius = isSmallScreen ? 0.1 : 0.3;
+	const labelSize = isSmallScreen ? 0.75 : 0.25;
+	const labelDotRadius = isSmallScreen ? 0.3 : 0.1;
 
 	// Ring settings
-	const ringMaxRadius = isSmallScreen ? 2 : 4;
-	const ringPropagationSpeed = isSmallScreen ? 2 : 4;
+	const ringMaxRadius = isSmallScreen ? 4 : 2;
+	const ringPropagationSpeed = isSmallScreen ? 4 : 2;
 
 	// Arc settings
-	const arcStroke = isSmallScreen ? 0.05 : 0.2;
+	const arcStroke = isSmallScreen ? 0.2 : 0.05;
 	const arcAltitude = null;
-	const arcAltitudeAutoscale = isSmallScreen ? 0.2 : 0.3;
+	const arcAltitudeAutoscale = isSmallScreen ? 0.3 : 0.2;
+
+	// Atmosphere settings
+	const atmosphereAltitude = isSmallScreen ? 0 : 0.15;
 
 	return {
-		// Globe
-		imgEarth: "/images/skins/earth-blue-marble.jpg",
-		globeWidth,
-		globeHeight,
-		globeLeft,
-		globeTop,
-
-		// Vignette/Shadow (gradient from bottom to top)
-		vignetteEnabled: true,
-		vignetteFadeStart: 0.3, // Start fade at 30% from bottom
-		vignetteFadeEnd: 1.0, // Complete fade at top
-		vignetteOpacity: 0.7, // 70% opacity for the shadow
-
-		// Position
-		povAltitude,
-		povLatitude,
-
-		// Points
-		pointAltitude: 0.001,
-		pointColor: "rgba(0, 0, 255, 1)",
-
-		// Labels
-		labelSize,
-		labelDotRadius,
-		labelTextColor: "rgba(255, 255, 255, 1)",
-		labelDotColor: "#ffffff",
-
-		// Rings
-		ringColorLocation: "#ffffff",
-		ringMaxRadius,
-		ringPropagationSpeed,
-		ringRepeatPeriod: 1000,
-		ringAltitude: 0,
-
-		// Arcs
-		arcRelativeLength: 0.4,
-		arcFlightTime: 2000,
-		arcNumRings: 5,
-		arcStroke,
-		arcDashLength: 0.6,
-		arcDashGap: 2,
-		arcDashInitialGap: 1,
-		arcAltitude,
-		arcAltitudeAutoscale,
-		arcColor: "rgba(255, 255, 255, 1)",
-
-		// Animation
-		animationDuration: 1000,
-
-		// Auto-play
-		autoPlay: true,
-		autoPlayInterval: 7000,
-		autoPlayPauseOnInteraction: true,
-		autoPlayResumeDelay: 60000,
+		globe: {
+			image: "/images/skins/earth-blue-marble.jpg",
+			width: globeWidth,
+			height: globeHeight,
+			left: globeLeft,
+			top: globeTop,
+		},
+		atmosphere: {
+			show: true,
+			color: "lightskyblue",
+			altitude: atmosphereAltitude,
+		},
+		vignette: {
+			enabled: true,
+			fadeStart: 0.3,
+			fadeEnd: 1.0,
+			opacity: 0.7,
+		},
+		position: {
+			altitude: povAltitude,
+			latitude: povLatitude,
+		},
+		points: {
+			altitude: 0.001,
+			color: "rgba(0, 0, 255, 1)",
+		},
+		labels: {
+			size: labelSize,
+			dotRadius: labelDotRadius,
+			textColor: "rgba(255, 255, 255, 1)",
+			dotColor: "#ffffff",
+		},
+		rings: {
+			color: "#ffffff",
+			maxRadius: ringMaxRadius,
+			propagationSpeed: ringPropagationSpeed,
+			repeatPeriod: 1000,
+			altitude: 0,
+		},
+		arcs: {
+			relativeLength: 0.4,
+			flightTime: 2000,
+			numRings: 5,
+			stroke: arcStroke,
+			dashLength: 0.6,
+			dashGap: 2,
+			dashInitialGap: 1,
+			altitude: arcAltitude,
+			altitudeAutoscale: arcAltitudeAutoscale,
+			color: "rgba(255, 255, 255, 1)",
+		},
+		animation: {
+			duration: 1000,
+		},
+		autoplay: {
+			enabled: true,
+			interval: 7000,
+			pauseOnInteraction: true,
+			resumeDelay: 60000,
+		},
 	};
+}
+
+/**
+ * Deep merge multiple globe configurations.
+ * The last object in the array has the highest precedence.
+ */
+export function mergeConfigs(
+	...configs: (GlobeConfig | undefined)[]
+): GlobeConfig {
+	const result: GlobeConfig = {};
+	for (const config of configs) {
+		if (!config) continue;
+		result.data = { ...result.data, ...config.data };
+		result.globe = { ...result.globe, ...config.globe };
+		result.atmosphere = { ...result.atmosphere, ...config.atmosphere };
+		result.hexPolygon = { ...result.hexPolygon, ...config.hexPolygon };
+		result.polygon = { ...result.polygon, ...config.polygon };
+		result.vignette = { ...result.vignette, ...config.vignette };
+		result.position = { ...result.position, ...config.position };
+		result.points = { ...result.points, ...config.points };
+		result.labels = { ...result.labels, ...config.labels };
+		result.rings = { ...result.rings, ...config.rings };
+		result.arcs = { ...result.arcs, ...config.arcs };
+		result.animation = { ...result.animation, ...config.animation };
+		result.autoplay = { ...result.autoplay, ...config.autoplay };
+	}
+	return result;
 }
 
 /**
@@ -301,7 +368,7 @@ export function getRingColor(t: number): string {
  * Auto-play controller
  */
 export function createAutoPlay(
-	config: GlobeConfig,
+	config: GlobeAutoPlayConfig,
 	advanceCallback: () => void,
 	interactionElements: (HTMLElement | Document | null)[] = [],
 ) {
@@ -326,25 +393,25 @@ export function createAutoPlay(
 
 	const startTimer = () => {
 		clearTimer();
-		if (!userInteracted && config.autoPlay) {
-			timer = setInterval(advanceCallback, config.autoPlayInterval);
+		if (!userInteracted && config.enabled) {
+			timer = setInterval(advanceCallback, config.interval);
 		}
 	};
 
 	const pause = () => {
-		if (!config.autoPlayPauseOnInteraction) return;
+		if (!config.pauseOnInteraction) return;
 
 		userInteracted = true;
 		clearTimer();
 		clearPauseTimer();
 
-		if (config.autoPlayResumeDelay && config.autoPlayResumeDelay > 0) {
+		if (config.resumeDelay && config.resumeDelay > 0) {
 			pauseTimer = setTimeout(() => {
 				userInteracted = false;
-				if (config.autoPlay && active) {
+				if (config.enabled && active) {
 					startTimer();
 				}
-			}, config.autoPlayResumeDelay);
+			}, config.resumeDelay);
 		}
 	};
 
@@ -364,7 +431,7 @@ export function createAutoPlay(
 				clearTimer();
 				clearPauseTimer();
 			} else if (
-				document.visibilityState === "visible" && config.autoPlay && active
+				document.visibilityState === "visible" && config.enabled && active
 			) {
 				startTimer();
 			}
@@ -373,7 +440,7 @@ export function createAutoPlay(
 
 	// Return controller function
 	return (start = true) => {
-		if (!config.autoPlay) return;
+		if (!config.enabled) return;
 
 		clearTimer();
 		active = start;

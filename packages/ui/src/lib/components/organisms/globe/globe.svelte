@@ -1,33 +1,6 @@
 <!--
 @component Globe
 @tags organism, 3d, visualization, interactive, map
-
-A 3D interactive globe visualization component using globe.gl.
-Displays locations with markers, arcs, rings, and labels.
-
-@example
-```svelte
-<script>
-	import { Globe } from '@layerd/ui';
-
-	const locations = [
-		{ location: 'New York', lat: 40.7128, lng: -74.0060, phone: '555-0001', email: 'ny@example.com' }
-	];
-
-	const por					// LABELS - Directly on top of blue points (0.004)
-					.labelColor(() => cfg.labelTextColor || 'rgba(255, 255, 255, 1)')
-					.labelDotOrientation(() => 'top') // 'top' puts text below the centered white dot
-					.labelDotRadius(() => cfg.labelDotRadius || 0.25)
-					.labelSize(() => cfg.labelSize || 0.6)
-					.labelText('label')
-					.labelLabel((d: any) => `<div>${d.label}</div>`)
-					.labelAltitude(0.004)
-					.labelResolution(20)	{ port: 'Brooklyn Port', city: 'Brooklyn', location: 'New York', lat: 40.6526, lng: -74.0102 }
-	];
-</script>
-
-<Globe {locations} {ports} />
-```
 -->
 
 <script lang="ts">
@@ -45,14 +18,15 @@ Displays locations with markers, arcs, rings, and labels.
 		createDefaultConfig,
 		avoidLabelCollisions,
 		createAutoPlay,
-		markerSVG
+		markerSVG,
+		mergeConfigs
 	} from '@layerd/ui';
 
 	let {
 		locations = $bindable([]),
 		ports = $bindable([]),
-		config: userConfig = {},
 		class: className = '',
+		// All other props are collected into restProps to be merged into the config
 		...restProps
 	}: GlobeProps = $props();
 
@@ -74,16 +48,25 @@ Displays locations with markers, arcs, rings, and labels.
 		height: browser ? window.innerHeight : 1080
 	});
 
-	// Derived config with responsive values (pass mq.sm to avoid reactive loop)
-	const config = $derived(
-		createDefaultConfig(windowDimensions.width, windowDimensions.height, mq.sm)
+	// Create a reactive, merged configuration
+	const mergedConfig = $derived(
+		mergeConfigs(
+			createDefaultConfig(windowDimensions.width, windowDimensions.height),
+			restProps.config, // The main config object prop
+			restProps // Individual objects like `data`, `arcs`, etc.
+		)
 	);
-	const mergedConfig = $derived({ ...config, ...userConfig });
+
+	// Get locations and ports from data config or direct props
+	const effectiveLocations = $derived(mergedConfig.data?.locations ?? locations);
+	const effectivePorts = $derived(mergedConfig.data?.ports ?? ports);
 
 	// Current location and ports
-	const currentLocation = $derived(locations[currentIndex] || null);
+	const currentLocation = $derived(effectiveLocations[currentIndex] || null);
 	const currentPorts = $derived(
-		currentLocation ? ports.filter((port) => port.location === currentLocation.location) : []
+		currentLocation
+			? effectivePorts.filter((port) => port.location === currentLocation.location)
+			: []
 	);
 
 	// ============================================================================
@@ -91,7 +74,7 @@ Displays locations with markers, arcs, rings, and labels.
 	// ============================================================================
 
 	function changeLocation(newIndex: number) {
-		const total = locations.length;
+		const total = effectiveLocations.length;
 		if (total === 0) return;
 		currentIndex = (newIndex + total) % total;
 	}
@@ -107,8 +90,8 @@ Displays locations with markers, arcs, rings, and labels.
 		const globe = globeInstance;
 		// Use untrack to read config without creating dependency
 		const cfg = untrack(() => mergedConfig);
-		const FLIGHT_TIME = cfg.arcFlightTime || 2000;
-		const ARC_REL_LEN = cfg.arcRelativeLength || 0.4;
+		const FLIGHT_TIME = cfg.arcs?.flightTime ?? 2000;
+		const ARC_REL_LEN = cfg.arcs?.relativeLength ?? 0.4;
 
 		// Create and add the arc
 		const arc: Arc = {
@@ -116,7 +99,7 @@ Displays locations with markers, arcs, rings, and labels.
 			startLng,
 			endLat,
 			endLng,
-			color: cfg.arcColor || 'rgba(255, 255, 255, 1)'
+			color: cfg.arcs?.color ?? 'rgba(255, 255, 255, 1)'
 		};
 		// Use untrack to read current state without dependency
 		const currentArcs = untrack(() => activeArcs);
@@ -209,7 +192,7 @@ Displays locations with markers, arcs, rings, and labels.
 					() => {
 						globe.ringsData([]);
 					},
-					(cfg.arcFlightTime || 2000) * (cfg.arcRelativeLength || 0.4)
+					(cfg.arcs?.flightTime ?? 2000) * (cfg.arcs?.relativeLength ?? 0.4)
 				);
 			}, 100);
 
@@ -221,11 +204,11 @@ Displays locations with markers, arcs, rings, and labels.
 			// Update globe view
 			globe.pointOfView(
 				{
-					lat: parseFloat(String(location.lat)) - (cfg.povLatitude || 0),
+					lat: parseFloat(String(location.lat)) - (cfg.position?.latitude ?? 0),
 					lng: parseFloat(String(location.lng)),
-					altitude: cfg.povAltitude || 0.25
+					altitude: cfg.position?.altitude ?? 0.25
 				},
-				cfg.animationDuration || 1000
+				cfg.animation?.duration ?? 1000
 			);
 
 			return;
@@ -249,11 +232,11 @@ Displays locations with markers, arcs, rings, and labels.
 			// Update globe view
 			globe.pointOfView(
 				{
-					lat: parseFloat(String(location.lat)) - (cfg.povLatitude || 0),
+					lat: parseFloat(String(location.lat)) - (cfg.position?.latitude ?? 0),
 					lng: parseFloat(String(location.lng)),
-					altitude: cfg.povAltitude || 0.25
+					altitude: cfg.position?.altitude ?? 0.25
 				},
-				cfg.animationDuration || 1000
+				cfg.animation?.duration ?? 1000
 			);
 		}
 	});
@@ -281,8 +264,8 @@ Displays locations with markers, arcs, rings, and labels.
 					lat: parseFloat(String(port.lat)),
 					lng: parseFloat(String(port.lng)),
 					label: port.city || 'Unknown Port',
-					size: cfg.labelSize || 0.5,
-					dotRadius: cfg.labelDotRadius || 0.2,
+					size: cfg.labels?.size ?? 0.5,
+					dotRadius: cfg.labels?.dotRadius ?? 0.2,
 					orientation: 'bottom'
 				}));
 
@@ -290,7 +273,7 @@ Displays locations with markers, arcs, rings, and labels.
 				const adjustedLabels = avoidLabelCollisions(labelData);
 				globe.labelsData(adjustedLabels);
 			},
-			(cfg.arcFlightTime || 2000) + 500
+			(cfg.arcs?.flightTime ?? 2000) + 500
 		);
 	});
 
@@ -319,183 +302,188 @@ Displays locations with markers, arcs, rings, and labels.
 	});
 
 	// ============================================================================
-	// Globe Initialization (Attachment Factory for {@attach})
+	// Globe Initialization (Svelte 5 $effect - HMR-friendly)
 	// ============================================================================
 
-	/**
-	 * Creates an attachment for initializing the Globe.gl instance
-	 * @returns {import('svelte/attachments').Attachment}
-	 */
-	function createGlobeAttachment() {
-		return (container: HTMLDivElement) => {
-			if (!browser || !container || locations.length === 0) return;
+	// Initialize globe when container is ready
+	$effect(() => {
+		if (!browser || !globeContainer || effectiveLocations.length === 0) return;
 
-			let globe: GlobeInstance | null = null;
+		let globe: GlobeInstance | null = null;
+		let isDestroyed = false;
 
-			// Dynamically import and initialize Globe.gl only in browser
-			(async () => {
-				try {
-					const GlobeGL = await import('globe.gl');
-					const Globe = GlobeGL.default;
+		// Dynamically import and initialize Globe.gl only in browser
+		(async () => {
+			try {
+				const GlobeGL = await import('globe.gl');
+				const Globe = GlobeGL.default;
 
-					const cfg = mergedConfig;
-					const altitude = cfg.povAltitude || 0.5;
+				// Check if component was destroyed during async import
+				if (isDestroyed) return;
 
-					globe = new Globe(container)
-						.backgroundColor('rgba(0,0,0,0)')
-						.globeOffset([cfg.globeLeft || 0, cfg.globeTop || 0])
-						.pointOfView({ lat: 0, lng: 0, altitude })
-						.showAtmosphere(true); // Explicitly disable atmosphere
+				const cfg = untrack(() => mergedConfig);
+				const altitude = cfg.position?.altitude ?? 0.5;
 
-					// Set a single, moderately bright ambient light to make rings/labels visible
-					const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-					globe.lights([ambientLight]);
-					console.log('💡 Set a moderate ambient light for effects.');
+				globe = new Globe(globeContainer)
+					.backgroundColor('rgba(0,0,0,0)')
+					.globeOffset([cfg.globe?.left ?? 0, cfg.globe?.top ?? 0])
+					.pointOfView({ lat: 0, lng: 0, altitude })
+					.showAtmosphere(cfg.atmosphere?.show ?? true)
+					.atmosphereColor(cfg.atmosphere?.color ?? 'lightskyblue')
+					.atmosphereAltitude(cfg.atmosphere?.altitude ?? 0.15);
 
-					// Disable bloom/glow post-processing effect
-					const composer = globe.postProcessingComposer();
-					if (composer && composer.passes) {
-						const bloomPass = composer.passes.find(
-							(pass: any) => pass.name === 'UnrealBloomPass' || pass.name === 'BloomPass'
-						);
-						if (bloomPass) {
-							bloomPass.enabled = false;
-							console.log('✅ Disabled bloom pass.');
-						}
+				// Set a single, moderately bright ambient light to make rings/labels visible
+				const ambientLight = new THREE.AmbientLight(0xffffff, 2);
+				globe.lights([ambientLight]);
+				console.log('💡 Set a moderate ambient light for effects.');
+
+				// Disable bloom/glow post-processing effect
+				const composer = globe.postProcessingComposer();
+				if (composer && composer.passes) {
+					const bloomPass = composer.passes.find(
+						(pass: any) => pass.name === 'UnrealBloomPass' || pass.name === 'BloomPass'
+					);
+					if (bloomPass) {
+						bloomPass.enabled = false;
+						console.log('✅ Disabled bloom pass.');
 					}
+				}
 
-					// COUNTRY OUTLINES
-					if (cfg.polygonsData) {
-						fetch(cfg.polygonsData)
-							.then((res) => res.json())
-							.then((data) => {
-								globe!
-									.polygonsData(data.features || data)
-									.polygonCapMaterial(
-										new THREE.MeshBasicMaterial({
-											color: '#323035',
-											transparent: true
-										})
-									)
-									.polygonSideMaterial(
-										new THREE.MeshBasicMaterial({
-											color: '#323035',
-											transparent: true
-										})
-									)
-									.polygonStrokeColor(() => cfg.polygonStrokeColor ?? 'rgba(255, 255, 255, 1)')
-									.polygonAltitude(cfg.polygonAltitude ?? 0.005)
-									.polygonsTransitionDuration(cfg.polygonsTransitionDuration ?? 0);
-							})
-							.catch((err) => console.error('Failed to load polygon data:', err));
-					}
-
-					globe
-						// RINGS - Above countries (0.002)
-						.ringLat((d: any) => d.lat)
-						.ringLng((d: any) => d.lng)
-						.ringAltitude(cfg.ringAltitude || 0.002)
-						.ringColor(() => (t: number) => `rgba(255,255,255,${1 - t})`)
-						.ringMaxRadius(cfg.ringMaxRadius || 4)
-						.ringPropagationSpeed(cfg.ringPropagationSpeed || 4)
-						.ringResolution(64)
-						.ringsData([])
-						.ringRepeatPeriod(
-							((cfg.arcFlightTime || 2000) * (cfg.arcRelativeLength || 0.4)) /
-								(cfg.arcNumRings || 5)
-						)
-						// ARCS - Above rings
-						.arcColor('color')
-						.arcStroke(cfg.arcStroke || 0.2)
-						.arcDashLength(cfg.arcDashLength || 0.6)
-						.arcDashGap(cfg.arcDashGap || 2)
-						.arcDashInitialGap(cfg.arcDashInitialGap || 1)
-						.arcDashAnimateTime(cfg.arcFlightTime || 2000)
-						.arcAltitude(cfg.arcAltitude ?? null)
-						.arcAltitudeAutoScale(cfg.arcAltitudeAutoscale || 0.3)
-						.arcsTransitionDuration(0)
-						.arcLabel((d: any) => `${d.port || 'Port'} - ${d.city || 'Unknown'}`)
-						// POINTS - Above rings (0.003) - Solid blue dots (base layer)
-						.pointsData(locations)
-						.pointAltitude(() => cfg.pointAltitude || 0.003)
-						.pointColor(() => cfg.pointColor || '#0066ff')
-						.pointRadius(0.25)
-						// LABELS - Directly on top of blue points (0.004)
-						.labelColor(() => cfg.labelTextColor || 'rgba(255, 255, 255, 1)')
-						.labelDotOrientation((d: any) => d.orientation)
-						.labelDotRadius(() => cfg.labelDotRadius || 0.25)
-						.labelSize(() => cfg.labelSize || 1)
-						.labelText('label')
-						.labelLabel((d: any) => `<div>${d.label}</div>`)
-						.labelAltitude(0.001)
-						.labelResolution(120)
-						// HTML - Floating above everything (0.006)
-						.htmlElementsData(locations)
-						.htmlElement((d: any) => {
-							const el = document.createElement('div');
-							el.innerHTML = markerSVG;
-							el.dataset.lat = String(d.lat);
-							el.dataset.lng = String(d.lng);
-
-							el.style.pointerEvents = 'auto';
-							el.onclick = () => {
-								const idx = locations.findIndex(
-									(loc) =>
-										parseFloat(String(loc.lat)) === parseFloat(String(d.lat)) &&
-										parseFloat(String(loc.lng)) === parseFloat(String(d.lng))
-								);
-								if (idx >= 0) {
-									changeLocation(idx);
-								}
-							};
-							return el;
+				// COUNTRY OUTLINES
+				if (cfg.data?.polygons) {
+					fetch(cfg.data.polygons)
+						.then((res) => res.json())
+						.then((data) => {
+							if (isDestroyed || !globe) return;
+							globe
+								.polygonsData(data.features || data)
+								.polygonCapMaterial(
+									new THREE.MeshBasicMaterial({
+										color: '#323035',
+										transparent: true
+									})
+								)
+								.polygonSideMaterial(
+									new THREE.MeshBasicMaterial({
+										color: '#323035',
+										transparent: true
+									})
+								)
+								.polygonStrokeColor(() => cfg.polygon?.strokeColor ?? 'rgba(255, 255, 255, 1)')
+								.polygonAltitude(cfg.polygon?.altitude ?? 0.005)
+								.polygonsTransitionDuration(cfg.polygon?.transitionDuration ?? 0);
 						})
-						.htmlLat((d: any) => d.lat)
-						.htmlLng((d: any) => d.lng)
-						.htmlAltitude(0.01)
-						// FIRST LOAD
-						.onGlobeReady(() => {
-							const scene = globe!.scene();
+						.catch((err) => console.error('Failed to load polygon data:', err));
+				}
 
-							// Make ONLY the globe sphere a solid, unlit black
-							scene.traverse((object: any) => {
-								if (object.type === 'Mesh' && object.geometry?.type === 'SphereGeometry') {
-									object.material = new THREE.MeshBasicMaterial({
-										color: 0x000000 // Solid black
-									});
-									console.log('✅ Converted globe sphere to solid black MeshBasicMaterial.');
-								}
-							});
+				globe
+					// RINGS - Above countries (0.002)
+					.ringLat((d: any) => d.lat)
+					.ringLng((d: any) => d.lng)
+					.ringAltitude(cfg.rings?.altitude ?? 0.002)
+					.ringColor(() => (t: number) => `rgba(255,255,255,${1 - t})`)
+					.ringMaxRadius(cfg.rings?.maxRadius ?? 4)
+					.ringPropagationSpeed(cfg.rings?.propagationSpeed ?? 4)
+					.ringResolution(64)
+					.ringsData([])
+					.ringRepeatPeriod(
+						((cfg.arcs?.flightTime ?? 2000) * (cfg.arcs?.relativeLength ?? 0.4)) /
+							(cfg.arcs?.numRings ?? 5)
+					)
+					// ARCS - Above rings
+					.arcColor('color')
+					.arcStroke(cfg.arcs?.stroke ?? 0.2)
+					.arcDashLength(cfg.arcs?.dashLength ?? 0.6)
+					.arcDashGap(cfg.arcs?.dashGap ?? 2)
+					.arcDashInitialGap(cfg.arcs?.dashInitialGap ?? 1)
+					.arcDashAnimateTime(cfg.arcs?.flightTime ?? 2000)
+					.arcAltitude(cfg.arcs?.altitude ?? null)
+					.arcAltitudeAutoScale(cfg.arcs?.altitudeAutoscale ?? 0.3)
+					.arcsTransitionDuration(0)
+					.arcLabel((d: any) => `${d.port || 'Port'} - ${d.city || 'Unknown'}`)
+					// POINTS - Above rings (0.003) - Solid blue dots (base layer)
+					.pointsData(effectiveLocations)
+					.pointAltitude(() => cfg.points?.altitude ?? 0.003)
+					.pointColor(() => cfg.points?.color ?? '#0066ff')
+					.pointRadius(0.25)
+					// LABELS - Directly on top of blue points (0.004)
+					.labelColor(() => cfg.labels?.textColor ?? 'rgba(255, 255, 255, 1)')
+					.labelDotOrientation((d: any) => d.orientation)
+					.labelDotRadius(() => cfg.labels?.dotRadius ?? 0.25)
+					.labelSize(() => cfg.labels?.size ?? 1)
+					.labelText('label')
+					.labelLabel((d: any) => `<div>${d.label}</div>`)
+					.labelAltitude(0.001)
+					.labelResolution(120)
+					// HTML - Floating above everything (0.006)
+					.htmlElementsData(effectiveLocations)
+					.htmlElement((d: any) => {
+						const el = document.createElement('div');
+						el.innerHTML = markerSVG;
+						el.dataset.lat = String(d.lat);
+						el.dataset.lng = String(d.lng);
 
-							if (locations.length > 0) {
-								const firstLocation = locations[0];
-								globe!.ringsData([
-									{
-										lat: parseFloat(String(firstLocation.lat)),
-										lng: parseFloat(String(firstLocation.lng))
-									}
-								]);
-								currentIndex = 0;
+						el.style.pointerEvents = 'auto';
+						el.onclick = () => {
+							const idx = effectiveLocations.findIndex(
+								(loc) =>
+									parseFloat(String(loc.lat)) === parseFloat(String(d.lat)) &&
+									parseFloat(String(loc.lng)) === parseFloat(String(d.lng))
+							);
+							if (idx >= 0) {
+								changeLocation(idx);
+							}
+						};
+						return el;
+					})
+					.htmlLat((d: any) => d.lat)
+					.htmlLng((d: any) => d.lng)
+					.htmlAltitude(0.01)
+					// FIRST LOAD
+					.onGlobeReady(() => {
+						if (isDestroyed) return;
 
-								// Setup auto-play
-								if (cfg.autoPlay && container) {
-									const interactionElements = [container, document];
-									createAutoPlay(
-										cfg,
-										() => changeLocation(currentIndex + 1),
-										interactionElements
-									)(true);
-								}
+						const scene = globe!.scene();
+
+						// Make ONLY the globe sphere a solid, unlit black
+						scene.traverse((object: any) => {
+							if (object.type === 'Mesh' && object.geometry?.type === 'SphereGeometry') {
+								object.material = new THREE.MeshBasicMaterial({
+									color: 0x000000 // Solid black
+								});
+								console.log('✅ Converted globe sphere to solid black MeshBasicMaterial.');
 							}
 						});
-					globe.controls().enableZoom = false;
 
-					globeInstance = globe;
-				} catch (error) {
-					console.error('Failed to initialize Globe.gl:', error);
-					// Display user-friendly error message
-					if (container) {
-						container.innerHTML = `
+						if (effectiveLocations.length > 0) {
+							const firstLocation = effectiveLocations[0];
+							globe!.ringsData([
+								{
+									lat: parseFloat(String(firstLocation.lat)),
+									lng: parseFloat(String(firstLocation.lng))
+								}
+							]);
+							currentIndex = 0;
+
+							// Setup auto-play
+							if (cfg.autoplay?.enabled && globeContainer) {
+								const interactionElements = [globeContainer, document];
+								createAutoPlay(
+									cfg.autoplay,
+									() => changeLocation(currentIndex + 1),
+									interactionElements
+								)(true);
+							}
+						}
+					});
+
+				globe.controls().enableZoom = false;
+				globeInstance = globe;
+			} catch (error) {
+				console.error('Failed to initialize Globe.gl:', error);
+				// Display user-friendly error message
+				if (globeContainer && !isDestroyed) {
+					globeContainer.innerHTML = `
 						<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: white; text-align: center; padding: 20px;">
 							<div>
 								<h3 style="margin-bottom: 10px;">Unable to load 3D Globe</h3>
@@ -508,16 +496,19 @@ Displays locations with markers, arcs, rings, and labels.
 							</div>
 						</div>
 					`;
-					}
 				}
-			})();
+			}
+		})();
 
-			// Cleanup function
-			return () => {
-				globeInstance = null;
-			};
+		// Cleanup function that runs when effect re-runs or component unmounts
+		return () => {
+			isDestroyed = true;
+			if (globe) {
+				globe._destructor();
+			}
+			globeInstance = null;
 		};
-	}
+	});
 
 	// Window resize handler
 	$effect(() => {
@@ -535,8 +526,8 @@ Displays locations with markers, arcs, rings, and labels.
 				globeInstance
 					.width(window.innerWidth)
 					.height(window.innerHeight)
-					.globeOffset([cfg.globeLeft || 0, cfg.globeTop || 0])
-					.pointOfView({ lat: 0, lng: 0, altitude: cfg.povAltitude || 0.5 }, 1000);
+					.globeOffset([cfg.globe?.left ?? 0, cfg.globe?.top ?? 0])
+					.pointOfView({ lat: 0, lng: 0, altitude: cfg.position?.altitude ?? 0.5 }, 1000);
 			}
 		};
 
@@ -555,9 +546,7 @@ Displays locations with markers, arcs, rings, and labels.
 
 <div
 	bind:this={globeContainer}
-	{@attach createGlobeAttachment()}
 	class="globe-container {className}"
-	{...restProps}
 ></div>
 
 <style>
