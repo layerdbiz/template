@@ -14,8 +14,15 @@ Displays locations with markers, arcs, rings, and labels.
 		{ location: 'New York', lat: 40.7128, lng: -74.0060, phone: '555-0001', email: 'ny@example.com' }
 	];
 
-	const ports = [
-		{ port: 'Brooklyn Port', city: 'Brooklyn', location: 'New York', lat: 40.6526, lng: -74.0102 }
+	const por					// LABELS - Directly on top of blue points (0.004)
+					.labelColor(() => cfg.labelTextColor || 'rgba(255, 255, 255, 1)')
+					.labelDotOrientation(() => 'top') // 'top' puts text below the centered white dot
+					.labelDotRadius(() => cfg.labelDotRadius || 0.25)
+					.labelSize(() => cfg.labelSize || 0.6)
+					.labelText('label')
+					.labelLabel((d: any) => `<div>${d.label}</div>`)
+					.labelAltitude(0.004)
+					.labelResolution(20)	{ port: 'Brooklyn Port', city: 'Brooklyn', location: 'New York', lat: 40.6526, lng: -74.0102 }
 	];
 </script>
 
@@ -39,7 +46,7 @@ Displays locations with markers, arcs, rings, and labels.
 		avoidLabelCollisions,
 		createAutoPlay,
 		markerSVG
-	} from './globe.svelte.ts';
+	} from '@layerd/ui';
 
 	let {
 		locations = $bindable([]),
@@ -216,7 +223,7 @@ Displays locations with markers, arcs, rings, and labels.
 				{
 					lat: parseFloat(String(location.lat)) - (cfg.povLatitude || 0),
 					lng: parseFloat(String(location.lng)),
-					altitude: cfg.povAltitude || 0.5
+					altitude: cfg.povAltitude || 0.25
 				},
 				cfg.animationDuration || 1000
 			);
@@ -244,7 +251,7 @@ Displays locations with markers, arcs, rings, and labels.
 				{
 					lat: parseFloat(String(location.lat)) - (cfg.povLatitude || 0),
 					lng: parseFloat(String(location.lng)),
-					altitude: cfg.povAltitude || 0.5
+					altitude: cfg.povAltitude || 0.25
 				},
 				cfg.animationDuration || 1000
 			);
@@ -327,237 +334,182 @@ Displays locations with markers, arcs, rings, and labels.
 
 			// Dynamically import and initialize Globe.gl only in browser
 			(async () => {
-				const GlobeGL = await import('globe.gl');
-				const Globe = GlobeGL.default;
+				try {
+					const GlobeGL = await import('globe.gl');
+					const Globe = GlobeGL.default;
 
-				const cfg = mergedConfig;
-				const altitude = cfg.povAltitude || 0.5;
+					const cfg = mergedConfig;
+					const altitude = cfg.povAltitude || 0.5;
 
-				globe = new Globe(container)
-					// GLOBE
-					.globeImageUrl(cfg.imgEarth || '/images/skins/earth-blue-marble.jpg')
-					.backgroundColor('rgba(0,0,0,0)')
-					.globeOffset([cfg.globeLeft || 0, cfg.globeTop || 0])
-					.pointOfView({ lat: 0, lng: 0, altitude })
-					// ATMOSPHERE
-					.showAtmosphere(true)
-					.atmosphereColor('#00bcff')
-					.atmosphereAltitude(mq.sm ? 0.1 : 0.2)
-					// RINGS
-					.ringLat((d: any) => d.lat)
-					.ringLng((d: any) => d.lng)
-					.ringAltitude(cfg.ringAltitude || 0)
-					.ringColor(() => (t: number) => `rgba(255,255,255,${1 - t})`)
-					.ringMaxRadius(cfg.ringMaxRadius || 4)
-					.ringPropagationSpeed(cfg.ringPropagationSpeed || 4)
-					.ringResolution(64)
-					.ringsData([])
-					.ringRepeatPeriod(
-						((cfg.arcFlightTime || 2000) * (cfg.arcRelativeLength || 0.4)) / (cfg.arcNumRings || 5)
-					)
-					// ARCS
-					.arcColor('color')
-					.arcStroke(cfg.arcStroke || 0.2)
-					.arcDashLength(cfg.arcDashLength || 0.6)
-					.arcDashGap(cfg.arcDashGap || 2)
-					.arcDashInitialGap(cfg.arcDashInitialGap || 1)
-					.arcDashAnimateTime(cfg.arcFlightTime || 2000)
-					.arcAltitude(cfg.arcAltitude ?? null)
-					.arcAltitudeAutoScale(cfg.arcAltitudeAutoscale || 0.3)
-					.arcsTransitionDuration(0)
-					.arcLabel((d: any) => `${d.port || 'Port'} - ${d.city || 'Unknown'}`)
-					// POINTS
-					.pointsData(locations)
-					.pointAltitude(() => cfg.pointAltitude || 0.001)
-					.pointColor(() => cfg.pointColor || 'rgba(0, 0, 255, 1)')
-					// HTML
-					.htmlElementsData(locations)
-					.htmlElement((d: any) => {
-						const el = document.createElement('div');
-						el.innerHTML = markerSVG;
-						el.dataset.lat = String(d.lat);
-						el.dataset.lng = String(d.lng);
+					globe = new Globe(container)
+						.backgroundColor('rgba(0,0,0,0)')
+						.globeOffset([cfg.globeLeft || 0, cfg.globeTop || 0])
+						.pointOfView({ lat: 0, lng: 0, altitude })
+						.showAtmosphere(true); // Explicitly disable atmosphere
 
-						el.style.pointerEvents = 'auto';
-						el.onclick = () => {
-							const idx = locations.findIndex(
-								(loc) =>
-									parseFloat(String(loc.lat)) === parseFloat(String(d.lat)) &&
-									parseFloat(String(loc.lng)) === parseFloat(String(d.lng))
-							);
-							if (idx >= 0) {
-								changeLocation(idx);
-							}
-						};
-						return el;
-					})
-					.htmlLat((d: any) => d.lat)
-					.htmlLng((d: any) => d.lng)
-					.htmlAltitude(0.005)
-					// LABELS
-					.labelColor(() => cfg.labelTextColor || 'rgba(255, 255, 255, 1)')
-					.labelDotOrientation((d: any) => d.orientation)
-					.labelDotRadius(() => cfg.labelDotRadius || 0.2)
-					.labelSize(() => cfg.labelSize || 0.5)
-					.labelText('label')
-					.labelLabel((d: any) => `<div>${d.label}</div>`)
-					.labelAltitude(0.0011)
-					.labelResolution(20)
-					// FIRST LOAD
-					.onGlobeReady(() => {
-						if (locations.length > 0) {
-							const firstLocation = locations[0];
-							globe!.ringsData([
-								{
-									lat: parseFloat(String(firstLocation.lat)),
-									lng: parseFloat(String(firstLocation.lng))
-								}
-							]);
-							currentIndex = 0;
+					// Set a single, moderately bright ambient light to make rings/labels visible
+					const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+					globe.lights([ambientLight]);
+					console.log('💡 Set a moderate ambient light for effects.');
 
-							// Setup auto-play
-							if (cfg.autoPlay && container) {
-								const interactionElements = [container, document];
-								createAutoPlay(
-									cfg,
-									() => changeLocation(currentIndex + 1),
-									interactionElements
-								)(true);
-							}
+					// Disable bloom/glow post-processing effect
+					const composer = globe.postProcessingComposer();
+					if (composer && composer.passes) {
+						const bloomPass = composer.passes.find(
+							(pass: any) => pass.name === 'UnrealBloomPass' || pass.name === 'BloomPass'
+						);
+						if (bloomPass) {
+							bloomPass.enabled = false;
+							console.log('✅ Disabled bloom pass.');
 						}
+					}
 
-						// Apply vignette/gradient shadow to the globe using custom shader
-						if (cfg.vignetteEnabled) {
+					// COUNTRY OUTLINES
+					if (cfg.polygonsData) {
+						fetch(cfg.polygonsData)
+							.then((res) => res.json())
+							.then((data) => {
+								globe!
+									.polygonsData(data.features || data)
+									.polygonCapMaterial(
+										new THREE.MeshBasicMaterial({
+											color: '#323035',
+											transparent: true
+										})
+									)
+									.polygonSideMaterial(
+										new THREE.MeshBasicMaterial({
+											color: '#323035',
+											transparent: true
+										})
+									)
+									.polygonStrokeColor(() => cfg.polygonStrokeColor ?? 'rgba(255, 255, 255, 1)')
+									.polygonAltitude(cfg.polygonAltitude ?? 0.005)
+									.polygonsTransitionDuration(cfg.polygonsTransitionDuration ?? 0);
+							})
+							.catch((err) => console.error('Failed to load polygon data:', err));
+					}
+
+					globe
+						// RINGS - Above countries (0.002)
+						.ringLat((d: any) => d.lat)
+						.ringLng((d: any) => d.lng)
+						.ringAltitude(cfg.ringAltitude || 0.002)
+						.ringColor(() => (t: number) => `rgba(255,255,255,${1 - t})`)
+						.ringMaxRadius(cfg.ringMaxRadius || 4)
+						.ringPropagationSpeed(cfg.ringPropagationSpeed || 4)
+						.ringResolution(64)
+						.ringsData([])
+						.ringRepeatPeriod(
+							((cfg.arcFlightTime || 2000) * (cfg.arcRelativeLength || 0.4)) /
+								(cfg.arcNumRings || 5)
+						)
+						// ARCS - Above rings
+						.arcColor('color')
+						.arcStroke(cfg.arcStroke || 0.2)
+						.arcDashLength(cfg.arcDashLength || 0.6)
+						.arcDashGap(cfg.arcDashGap || 2)
+						.arcDashInitialGap(cfg.arcDashInitialGap || 1)
+						.arcDashAnimateTime(cfg.arcFlightTime || 2000)
+						.arcAltitude(cfg.arcAltitude ?? null)
+						.arcAltitudeAutoScale(cfg.arcAltitudeAutoscale || 0.3)
+						.arcsTransitionDuration(0)
+						.arcLabel((d: any) => `${d.port || 'Port'} - ${d.city || 'Unknown'}`)
+						// POINTS - Above rings (0.003) - Solid blue dots (base layer)
+						.pointsData(locations)
+						.pointAltitude(() => cfg.pointAltitude || 0.003)
+						.pointColor(() => cfg.pointColor || '#0066ff')
+						.pointRadius(0.25)
+						// LABELS - Directly on top of blue points (0.004)
+						.labelColor(() => cfg.labelTextColor || 'rgba(255, 255, 255, 1)')
+						.labelDotOrientation((d: any) => d.orientation)
+						.labelDotRadius(() => cfg.labelDotRadius || 0.25)
+						.labelSize(() => cfg.labelSize || 1)
+						.labelText('label')
+						.labelLabel((d: any) => `<div>${d.label}</div>`)
+						.labelAltitude(0.001)
+						.labelResolution(120)
+						// HTML - Floating above everything (0.006)
+						.htmlElementsData(locations)
+						.htmlElement((d: any) => {
+							const el = document.createElement('div');
+							el.innerHTML = markerSVG;
+							el.dataset.lat = String(d.lat);
+							el.dataset.lng = String(d.lng);
+
+							el.style.pointerEvents = 'auto';
+							el.onclick = () => {
+								const idx = locations.findIndex(
+									(loc) =>
+										parseFloat(String(loc.lat)) === parseFloat(String(d.lat)) &&
+										parseFloat(String(loc.lng)) === parseFloat(String(d.lng))
+								);
+								if (idx >= 0) {
+									changeLocation(idx);
+								}
+							};
+							return el;
+						})
+						.htmlLat((d: any) => d.lat)
+						.htmlLng((d: any) => d.lng)
+						.htmlAltitude(0.01)
+						// FIRST LOAD
+						.onGlobeReady(() => {
 							const scene = globe!.scene();
 
-							// Find the globe mesh in the scene
-							let globeMesh: THREE.Mesh<THREE.SphereGeometry> | undefined;
-							scene.traverse((object: THREE.Object3D) => {
-								if (
-									!globeMesh &&
-									object instanceof THREE.Mesh &&
-									object.geometry instanceof THREE.SphereGeometry
-								) {
-									globeMesh = object;
+							// Make ONLY the globe sphere a solid, unlit black
+							scene.traverse((object: any) => {
+								if (object.type === 'Mesh' && object.geometry?.type === 'SphereGeometry') {
+									object.material = new THREE.MeshBasicMaterial({
+										color: 0x000000 // Solid black
+									});
+									console.log('✅ Converted globe sphere to solid black MeshBasicMaterial.');
 								}
 							});
 
-							if (globeMesh) {
-								const mesh = globeMesh;
-								const material = mesh.material;
+							if (locations.length > 0) {
+								const firstLocation = locations[0];
+								globe!.ringsData([
+									{
+										lat: parseFloat(String(firstLocation.lat)),
+										lng: parseFloat(String(firstLocation.lng))
+									}
+								]);
+								currentIndex = 0;
 
-								// Only apply shader if it's a MeshPhongMaterial (globe.gl default)
-								if (material instanceof THREE.MeshPhongMaterial) {
-									// Create custom shader with improved gradient
-									const vignetteShaderMaterial = new THREE.ShaderMaterial({
-										uniforms: {
-											...THREE.UniformsUtils.clone(THREE.ShaderLib.phong.uniforms),
-											map: { value: material.map },
-											bumpMap: { value: material.bumpMap || null },
-											bumpScale: { value: material.bumpScale || 1 },
-											fadeStart: { value: cfg.vignetteFadeStart || 0.3 },
-											fadeEnd: { value: cfg.vignetteFadeEnd || 1.0 },
-											vignetteOpacity: { value: cfg.vignetteOpacity || 0.7 }
-										},
-										vertexShader: `
-											#include <common>
-											#include <uv_pars_vertex>
-											#include <displacementmap_pars_vertex>
-											#include <fog_pars_vertex>
-											#include <lights_pars_begin>
-											#include <logdepthbuf_pars_vertex>
-											
-											varying vec3 vPosition;
-											varying vec3 vNormal;
-											varying vec3 vViewPosition;
-											
-											void main() {
-												#include <uv_vertex>
-												#include <beginnormal_vertex>
-												#include <defaultnormal_vertex>
-												#include <begin_vertex>
-												
-												vPosition = position;
-												vNormal = normalize(normalMatrix * normal);
-												
-												vec4 mvPosition = modelViewMatrix * vec4(transformed, 1.0);
-												vViewPosition = -mvPosition.xyz;
-												gl_Position = projectionMatrix * mvPosition;
-												
-												#include <logdepthbuf_vertex>
-												#include <fog_vertex>
-											}
-										`,
-										fragmentShader: `
-											uniform sampler2D map;
-											uniform sampler2D bumpMap;
-											uniform float bumpScale;
-											uniform float fadeStart;
-											uniform float fadeEnd;
-											uniform float vignetteOpacity;
-											
-											varying vec3 vPosition;
-											varying vec3 vNormal;
-											varying vec3 vViewPosition;
-											varying vec2 vUv;
-											
-											#include <common>
-											#include <lights_pars_begin>
-											#include <fog_pars_fragment>
-											
-											void main() {
-												// Sample the original globe texture
-												vec4 texColor = texture2D(map, vUv);
-												
-												// Calculate lighting (Phong illumination)
-												vec3 normal = normalize(vNormal);
-												vec3 viewDir = normalize(vViewPosition);
-												
-												// Ambient light
-												vec3 ambient = vec3(0.3);
-												
-												// Directional light
-												vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
-												float diff = max(dot(normal, lightDir), 0.0);
-												vec3 diffuse = diff * vec3(1.0);
-												
-												// Apply lighting to texture
-												vec3 lighting = ambient + diffuse;
-												vec3 litColor = texColor.rgb * lighting;
-												
-												// Calculate vertical gradient (bottom to top)
-												// Normalize Y position: -1 to 1 becomes 0 to 1
-												float normalizedY = (vPosition.y + 1.0) / 2.0;
-												
-												// Smooth gradient from fadeStart to fadeEnd
-												float gradient = smoothstep(fadeStart, fadeEnd, normalizedY);
-												
-												// Invert gradient: 1 at bottom (dark), 0 at top (light)
-												float vignetteAlpha = (1.0 - gradient) * vignetteOpacity;
-												
-												// Blend: darken bottom, preserve top
-												vec3 finalColor = mix(vec3(0.0), litColor, 1.0 - vignetteAlpha);
-												
-												gl_FragColor = vec4(finalColor, 1.0);
-												
-												#include <fog_fragment>
-											}
-										`,
-										lights: true,
-										fog: true,
-										side: THREE.FrontSide
-									});
-
-									// Apply the custom shader material
-									mesh.material = vignetteShaderMaterial;
-									mesh.material.needsUpdate = true;
+								// Setup auto-play
+								if (cfg.autoPlay && container) {
+									const interactionElements = [container, document];
+									createAutoPlay(
+										cfg,
+										() => changeLocation(currentIndex + 1),
+										interactionElements
+									)(true);
 								}
 							}
-						}
-					});
-				globe.controls().enableZoom = false;
+						});
+					globe.controls().enableZoom = false;
 
-				globeInstance = globe;
+					globeInstance = globe;
+				} catch (error) {
+					console.error('Failed to initialize Globe.gl:', error);
+					// Display user-friendly error message
+					if (container) {
+						container.innerHTML = `
+						<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: white; text-align: center; padding: 20px;">
+							<div>
+								<h3 style="margin-bottom: 10px;">Unable to load 3D Globe</h3>
+								<p style="opacity: 0.7; font-size: 14px;">WebGL context error. Please try:</p>
+								<ul style="list-style: none; padding: 0; opacity: 0.7; font-size: 14px;">
+									<li>• Refresh the page (Ctrl+Shift+R)</li>
+									<li>• Close other browser tabs</li>
+									<li>• Restart your browser</li>
+								</ul>
+							</div>
+						</div>
+					`;
+					}
+				}
 			})();
 
 			// Cleanup function

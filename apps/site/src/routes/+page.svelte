@@ -194,10 +194,20 @@
 			{locations}
 			{ports}
 			config={{
-				vignetteEnabled: true,
-				vignetteFadeStart: 0.2, // Start fade at 20% from bottom
-				vignetteFadeEnd: 0.9, // Complete fade at 90%
-				vignetteOpacity: 0.8 // 80% opacity for stronger shadow
+				// imgEarth: '/images/skins/earth-dark.jpg', // Commented out - using polygons instead
+
+				// Country Outlines (polygon borders)
+				polygonsData: '/data/countries.geojson',
+				polygonCapColor: 'rgba(255, 255, 255, 1)', // Transparent fill
+				polygonSideColor: 'rgba(255, 255, 255, 1)', // Transparent sides
+				polygonStrokeColor: 'rgba(255, 255, 255, 1)', // White outline
+				polygonAltitude: 0, // Slight altitude above globe
+
+				// Gradient Shadow Control
+				vignetteEnabled: false,
+				vignetteFadeStart: 0.0, // 0 = bottom of globe
+				vignetteFadeEnd: 0, // 0.6 = 60% up the globe
+				vignetteOpacity: 0 // 0-1 darkness strength
 			}}
 		/>
 	</div>

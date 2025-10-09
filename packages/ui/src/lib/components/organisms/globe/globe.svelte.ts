@@ -61,10 +61,23 @@ export interface GlobeConfig {
 	globeLeft?: number;
 	globeTop?: number;
 
-	// Globe colors
-	globeColor?: string;
-	emissiveColor?: string;
-	emissiveIntensity?: number;
+	// Hex Polygons (dot map visualization)
+	hexPolygonsData?: string; // URL or path to GeoJSON data
+	hexPolygonResolution?: number; // Resolution level (0-15, lower = fewer hexagons)
+	hexPolygonMargin?: number; // Margin between hexagons
+	hexPolygonColor?: string | ((properties: any) => string); // Hex color
+	hexPolygonAltitude?: number; // Altitude of hexagons
+	hexPolygonCurvatureResolution?: number; // Curvature resolution
+
+	// Polygon Outlines (country borders, etc.)
+	polygonsData?: string; // URL or path to GeoJSON data
+	polygonCapColor?: string | ((properties: any) => string); // Fill color (top cap)
+	polygonSideColor?: string | ((properties: any) => string); // Side color
+	polygonStrokeColor?: string | ((properties: any) => string); // Outline/stroke color
+	polygonAltitude?: number; // Altitude of polygons
+	polygonCapCurvatureResolution?: number; // Cap curvature resolution
+	polygonSideResolution?: number; // Side resolution
+	polygonsTransitionDuration?: number; // Transition duration in ms
 
 	// Vignette/Shadow
 	vignetteEnabled?: boolean;
@@ -190,11 +203,6 @@ export function createDefaultConfig(
 		globeLeft,
 		globeTop,
 
-		// Globe colors
-		globeColor: "#3a228a",
-		emissiveColor: "#220038",
-		emissiveIntensity: 0.1,
-
 		// Vignette/Shadow (gradient from bottom to top)
 		vignetteEnabled: true,
 		vignetteFadeStart: 0.3, // Start fade at 30% from bottom
@@ -213,7 +221,7 @@ export function createDefaultConfig(
 		labelSize,
 		labelDotRadius,
 		labelTextColor: "rgba(255, 255, 255, 1)",
-		labelDotColor: "lime",
+		labelDotColor: "#ffffff",
 
 		// Rings
 		ringColorLocation: "#ffffff",
