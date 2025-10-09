@@ -48,6 +48,9 @@
 		height: browser ? window.innerHeight : 1080
 	});
 
+	// Store marker elements for class toggling
+	let markerElements = $state<Map<string, HTMLElement>>(new Map());
+
 	// Create a reactive, merged configuration
 	const mergedConfig = $derived(
 		mergeConfigs(
@@ -72,6 +75,25 @@
 	// ============================================================================
 	// Helper Functions
 	// ============================================================================
+
+	// Attachment function for globe container
+	function attachGlobeContainer(element: HTMLElement) {
+		globeContainer = element as HTMLDivElement;
+		return () => {
+			globeContainer = undefined;
+		};
+	}
+
+	// Create attachment for marker elements
+	function createMarkerAttachment(lat: number, lng: number) {
+		const key = `${lat},${lng}`;
+		return (element: HTMLElement) => {
+			markerElements.set(key, element);
+			return () => {
+				markerElements.delete(key);
+			};
+		};
+	}
 
 	function changeLocation(newIndex: number) {
 		const total = effectiveLocations.length;
@@ -284,17 +306,17 @@
 		const loc = currentLocation;
 		if (!loc) return;
 
+		const currentLat = parseFloat(String(loc.lat));
+		const currentLng = parseFloat(String(loc.lng));
+
 		setTimeout(() => {
-			document.querySelectorAll('.svg-marker').forEach((marker) => {
-				const parent = marker.closest('[data-lat][data-lng]') as HTMLElement | null;
-				if (!parent) return;
+			// Use tracked marker elements instead of querySelectorAll
+			markerElements.forEach((markerEl, key) => {
+				const marker = markerEl.querySelector('.svg-marker');
+				if (!marker) return;
 
-				const lat = parent.dataset.lat;
-				const lng = parent.dataset.lng;
-
-				const isActive =
-					parseFloat(lat || '0') === parseFloat(String(loc.lat)) &&
-					parseFloat(lng || '0') === parseFloat(String(loc.lng));
+				const [lat, lng] = key.split(',').map(Number);
+				const isActive = lat === currentLat && lng === currentLng;
 
 				marker.classList.toggle('active', isActive);
 			});
@@ -355,21 +377,34 @@
 						.then((res) => res.json())
 						.then((data) => {
 							if (isDestroyed || !globe) return;
+
+							const capColor = cfg.polygon?.capColor ?? '#444444';
+							const sideColor = cfg.polygon?.sideColor ?? '#444444';
+							const strokeColor = cfg.polygon?.strokeColor ?? '#ffffff';
+
+							// Resolve color to string if it's a function
+							const resolvedCapColor = typeof capColor === 'function' ? capColor({}) : capColor;
+							const resolvedSideColor = typeof sideColor === 'function' ? sideColor({}) : sideColor;
+							const resolvedStrokeColor =
+								typeof strokeColor === 'function' ? strokeColor : strokeColor;
+
 							globe
 								.polygonsData(data.features || data)
 								.polygonCapMaterial(
 									new THREE.MeshBasicMaterial({
-										color: '#323035',
-										transparent: true
+										color: resolvedCapColor,
+										transparent: false,
+										side: THREE.DoubleSide
 									})
 								)
 								.polygonSideMaterial(
 									new THREE.MeshBasicMaterial({
-										color: '#323035',
-										transparent: true
+										color: resolvedSideColor,
+										transparent: false,
+										side: THREE.DoubleSide
 									})
 								)
-								.polygonStrokeColor(() => cfg.polygon?.strokeColor ?? 'rgba(255, 255, 255, 1)')
+								.polygonStrokeColor(() => resolvedStrokeColor)
 								.polygonAltitude(cfg.polygon?.altitude ?? 0.005)
 								.polygonsTransitionDuration(cfg.polygon?.transitionDuration ?? 0);
 						})
@@ -422,6 +457,13 @@
 						el.innerHTML = markerSVG;
 						el.dataset.lat = String(d.lat);
 						el.dataset.lng = String(d.lng);
+
+						// Apply attachment for lifecycle tracking
+						const markerKey = createMarkerAttachment(
+							parseFloat(String(d.lat)),
+							parseFloat(String(d.lng))
+						);
+						markerKey(el);
 
 						el.style.pointerEvents = 'auto';
 						el.onclick = () => {
@@ -545,8 +587,8 @@
 </script>
 
 <div
-	bind:this={globeContainer}
 	class="globe-container {className}"
+	{@attach attachGlobeContainer}
 ></div>
 
 <style>

@@ -201,7 +201,7 @@
 				width: typeof window !== 'undefined' ? window.innerWidth : 1920,
 				height: typeof window !== 'undefined' ? window.innerHeight : 1080,
 				left: 0,
-				top: mq.sm
+				top: mq.md
 					? typeof window !== 'undefined'
 						? window.innerHeight * 0.9
 						: 972
@@ -212,32 +212,32 @@
 			atmosphere={{
 				show: true,
 				color: 'lightskyblue',
-				altitude: mq.sm ? 0.25 : 0.08
+				altitude: mq.md ? 0.25 : 0.08
 			}}
 			vignette={{
-				enabled: true,
+				enabled: false,
 				fadeStart: 0.3,
 				fadeEnd: 1.0,
 				opacity: 0.7
 			}}
 			position={{
-				altitude: mq.sm ? 0.8 : 0.2,
-				latitude: mq.sm ? 36 : 21
+				altitude: mq.md ? 0.8 : 0.2,
+				latitude: mq.md ? 36 : 21
 			}}
 			points={{
 				altitude: 0.001,
 				color: 'rgba(0, 0, 255, 1)'
 			}}
 			labels={{
-				size: mq.sm ? 0.75 : 0.25,
-				dotRadius: mq.sm ? 0.3 : 0.1,
-				textColor: 'rgba(255, 255, 255, 1)',
+				size: mq.md ? 0.75 : 0.25,
+				dotRadius: mq.md ? 0.3 : 0.1,
+				textColor: '#ffffff',
 				dotColor: '#ffffff'
 			}}
 			rings={{
 				color: '#ffffff',
-				maxRadius: mq.sm ? 4 : 2,
-				propagationSpeed: mq.sm ? 4 : 2,
+				maxRadius: mq.md ? 4 : 2,
+				propagationSpeed: mq.md ? 4 : 2,
 				repeatPeriod: 1000,
 				altitude: 0
 			}}
@@ -245,12 +245,12 @@
 				relativeLength: 0.4,
 				flightTime: 2000,
 				numRings: 5,
-				stroke: mq.sm ? 0.2 : 0.05,
+				stroke: mq.md ? 0.2 : 0.05,
 				dashLength: 0.6,
 				dashGap: 2,
 				dashInitialGap: 1,
 				altitude: null,
-				altitudeAutoscale: mq.sm ? 0.3 : 0.2,
+				altitudeAutoscale: mq.md ? 0.3 : 0.2,
 				color: 'rgba(255, 255, 255, 1)'
 			}}
 			animation={{
@@ -263,10 +263,10 @@
 				resumeDelay: 60000
 			}}
 			polygon={{
-				capColor: 'rgba(255, 255, 255, 1)',
-				sideColor: 'rgba(255, 255, 255, 1)',
-				strokeColor: 'rgba(255, 255, 255, 1)',
-				altitude: 0
+				capColor: '#181e2b',
+				sideColor: '#0b101c',
+				strokeColor: '#3b4250',
+				altitude: mq.md ? 0.005 : 0.002
 			}}
 		/>
 	</div>
