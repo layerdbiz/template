@@ -197,7 +197,7 @@
 				polygons: '/data/countries.geojson'
 			}}
 			globe={{
-				image: '/images/skins/earth-blue-marble.jpg',
+				// image: '/images/skins/earth-blue-marble.jpg',
 				width: typeof window !== 'undefined' ? window.innerWidth : 1920,
 				height: typeof window !== 'undefined' ? window.innerHeight : 1080,
 				left: 0,
