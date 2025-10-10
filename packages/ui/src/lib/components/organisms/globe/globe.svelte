@@ -39,6 +39,8 @@
 	let windowWidth = $state(1920);
 	let windowHeight = $state(1080);
 	let processedLocations = $state<Location[]>([]);
+	let activeArcs = $state<any[]>([]); // Track all active arcs
+	let arcCleanupTimeouts = $state<Map<string, ReturnType<typeof setTimeout>>>(new Map()); // Track cleanup timeouts per arc
 
 	// Track media query breakpoints for recreation
 	let lastMqSm = $state(mq.sm);
@@ -164,15 +166,17 @@
 
 		if (!arcsConfig) return;
 
-		// Create arc data from previous to current location
-		const arcData = [
-			{
-				startLat: parseFloat(String(fromLocation.lat)),
-				startLng: parseFloat(String(fromLocation.lng)),
-				endLat: parseFloat(String(toLocation.lat)),
-				endLng: parseFloat(String(toLocation.lng))
-			}
-		];
+		// Create unique arc ID for tracking
+		const arcId = `${fromLocation.lat},${fromLocation.lng}-${toLocation.lat},${toLocation.lng}-${Date.now()}`;
+
+		// Create new arc data
+		const newArc = {
+			id: arcId,
+			startLat: parseFloat(String(fromLocation.lat)),
+			startLng: parseFloat(String(fromLocation.lng)),
+			endLat: parseFloat(String(toLocation.lat)),
+			endLng: parseFloat(String(toLocation.lng))
+		};
 
 		// Get dash configuration
 		const dashLength = arcsConfig.dashLength ?? 0.6;
@@ -189,9 +193,12 @@
 		// We need to account for the initial gap as well
 		const fullAnimationTime = duration * (1 + dashGap / totalDashCycle);
 
-		// Configure arc visualization
+		// Add new arc to active arcs array
+		activeArcs = [...activeArcs, newArc];
+
+		// Configure arc visualization with all active arcs
 		globeInstance
-			.arcsData(arcData)
+			.arcsData(activeArcs)
 			.arcColor(() => arcsConfig.color ?? '#ffffff')
 			.arcStroke(() => arcsConfig.stroke ?? 0.5)
 			.arcDashLength(dashLength)
@@ -203,12 +210,22 @@
 			.arcStartAltitude(() => arcsConfig.startAltitude ?? 0.003)
 			.arcEndAltitude(() => arcsConfig.endAltitude ?? 0.003);
 
-		// Clear arcs after the full animation completes (dash + gap)
-		setTimeout(() => {
+		// Schedule cleanup for this specific arc after the full animation completes
+		const cleanupTimeout = setTimeout(() => {
+			// Remove this arc from active arcs
+			activeArcs = activeArcs.filter((arc) => arc.id !== arcId);
+
+			// Update globe with remaining arcs
 			if (globeInstance) {
-				globeInstance.arcsData([]);
+				globeInstance.arcsData(activeArcs);
 			}
+
+			// Clean up timeout reference
+			arcCleanupTimeouts.delete(arcId);
 		}, fullAnimationTime);
+
+		// Store timeout reference for potential cleanup
+		arcCleanupTimeouts.set(arcId, cleanupTimeout);
 	}
 
 	/**
@@ -450,6 +467,11 @@
 			// Clear marker elements
 			markerElements.clear();
 
+			// Clear all arc cleanup timeouts and active arcs
+			arcCleanupTimeouts.forEach((timeout) => clearTimeout(timeout));
+			arcCleanupTimeouts.clear();
+			activeArcs = [];
+
 			// Update tracking variables
 			lastMqSm = currentMqSm;
 			lastMqMd = currentMqMd;
@@ -667,6 +689,11 @@
 
 			// Stop auto-play
 			stopAutoPlay();
+
+			// Clear all arc cleanup timeouts
+			arcCleanupTimeouts.forEach((timeout) => clearTimeout(timeout));
+			arcCleanupTimeouts.clear();
+			activeArcs = [];
 
 			// Cleanup globe on component unmount
 			if (globeInstance) {
