@@ -209,15 +209,31 @@
 				opacity: 0.7
 			}}
 			points={{
-				altitude: mq.md ? 0.007 : 0.01,
-				color: 'rgba(0, 0, 255, 0)'
+				layers: [
+					// blue dot (bg)
+					{
+						base: mq.md ? 0.01 : 0.001,
+						altitude: mq.md ? 0.01 : 0.0015,
+						color: '#155dfc',
+						radius: mq.md ? 0.4 : 0.3,
+						zOffset: 0
+					},
+					// white dot (fg)
+					{
+						base: mq.md ? 0.01 : 0.0015,
+						altitude: mq.md ? 0.012 : 0.001,
+						color: '#ffffff',
+						radius: mq.md ? 0.2 : 0.15,
+						zOffset: 0.001 // Slightly forward to ensure it's on top
+					}
+				]
 			}}
 			html={{
 				altitude: mq.md ? 0.009 : 0.009
 			}}
 			arcs={{
 				color: '#ffffff',
-				stroke: mq.md ? 0.2 : 0.05,
+				stroke: mq.md ? 0.2 : 0.04,
 				duration: 2000,
 				dashRelativeLength: 0.4,
 				dashLength: 0.6,
@@ -225,8 +241,16 @@
 				dashInitialGap: 1,
 				altitude: null,
 				altitudeAutoscale: mq.md ? 0.3 : 0.2,
-				startAltitude: mq.md ? 0.007 : 0.004,
-				endAltitude: mq.md ? 0.007 : 0.004
+				startAltitude: mq.md ? 0 : 0.002,
+				endAltitude: mq.md ? 0 : 0.0016
+			}}
+			rings={{
+				color: '#ffffff',
+				rings: 4,
+				radius: mq.md ? 4 : 2,
+				speed: mq.md ? 4 : 2,
+				altitude: mq.md ? 0.006 : 0.0015,
+				duration: 700
 			}}
 			animation={{
 				duration: 1000

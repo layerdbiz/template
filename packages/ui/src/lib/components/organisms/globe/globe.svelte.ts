@@ -69,9 +69,20 @@ export interface GlobeVignetteConfig {
 	opacity?: number;
 }
 
-export interface GlobePointsConfig {
-	altitude?: number;
+export interface GlobePointLayerConfig {
+	altitude?: number; // Height of the point cylinder
+	base?: number; // Altitude where the point base starts (raises points from globe surface)
 	color?: string;
+	radius?: number;
+	zOffset?: number; // Small z-axis offset to ensure proper layering (smaller values render behind)
+}
+
+export interface GlobePointsConfig {
+	altitude?: number; // Height of the point cylinder (default for single layer)
+	base?: number; // Altitude where the point base starts (default for single layer)
+	color?: string; // Color (default for single layer)
+	radius?: number; // Radius (default for single layer)
+	layers?: GlobePointLayerConfig[]; // Array of point layers (back to front) - allows multiple points per location
 }
 
 export interface GlobeAnimationConfig {
@@ -103,6 +114,17 @@ export interface GlobeArcsConfig {
 	endAltitude?: number;
 }
 
+export interface GlobeRingsConfig {
+	color?: string | ((t: number) => string);
+	rings?: number;
+	stroke?: number; // NOTE: Not supported by globe.gl API - rings are rendered with constant line width
+	radius?: number;
+	speed?: number;
+	altitude?: number;
+	duration?: number;
+	repeat?: number;
+}
+
 export interface GlobeConfig {
 	data?: GlobeDataConfig;
 	globe?: GlobeAppearanceConfig;
@@ -115,6 +137,7 @@ export interface GlobeConfig {
 	html?: GlobeHtmlConfig;
 	autoplay?: GlobeAutoplayConfig;
 	arcs?: GlobeArcsConfig;
+	rings?: GlobeRingsConfig;
 }
 
 export interface GlobeProps {
@@ -134,6 +157,7 @@ export interface GlobeProps {
 	html?: GlobeHtmlConfig;
 	autoplay?: GlobeAutoplayConfig;
 	arcs?: GlobeArcsConfig;
+	rings?: GlobeRingsConfig;
 }
 
 // ============================================================================
@@ -225,6 +249,7 @@ export function mergeConfigs(
 		result.html = { ...result.html, ...config.html };
 		result.autoplay = { ...result.autoplay, ...config.autoplay };
 		result.arcs = { ...result.arcs, ...config.arcs };
+		result.rings = { ...result.rings, ...config.rings };
 	}
 	return result;
 }

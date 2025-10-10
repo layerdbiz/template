@@ -41,6 +41,7 @@
 	let processedLocations = $state<Location[]>([]);
 	let activeArcs = $state<any[]>([]); // Track all active arcs
 	let arcCleanupTimeouts = $state<Map<string, ReturnType<typeof setTimeout>>>(new Map()); // Track cleanup timeouts per arc
+	let activeRings = $state<any[]>([]); // Track all active rings
 
 	// Track media query breakpoints for recreation
 	let lastMqSm = $state(mq.sm);
@@ -154,6 +155,89 @@
 	}
 
 	/**
+	 * Add a ripple ring at a specific location
+	 * Called when arc endpoint reaches its destination
+	 */
+	function addRingAtLocation(location: Location) {
+		if (!globeInstance) return;
+
+		// Use untrack to read config without creating dependency
+		const cfg = untrack(() => mergedConfig);
+		const ringsConfig = cfg.rings;
+		const arcsConfig = cfg.arcs;
+
+		if (!ringsConfig) return;
+
+		// Create unique ring ID for tracking
+		const ringId = `${location.lat},${location.lng}-${Date.now()}`;
+
+		// Create new ring data
+		const newRing = {
+			id: ringId,
+			lat: parseFloat(String(location.lat)),
+			lng: parseFloat(String(location.lng))
+		};
+
+		// Add new ring to active rings array
+		activeRings = [...activeRings, newRing];
+
+		// Get ring configuration
+		const radius = ringsConfig.radius ?? 2;
+		const speed = ringsConfig.speed ?? 2;
+		const stroke = ringsConfig.stroke;
+		const numRings = ringsConfig.rings ?? 3;
+		const arcDuration = arcsConfig?.duration ?? 2000;
+		const arcDashLength = arcsConfig?.dashLength ?? 0.6;
+
+		// Calculate ring duration based on arc dash length if not explicitly set
+		// This matches the emit-arcs-on-click example: FLIGHT_TIME * ARC_REL_LEN
+		const ringDuration = ringsConfig.duration ?? arcDuration * arcDashLength;
+
+		// Calculate repeat period to show multiple rings
+		// If repeat is explicitly set, use it; otherwise calculate based on numRings
+		// This matches the emit-arcs-on-click example: FLIGHT_TIME * ARC_REL_LEN / NUM_RINGS
+		// This creates evenly spaced rings that emit over the duration
+		const repeatPeriod = ringsConfig.repeat ?? ringDuration / numRings;
+
+		// Configure ring visualization with all active rings
+		// Use color function for fade effect if color is a string
+		const ringColor =
+			typeof ringsConfig.color === 'function'
+				? ringsConfig.color
+				: (t: number) => {
+						const baseColor = ringsConfig.color ?? '#ffffff';
+						// Parse color and apply fade (only if baseColor is a string)
+						if (typeof baseColor === 'string' && baseColor.startsWith('#')) {
+							// Convert hex to rgb and apply opacity fade
+							const r = parseInt(baseColor.slice(1, 3), 16);
+							const g = parseInt(baseColor.slice(3, 5), 16);
+							const b = parseInt(baseColor.slice(5, 7), 16);
+							return `rgba(${r},${g},${b},${1 - t})`;
+						}
+						return typeof baseColor === 'string' ? baseColor : '#ffffff';
+					};
+
+		globeInstance
+			.ringsData(activeRings)
+			.ringColor(() => ringColor)
+			.ringMaxRadius(radius)
+			.ringPropagationSpeed(speed)
+			.ringRepeatPeriod(repeatPeriod)
+			.ringAltitude(ringsConfig.altitude ?? 0.003);
+
+		// Remove ring after animation completes
+		setTimeout(() => {
+			// Remove this ring from active rings
+			activeRings = activeRings.filter((ring) => ring.id !== ringId);
+
+			// Update globe with remaining rings
+			if (globeInstance) {
+				globeInstance.ringsData(activeRings);
+			}
+		}, ringDuration);
+	}
+
+	/**
 	 * Animate arc between two locations
 	 * Called when location changes to show travel animation
 	 */
@@ -209,6 +293,12 @@
 			.arcAltitudeAutoScale(arcsConfig.altitudeAutoscale ?? 0.5)
 			.arcStartAltitude(() => arcsConfig.startAltitude ?? 0.003)
 			.arcEndAltitude(() => arcsConfig.endAltitude ?? 0.003);
+
+		// Trigger ring animation when arc endpoint reaches destination
+		// This happens after the dash completes its journey (at 'duration' time, not fullAnimationTime)
+		setTimeout(() => {
+			addRingAtLocation(toLocation);
+		}, duration);
 
 		// Schedule cleanup for this specific arc after the full animation completes
 		const cleanupTimeout = setTimeout(() => {
@@ -472,6 +562,9 @@
 			arcCleanupTimeouts.clear();
 			activeArcs = [];
 
+			// Clear all rings
+			activeRings = [];
+
 			// Update tracking variables
 			lastMqSm = currentMqSm;
 			lastMqMd = currentMqMd;
@@ -583,12 +676,89 @@
 					.catch((err) => console.error('Failed to load polygon data:', err));
 			}
 
+			// POINTS LAYER RENDERING
+			// Support both single layer (backward compatible) and multiple layers
+			const pointLayers = cfg.points?.layers || [
+				{
+					altitude: cfg.points?.altitude ?? 0.003,
+					base: cfg.points?.base ?? 0,
+					color: cfg.points?.color ?? '#0066ff',
+					radius: cfg.points?.radius ?? 0.25,
+					zOffset: 0
+				}
+			];
+
+			// Check if any layer needs base or if we have multiple layers
+			const needsCustomObjects =
+				pointLayers.some((layer) => (layer.base ?? 0) > 0) || pointLayers.length > 1;
+
+			if (needsCustomObjects) {
+				// Use 3D Objects Layer for elevated points or multi-layer points
+				// Create a separate object for each layer at each location
+				const layeredLocations = effectiveLocations.flatMap((loc: Location) =>
+					pointLayers.map((layer, layerIndex) => ({
+						...loc,
+						__layerIndex: layerIndex,
+						__layerConfig: layer
+					}))
+				);
+
+				globe
+					.objectsData(layeredLocations)
+					.objectLat((d: any) => d.lat)
+					.objectLng((d: any) => d.lng)
+					.objectAltitude((d: any) => d.__layerConfig.base ?? 0) // Base starts at this altitude
+					.objectThreeObject((d: any) => {
+						const layer = d.__layerConfig;
+						const pointAltitude = layer.altitude ?? 0.003;
+						const pointColor = layer.color ?? '#0066ff';
+						const pointRadius = layer.radius ?? 0.25;
+						const zOffset = layer.zOffset ?? 0;
+
+						// Create cylinder geometry
+						const geometry = new THREE.CylinderGeometry(
+							pointRadius, // radiusTop
+							pointRadius, // radiusBottom
+							pointAltitude * 100, // height (scaled to match globe radius)
+							12, // radialSegments
+							1, // heightSegments
+							false // openEnded
+						);
+
+						// Rotate to align with globe surface normal
+						geometry.rotateX(Math.PI / 2);
+
+						// Apply z-offset for layering (smaller z renders behind)
+						if (zOffset !== 0) {
+							geometry.translate(0, 0, zOffset);
+						}
+
+						// Create material
+						const material = new THREE.MeshBasicMaterial({
+							color: pointColor,
+							transparent: false,
+							depthTest: true,
+							depthWrite: true
+						});
+
+						const mesh = new THREE.Mesh(geometry, material);
+
+						// Set render order based on layer index (lower index = rendered first = behind)
+						mesh.renderOrder = d.__layerIndex;
+
+						return mesh;
+					});
+			} else {
+				// Use standard Points Layer when no base and single layer
+				const singleLayer = pointLayers[0];
+				globe
+					.pointsData(effectiveLocations)
+					.pointAltitude(() => singleLayer.altitude ?? 0.003)
+					.pointColor(() => singleLayer.color ?? '#0066ff')
+					.pointRadius(singleLayer.radius ?? 0.25);
+			}
+
 			globe
-				// POINTS - Solid blue dots (base layer)
-				.pointsData(effectiveLocations)
-				.pointAltitude(() => cfg.points?.altitude ?? 0.003)
-				.pointColor(() => cfg.points?.color ?? '#0066ff')
-				.pointRadius(0.25)
 				// HTML - Location markers with click handlers
 				.htmlElementsData(effectiveLocations)
 				.htmlElement((d: any) => {
@@ -694,6 +864,9 @@
 			arcCleanupTimeouts.forEach((timeout) => clearTimeout(timeout));
 			arcCleanupTimeouts.clear();
 			activeArcs = [];
+
+			// Clear all rings
+			activeRings = [];
 
 			// Cleanup globe on component unmount
 			if (globeInstance) {
