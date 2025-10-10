@@ -46,6 +46,9 @@
 	// Store marker elements for class toggling
 	let markerElements = $state<Map<string, HTMLElement>>(new Map());
 
+	// Track if current navigation was from a user click (for immediate activation)
+	let wasClickNavigation = $state(false);
+
 	// Create a reactive, merged configuration
 	const mergedConfig = $derived(
 		mergeConfigs(
@@ -502,13 +505,45 @@
 	// Update markers when current location changes
 	$effect(() => {
 		const loc = currentLocation;
+		const prevLoc = previousLocation;
 		if (!loc) return;
 
 		const currentLat = parseFloat(String(loc.lat));
 		const currentLng = parseFloat(String(loc.lng));
 
+		// Use untrack to read config without creating dependency
+		const cfg = untrack(() => mergedConfig);
+		const arcDuration = cfg.arcs?.duration ?? 2000;
+
+		// Determine delay: no delay for first location (no arc), otherwise wait for arc to arrive
+		const isFirstLocation = !prevLoc;
+
+		// IMMEDIATELY remove active class from all markers
+		markerElements.forEach((markerEl, key) => {
+			const marker = markerEl.querySelector('.svg-marker');
+			const markerWrapper = markerEl.closest('.globe-marker');
+			const label = markerWrapper?.querySelector('.location-label') as HTMLElement;
+			if (!marker) return;
+
+			const [lat, lng] = key.split(',').map(Number);
+			const isThisLocationActive = lat === currentLat && lng === currentLng;
+
+			// Remove active class immediately from all non-active markers
+			if (!isThisLocationActive) {
+				marker.classList.remove('active');
+				if (label) {
+					label.classList.remove('opacity-100');
+					label.classList.add('opacity-0');
+				}
+			}
+		});
+
+		// Add active class to new location with appropriate delay
+		// No delay for: first location (no arc), or clicked marker (immediate feedback)
+		// Otherwise: wait for arc to arrive (arcDuration)
+		const delay = isFirstLocation || wasClickNavigation ? 0 : arcDuration;
+
 		setTimeout(() => {
-			// Use tracked marker elements instead of querySelectorAll
 			markerElements.forEach((markerEl, key) => {
 				const marker = markerEl.querySelector('.svg-marker');
 				const markerWrapper = markerEl.closest('.globe-marker');
@@ -518,20 +553,22 @@
 				const [lat, lng] = key.split(',').map(Number);
 				const isActive = lat === currentLat && lng === currentLng;
 
-				marker.classList.toggle('active', isActive);
-
-				// Show/hide label by toggling opacity
-				if (label) {
-					if (isActive) {
+				// Add active class only if this is the active location
+				if (isActive) {
+					marker.classList.add('active');
+					if (label) {
 						label.classList.remove('opacity-0');
 						label.classList.add('opacity-100');
-					} else {
-						label.classList.remove('opacity-100');
-						label.classList.add('opacity-0');
 					}
 				}
 			});
-		}, 500);
+
+			// Reset the click navigation flag after use
+			// Use untrack to avoid creating a reactive dependency
+			untrack(() => {
+				wasClickNavigation = false;
+			});
+		}, delay);
 	}); // Recreate globe when media query breakpoint changes
 	$effect(() => {
 		if (!globeInstance) return;
@@ -774,6 +811,12 @@
 				// HTML - Location markers with click handlers
 				.htmlElementsData(effectiveLocations)
 				.htmlElement((d: any) => {
+					// Check if this is the first location (initially active)
+					const isFirstLocation =
+						effectiveLocations[0] &&
+						parseFloat(String(d.lat)) === parseFloat(String(effectiveLocations[0].lat)) &&
+						parseFloat(String(d.lng)) === parseFloat(String(effectiveLocations[0].lng));
+
 					const wrapper = document.createElement('div');
 					wrapper.innerHTML = `
 						<div class="globe-marker relative flex flex-col items-center justify-center pointer-events-none">
@@ -781,13 +824,13 @@
 							     data-lat="${d.lat}" 
 							     data-lng="${d.lng}">
 								
-									 <svg xmlns="http://www.w3.org/2000/svg" class="svg svg-marker w-8 h-8 origin-bottom cursor-pointer duration-300" fill="none" viewBox="0 0 87 122">
+									 <svg xmlns="http://www.w3.org/2000/svg" class="svg svg-marker w-8 h-8 origin-bottom cursor-pointer duration-300 ${isFirstLocation ? 'active' : ''}" fill="none" viewBox="0 0 87 122">
 										<path class="stroke" stroke-width="4" d="m43.0833 115.667-1.4842 1.34 1.4842 1.643 1.4842-1.643-1.4842-1.34Zm0 0c1.4842 1.34 1.4846 1.34 1.4851 1.339l.0018-.002.0062-.007.023-.025.0875-.098c.0764-.085.1886-.211.3343-.376.2914-.33.7167-.816 1.2567-1.442 1.0799-1.254 2.6193-3.074 4.4651-5.348 3.6898-4.546 8.6129-10.9197 13.5399-18.2222 4.9232-7.2969 9.8751-15.5579 13.6022-23.8774 3.7154-8.2933 6.2816-16.7923 6.2816-24.5251A41.0836 41.0836 0 0 0 14.033 14.033 41.0835 41.0835 0 0 0 2 43.0833c0 7.7328 2.5662 16.2318 6.2816 24.5251 3.7271 8.3195 8.679 16.5805 13.6021 23.8774 4.9271 7.3025 9.8501 13.6762 13.5399 18.2222 1.8458 2.274 3.3852 4.094 4.4652 5.348.54.626.9652 1.112 1.2566 1.442.1457.165.258.291.3344.376l.0874.098.023.025.0063.007.0017.002c.0006.001.0009.001 1.4851-1.339Z"/>
 										<path class="bg fill-white" d="M60 44c0 9.3888-7.6112 17-17 17s-17-7.6112-17-17 7.6112-17 17-17 17 7.6112 17 17Z"/>
 										<path class="fg fill-primary-600" d="M43.0833 57.0417a13.9584 13.9584 0 1 1 .0001-27.9168 13.9584 13.9584 0 0 1-.0001 27.9168Zm0-53.0417a39.0837 39.0837 0 0 0-27.6361 11.4472A39.0837 39.0837 0 0 0 4 43.0833c0 29.3125 39.0833 72.5837 39.0833 72.5837s39.0834-43.2712 39.0834-72.5837A39.0834 39.0834 0 0 0 43.0833 4Z"/>
 									</svg>
 							</i>
-							<h4 class="location-label absolute top-full translate-y-full mt-2 text-sm font-normal text-white m-0 px-2 py-1 bg-black/60 rounded whitespace-nowrap pointer-events-none opacity-0 transition-all duration-300">
+							<h4 class="location-label absolute top-full translate-y-full mt-2 text-sm font-normal text-white m-0 px-2 py-1 bg-black/60 rounded whitespace-nowrap pointer-events-none ${isFirstLocation ? 'opacity-100' : 'opacity-0'} transition-all duration-300">
 								${d.location || 'Unknown Location'}
 							</h4>
 						</div>
@@ -809,6 +852,8 @@
 								parseFloat(String(loc.lng)) === parseFloat(String(d.lng))
 						);
 						if (idx >= 0) {
+							// Set flag to bypass arc delay for immediate activation
+							wasClickNavigation = true;
 							setActiveLocation(idx);
 
 							// Handle pause on interaction
