@@ -430,7 +430,7 @@
 		transition: all 0.3s ease;
 	}
 
-	:global(.svg-marker .stroke) {
+	:global(.svg-marker.active .stroke) {
 		stroke: white;
 		transition: stroke 0.3s ease;
 	}
@@ -441,17 +441,13 @@
 	}
 
 	:global(.svg-marker .fg) {
-		fill: blue;
+		fill: var(--color-primary-600);
 		transition: fill 0.3s ease;
 	}
 
-	/* :global(.svg-marker.active) {
-		transform: scale(2);
-		animation: blink 6s ease-in-out infinite;
-	} */
 	/* SVG Marker (active) */
 	:global(.svg-marker.active) {
-		@apply scale-250 md:scale-200 inline-block -translate-y-4 md:translate-y-0;
+		@apply md:scale-200 inline-block -translate-y-4 scale-150 md:translate-y-0;
 		animation: float 6s ease-in-out infinite;
 	}
 

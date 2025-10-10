@@ -113,7 +113,7 @@
 	<!-- hero content
 	------------------------------------------>
 	<section
-		class="fade-in z-1 pointer-events-none relative flex select-none flex-col items-center justify-start gap-10"
+		class="fade-in z-1 pointer-events-none relative flex select-none flex-col items-center justify-start gap-4 pt-10"
 	>
 		<!-- title -->
 		<div class="text-base-50 flex flex-col gap-2 text-center">
@@ -145,22 +145,22 @@
 		</div>
 
 		<!-- buttons -->
-		<div class="pointer-events-auto flex w-full gap-2 lg:w-auto lg:gap-6">
+		<div class="pointer-events-auto flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:gap-6">
 			<Button
-				size={mq.md ? 'sm' : 'xl'}
+				size={mq.lg ? 'lg' : 'xl'}
 				primary
 				variant="icon text"
 				icon="icon-[mdi--play-circle-outline]"
 				label="Learn More"
-				class="w-full flex-1 lg:min-w-72"
+				class="mx-auto !w-52 lg:min-w-72"
 				href="#About"
 			/>
 			<Button
-				size={mq.md ? 'sm' : 'xl'}
-				variant="text icon"
+				size={mq.lg ? 'lg' : 'xl'}
+				variant={mq.lg ? 'icon text' : 'text icon'}
 				icon="icon-[mdi--chevron-right]"
 				label="Contact Sales"
-				class="light w-full flex-1 lg:min-w-72"
+				class="light mx-auto !w-52 lg:min-w-72"
 				href="#Contact"
 			/>
 		</div>
@@ -183,7 +183,7 @@
 				left: 0,
 				top: mq.md
 					? typeof window !== 'undefined'
-						? window.innerHeight * 0.9
+						? window.innerHeight * 0.95
 						: 972
 					: typeof window !== 'undefined'
 						? window.innerHeight * 2.2
@@ -243,7 +243,7 @@
 	<!-- GRADIENT WRAPPER
 	------------------------------------------>
 	<div
-		class="z-1 scale-y-60 pointer-events-none absolute inset-0 top-auto isolate size-full origin-bottom blur-xl"
+		class="z-1 scale-y-40 lg:scale-y-60 pointer-events-none absolute inset-0 top-auto isolate size-full origin-bottom blur-xl"
 	>
 		<!-- top blue radial -->
 		<Image
