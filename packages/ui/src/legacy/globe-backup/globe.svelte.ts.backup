@@ -18,12 +18,36 @@ export interface Location {
 	email?: string;
 }
 
+export interface Port {
+	port: string;
+	city: string;
+	location: string;
+	lat: number | string;
+	lng: number | string;
+}
+
+export interface Arc {
+	startLat: number;
+	startLng: number;
+	endLat: number;
+	endLng: number;
+	port?: string;
+	city?: string;
+	color?: string;
+}
+
+export interface Ring {
+	lat: number;
+	lng: number;
+}
+
 // ============================================================================
 // New Nested Configuration Interfaces
 // ============================================================================
 
 export interface GlobeDataConfig {
 	locations?: Location[] | string;
+	ports?: Port[] | string;
 	hexPolygons?: string;
 	polygons?: string;
 }
@@ -74,8 +98,47 @@ export interface GlobePointsConfig {
 	color?: string;
 }
 
+export interface GlobeLabelsConfig {
+	size?: number;
+	dotRadius?: number;
+	textColor?: string;
+	dotColor?: string;
+	orientation?: "top" | "bottom" | "left" | "right";
+	altitude?: number;
+}
+
+export interface GlobeRingsConfig {
+	color?: string;
+	maxRadius?: number;
+	propagationSpeed?: number;
+	repeatPeriod?: number;
+	altitude?: number;
+}
+
+export interface GlobeArcsConfig {
+	relativeLength?: number;
+	flightTime?: number;
+	numRings?: number;
+	stroke?: number;
+	dashLength?: number;
+	dashGap?: number;
+	dashInitialGap?: number;
+	altitude?: number | null;
+	altitudeAutoscale?: number;
+	color?: string;
+	startAltitude?: number;
+	endAltitude?: number;
+}
+
 export interface GlobeAnimationConfig {
 	duration?: number;
+}
+
+export interface GlobeAutoPlayConfig {
+	enabled?: boolean;
+	interval?: number;
+	pauseOnInteraction?: boolean;
+	resumeDelay?: number;
 }
 
 export interface GlobeHtmlConfig {
@@ -90,12 +153,26 @@ export interface GlobeConfig {
 	polygon?: GlobePolygonConfig;
 	vignette?: GlobeVignetteConfig;
 	points?: GlobePointsConfig;
+	labels?: GlobeLabelsConfig;
+	rings?: GlobeRingsConfig;
+	arcs?: GlobeArcsConfig;
 	animation?: GlobeAnimationConfig;
+	autoplay?: GlobeAutoPlayConfig;
 	html?: GlobeHtmlConfig;
+}
+
+export interface Label {
+	lat: number;
+	lng: number;
+	label: string;
+	size: number;
+	dotRadius: number;
+	orientation: "top" | "bottom" | "left" | "right";
 }
 
 export interface GlobeProps {
 	locations?: Location[];
+	ports?: Port[];
 	config?: GlobeConfig;
 	class?: string;
 
@@ -107,7 +184,11 @@ export interface GlobeProps {
 	polygon?: GlobePolygonConfig;
 	vignette?: GlobeVignetteConfig;
 	points?: GlobePointsConfig;
+	labels?: GlobeLabelsConfig;
+	rings?: GlobeRingsConfig;
+	arcs?: GlobeArcsConfig;
 	animation?: GlobeAnimationConfig;
+	autoplay?: GlobeAutoPlayConfig;
 	html?: GlobeHtmlConfig;
 }
 
@@ -120,8 +201,8 @@ export interface GlobeProps {
  * Uses mq.sm to determine if we're on a small screen
  */
 export function createDefaultConfig(
-	width: number = typeof window !== 'undefined' ? window.innerWidth : 1920,
-	height: number = typeof window !== 'undefined' ? window.innerHeight : 1080
+	width: number = typeof window !== "undefined" ? window.innerWidth : 1920,
+	height: number = typeof window !== "undefined" ? window.innerHeight : 1080,
 ): GlobeConfig {
 	// Use mq.sm directly for responsive values (0-639px = small screen)
 	const isSmallScreen = mq.sm;
@@ -136,6 +217,23 @@ export function createDefaultConfig(
 	const povAltitude = isSmallScreen ? 0.8 : 0.2;
 	const povLatitude = isSmallScreen ? 36 : 21;
 
+	// Label settings
+	const labelSize = isSmallScreen ? 0.75 : 0.25;
+	const labelDotRadius = isSmallScreen ? 0.3 : 0.1;
+	const labelAltitude = 0.015;
+
+	// Ring settings
+	const ringMaxRadius = isSmallScreen ? 4 : 2;
+	const ringPropagationSpeed = isSmallScreen ? 4 : 2;
+	const ringAltitude = 0.002;
+
+	// Arc settings
+	const arcStroke = isSmallScreen ? 0.2 : 0.05;
+	const arcAltitude = null;
+	const arcAltitudeAutoscale = isSmallScreen ? 0.3 : 0.2;
+	const arcStartAltitude = 0.003;
+	const arcEndAltitude = 0.003;
+
 	// Atmosphere settings
 	const atmosphereAltitude = isSmallScreen ? 0 : 0.15;
 
@@ -147,38 +245,72 @@ export function createDefaultConfig(
 
 	return {
 		globe: {
-			image: '/images/skins/earth-blue-marble.jpg',
+			image: "/images/skins/earth-blue-marble.jpg",
 			width: globeWidth,
 			height: globeHeight,
 			left: globeLeft,
 			top: globeTop,
 			altitude: povAltitude,
-			latitude: povLatitude
+			latitude: povLatitude,
 		},
 		atmosphere: {
 			show: true,
-			color: 'lightskyblue',
-			altitude: atmosphereAltitude
+			color: "lightskyblue",
+			altitude: atmosphereAltitude,
 		},
 		vignette: {
 			enabled: true,
 			fadeStart: 0.3,
 			fadeEnd: 1.0,
-			opacity: 0.7
+			opacity: 0.7,
 		},
 		points: {
 			altitude: 0.003,
-			color: 'rgba(0, 0, 255, 1)'
+			color: "rgba(0, 0, 255, 1)",
+		},
+		labels: {
+			size: labelSize,
+			dotRadius: labelDotRadius,
+			textColor: "rgba(255, 255, 255, 1)",
+			dotColor: "#ffffff",
+			altitude: labelAltitude,
+		},
+		rings: {
+			color: "#ffffff",
+			maxRadius: ringMaxRadius,
+			propagationSpeed: ringPropagationSpeed,
+			repeatPeriod: 1000,
+			altitude: ringAltitude,
+		},
+		arcs: {
+			relativeLength: 0.4,
+			flightTime: 2000,
+			numRings: 5,
+			stroke: arcStroke,
+			dashLength: 0.6,
+			dashGap: 2,
+			dashInitialGap: 1,
+			altitude: arcAltitude,
+			altitudeAutoscale: arcAltitudeAutoscale,
+			startAltitude: arcStartAltitude,
+			endAltitude: arcEndAltitude,
+			color: "rgba(255, 255, 255, 1)",
 		},
 		polygon: {
-			altitude: polygonAltitude
+			altitude: polygonAltitude,
 		},
 		animation: {
-			duration: 1000
+			duration: 1000,
+		},
+		autoplay: {
+			enabled: true,
+			interval: 7000,
+			pauseOnInteraction: true,
+			resumeDelay: 60000,
 		},
 		html: {
-			altitude: htmlAltitude
-		}
+			altitude: htmlAltitude,
+		},
 	};
 }
 
@@ -186,7 +318,9 @@ export function createDefaultConfig(
  * Deep merge multiple globe configurations.
  * The last object in the array has the highest precedence.
  */
-export function mergeConfigs(...configs: (GlobeConfig | undefined)[]): GlobeConfig {
+export function mergeConfigs(
+	...configs: (GlobeConfig | undefined)[]
+): GlobeConfig {
 	const result: GlobeConfig = {};
 	for (const config of configs) {
 		if (!config) continue;
@@ -197,10 +331,153 @@ export function mergeConfigs(...configs: (GlobeConfig | undefined)[]): GlobeConf
 		result.polygon = { ...result.polygon, ...config.polygon };
 		result.vignette = { ...result.vignette, ...config.vignette };
 		result.points = { ...result.points, ...config.points };
+		result.labels = { ...result.labels, ...config.labels };
+		result.rings = { ...result.rings, ...config.rings };
+		result.arcs = { ...result.arcs, ...config.arcs };
 		result.animation = { ...result.animation, ...config.animation };
+		result.autoplay = { ...result.autoplay, ...config.autoplay };
 		result.html = { ...result.html, ...config.html };
 	}
 	return result;
+}
+
+/**
+ * Avoid label collisions by adjusting orientations
+ */
+export function avoidLabelCollisions(labels: Label[]): Label[] {
+	const grid = new Map<string, Label>();
+	const gridSize = 5; // degrees
+
+	const getGridKey = (lat: number, lng: number) => {
+		const latGrid = Math.floor(lat / gridSize);
+		const lngGrid = Math.floor(lng / gridSize);
+		return `${latGrid},${lngGrid}`;
+	};
+
+	return labels.map((label) => {
+		const key = getGridKey(label.lat, label.lng);
+
+		if (grid.has(key)) {
+			const existing = grid.get(key)!;
+			if (existing.orientation === "bottom") {
+				label.orientation = "top";
+			} else if (existing.orientation === "top") {
+				label.orientation = "right";
+			} else if (existing.orientation === "right") {
+				label.orientation = "left";
+			} else {
+				label.lat += gridSize * 0.2;
+				label.orientation = "bottom";
+			}
+		} else {
+			label.orientation = "bottom";
+		}
+
+		grid.set(key, label);
+		return label;
+	});
+}
+
+/**
+ * Creates ring color with dynamic opacity based on time
+ */
+export function getRingColor(t: number): string {
+	return `rgba(255,255,255,${Math.sqrt(1 - t)})`;
+}
+
+/**
+ * Auto-play controller
+ */
+export function createAutoPlay(
+	config: GlobeAutoPlayConfig,
+	advanceCallback: () => void,
+	interactionElements: (HTMLElement | Document | null)[] = [],
+) {
+	let timer: ReturnType<typeof setInterval> | null = null;
+	let pauseTimer: ReturnType<typeof setTimeout> | null = null;
+	let active = false;
+	let userInteracted = false;
+
+	const clearTimer = () => {
+		if (timer) {
+			clearInterval(timer);
+			timer = null;
+		}
+	};
+
+	const clearPauseTimer = () => {
+		if (pauseTimer) {
+			clearTimeout(pauseTimer);
+			pauseTimer = null;
+		}
+	};
+
+	const startTimer = () => {
+		clearTimer();
+		if (!userInteracted && config.enabled) {
+			timer = setInterval(advanceCallback, config.interval);
+		}
+	};
+
+	const pause = () => {
+		if (!config.pauseOnInteraction) return;
+
+		userInteracted = true;
+		clearTimer();
+		clearPauseTimer();
+
+		if (config.resumeDelay && config.resumeDelay > 0) {
+			pauseTimer = setTimeout(() => {
+				userInteracted = false;
+				if (config.enabled && active) {
+					startTimer();
+				}
+			}, config.resumeDelay);
+		}
+	};
+
+	// Setup interaction events
+	const interactionEvents = ["click", "touchstart", "mousedown", "keyup"];
+	interactionElements.forEach((element) => {
+		if (!element) return;
+		interactionEvents.forEach((eventType) => {
+			element.addEventListener(eventType, pause);
+		});
+	});
+
+	// Visibility change handler
+	if (typeof document !== "undefined") {
+		document.addEventListener("visibilitychange", () => {
+			if (document.visibilityState === "hidden") {
+				clearTimer();
+				clearPauseTimer();
+			} else if (
+				document.visibilityState === "visible" && config.enabled && active
+			) {
+				startTimer();
+			}
+		});
+	}
+
+	// Return controller function
+	return (start = true) => {
+		if (!config.enabled) return;
+
+		clearTimer();
+		active = start;
+
+		if (start) {
+			startTimer();
+		}
+
+		return {
+			stop: () => {
+				active = false;
+				clearTimer();
+				clearPauseTimer();
+			},
+		};
+	};
 }
 
 /**

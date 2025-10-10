@@ -11,13 +11,20 @@
 	import {
 		type GlobeProps,
 		type Location,
+		type Port,
+		type Arc,
+		type Ring,
+		type Label,
 		createDefaultConfig,
+		avoidLabelCollisions,
+		createAutoPlay,
 		markerSVG,
 		mergeConfigs
 	} from '@layerd/ui';
 
 	let {
 		locations = $bindable([]),
+		ports = $bindable([]),
 		class: className = '',
 		// All other props are collected into restProps to be merged into the config
 		...restProps
@@ -34,11 +41,14 @@
 	let globeInstance: GlobeInstance | null = $state(null);
 	let currentIndex = $state(0);
 	let previousLocation: Location | null = $state(null);
+	let activeArcs: Arc[] = $state([]);
+	let activeRings: Ring[] = $state([]);
 	let windowDimensions = $state({
 		width: browser ? window.innerWidth : 1920,
 		height: browser ? window.innerHeight : 1080
 	});
 	let processedLocations = $state<Location[]>([]);
+	let processedPorts = $state<Port[]>([]);
 
 	// Store marker elements for class toggling
 	let markerElements = $state<Map<string, HTMLElement>>(new Map());
@@ -67,11 +77,31 @@
 		}
 	});
 
+	$effect(() => {
+		const prts = mergedConfig.data?.ports ?? ports;
+		if (typeof prts === 'string') {
+			fetch(prts)
+				.then((res) => res.json())
+				.then((data) => {
+					processedPorts = data;
+				})
+				.catch((err) => console.error('Failed to fetch ports:', err));
+		} else {
+			processedPorts = prts;
+		}
+	});
+
 	// Get locations and ports from data config or direct props
 	const effectiveLocations = $derived(processedLocations);
+	const effectivePorts = $derived(processedPorts);
 
 	// Current location and ports
 	const currentLocation = $derived(effectiveLocations[currentIndex] || null);
+	const currentPorts = $derived(
+		currentLocation
+			? effectivePorts.filter((port) => port.location === currentLocation.location)
+			: []
+	);
 
 	// ============================================================================
 	// Helper Functions
@@ -102,6 +132,78 @@
 		currentIndex = (newIndex + total) % total;
 	}
 
+	function emitArc(startLocation: Location, endLocation: Location) {
+		if (!startLocation || !endLocation || !globeInstance) return;
+
+		const startLat = parseFloat(String(startLocation.lat));
+		const startLng = parseFloat(String(startLocation.lng));
+		const endLat = parseFloat(String(endLocation.lat));
+		const endLng = parseFloat(String(endLocation.lng));
+
+		const globe = globeInstance;
+		// Use untrack to read config without creating dependency
+		const cfg = untrack(() => mergedConfig);
+		const FLIGHT_TIME = cfg.arcs?.flightTime ?? 2000;
+		const ARC_REL_LEN = cfg.arcs?.relativeLength ?? 0.4;
+
+		// Create and add the arc
+		const arc: Arc = {
+			startLat,
+			startLng,
+			endLat,
+			endLng,
+			color: cfg.arcs?.color ?? 'rgba(255, 255, 255, 1)'
+		};
+		// Use untrack to read current state without dependency
+		const currentArcs = untrack(() => activeArcs);
+		const newArcs = [...currentArcs, arc];
+		activeArcs = newArcs;
+		globe.arcsData(newArcs);
+
+		// Remove arc after animation completes
+		setTimeout(() => {
+			activeArcs = activeArcs.filter((d) => d !== arc);
+			globe.arcsData(activeArcs);
+		}, FLIGHT_TIME * 2);
+
+		// Add start location rings
+		const startRing: Ring = { lat: startLat, lng: startLng };
+		// Use untrack to read current state without dependency
+		const currentRings = untrack(() => activeRings);
+		const newStartRings = [...currentRings, startRing];
+		activeRings = newStartRings;
+		globe.ringsData(newStartRings);
+
+		// Remove start rings after partial animation
+		setTimeout(() => {
+			activeRings = activeRings.filter((r) => r !== startRing);
+			globe.ringsData(activeRings);
+		}, FLIGHT_TIME * ARC_REL_LEN);
+
+		// Add end location rings with delay
+		setTimeout(() => {
+			const endRing: Ring = { lat: endLat, lng: endLng };
+			const currentRings2 = untrack(() => activeRings);
+			const newEndRings = [...currentRings2, endRing];
+			activeRings = newEndRings;
+			globe.ringsData(newEndRings);
+
+			// Remove end rings after partial animation
+			setTimeout(() => {
+				activeRings = activeRings.filter((r) => r !== endRing);
+				globe.ringsData(activeRings);
+			}, FLIGHT_TIME * ARC_REL_LEN);
+		}, FLIGHT_TIME);
+
+		// After all animations, set current location to active
+		setTimeout(
+			() => {
+				globe.ringsData([{ lat: endLat, lng: endLng }]);
+			},
+			FLIGHT_TIME * (1 + ARC_REL_LEN)
+		);
+	}
+
 	function handleKeyboard(event: KeyboardEvent) {
 		if (event.key === 'ArrowLeft') {
 			changeLocation(currentIndex - 1);
@@ -126,8 +228,27 @@
 
 		if (!globe || !location) return;
 
-		// First time initialization
+		// Clear any existing rings immediately
+		globe.ringsData([]);
+
+		// First time initialization - single ring animation
 		if (!prevLoc) {
+			const ring: Ring = {
+				lat: parseFloat(String(location.lat)),
+				lng: parseFloat(String(location.lng))
+			};
+			setTimeout(() => {
+				globe.ringsData([ring]);
+
+				// Remove ring after animation
+				setTimeout(
+					() => {
+						globe.ringsData([]);
+					},
+					(cfg.arcs?.flightTime ?? 2000) * (cfg.arcs?.relativeLength ?? 0.4)
+				);
+			}, 100);
+
 			// Use untrack to avoid triggering effect when setting previousLocation
 			untrack(() => {
 				previousLocation = location;
@@ -146,7 +267,7 @@
 			return;
 		}
 
-		// Location change
+		// Location change - emit arc and ring animations
 		// Compare by actual values, not proxy references
 		const locationChanged =
 			prevLoc.location !== location.location ||
@@ -154,6 +275,8 @@
 			prevLoc.lng !== location.lng;
 
 		if (locationChanged) {
+			emitArc(prevLoc, location);
+
 			// Use untrack to avoid triggering effect when setting previousLocation
 			untrack(() => {
 				previousLocation = location;
@@ -169,6 +292,42 @@
 				cfg.animation?.duration ?? 1000
 			);
 		}
+	});
+
+	// Update labels when current ports change
+	$effect(() => {
+		const globe = globeInstance;
+		const ports = currentPorts;
+		// Use untrack to read config without creating dependency
+		const cfg = untrack(() => mergedConfig);
+
+		if (!globe || !ports.length) {
+			if (globe) globe.labelsData([]);
+			return;
+		}
+
+		// Clear existing labels immediately
+		globe.labelsData([]);
+
+		// Add delay to match arc animation timing
+		setTimeout(
+			() => {
+				// Create initial label data
+				const labelData: Label[] = ports.map((port) => ({
+					lat: parseFloat(String(port.lat)),
+					lng: parseFloat(String(port.lng)),
+					label: port.city || 'Unknown Port',
+					size: cfg.labels?.size ?? 0.5,
+					dotRadius: cfg.labels?.dotRadius ?? 0.2,
+					orientation: 'bottom'
+				}));
+
+				// Apply collision detection
+				const adjustedLabels = avoidLabelCollisions(labelData);
+				globe.labelsData(adjustedLabels);
+			},
+			(cfg.arcs?.flightTime ?? 2000) + 500
+		);
 	});
 
 	// Update markers when current location changes
@@ -284,12 +443,47 @@
 				}
 
 				globe
+					// RINGS - Above countries
+					.ringLat((d: any) => d.lat)
+					.ringLng((d: any) => d.lng)
+					.ringAltitude(cfg.rings?.altitude ?? 0.002)
+					.ringColor(() => (t: number) => `rgba(255,255,255,${1 - t})`)
+					.ringMaxRadius(cfg.rings?.maxRadius ?? 4)
+					.ringPropagationSpeed(cfg.rings?.propagationSpeed ?? 4)
+					.ringResolution(64)
+					.ringsData([])
+					.ringRepeatPeriod(
+						((cfg.arcs?.flightTime ?? 2000) * (cfg.arcs?.relativeLength ?? 0.4)) /
+							(cfg.arcs?.numRings ?? 5)
+					)
+					// ARCS - Above rings
+					.arcColor('color')
+					.arcStroke(cfg.arcs?.stroke ?? 0.2)
+					.arcDashLength(cfg.arcs?.dashLength ?? 0.6)
+					.arcDashGap(cfg.arcs?.dashGap ?? 2)
+					.arcDashInitialGap(cfg.arcs?.dashInitialGap ?? 1)
+					.arcDashAnimateTime(cfg.arcs?.flightTime ?? 2000)
+					.arcAltitude(cfg.arcs?.altitude ?? null)
+					.arcAltitudeAutoScale(cfg.arcs?.altitudeAutoscale ?? 0.3)
+					.arcStartAltitude(cfg.arcs?.startAltitude ?? 0.003)
+					.arcEndAltitude(cfg.arcs?.endAltitude ?? 0.003)
+					.arcsTransitionDuration(0)
+					.arcLabel((d: any) => `${d.port || 'Port'} - ${d.city || 'Unknown'}`)
 					// POINTS - Solid blue dots (base layer)
 					.pointsData(effectiveLocations)
 					.pointAltitude(() => cfg.points?.altitude ?? 0.003)
 					.pointColor(() => cfg.points?.color ?? '#0066ff')
 					.pointRadius(0.25)
-					// HTML - Location markers with click handlers
+					// LABELS - Floating above everything else
+					.labelColor(() => cfg.labels?.textColor ?? 'rgba(255, 255, 255, 1)')
+					.labelDotOrientation((d: any) => d.orientation)
+					.labelDotRadius(() => cfg.labels?.dotRadius ?? 0.25)
+					.labelSize(() => cfg.labels?.size ?? 1)
+					.labelText('label')
+					.labelLabel((d: any) => `<div>${d.label}</div>`)
+					.labelAltitude(cfg.labels?.altitude ?? 0.015)
+					.labelResolution(120)
+					// HTML - Floating above everything
 					.htmlElementsData(effectiveLocations)
 					.htmlElement((d: any) => {
 						const el = document.createElement('div');
@@ -305,7 +499,6 @@
 						markerKey(el);
 
 						el.style.pointerEvents = 'auto';
-						el.style.cursor = 'pointer';
 						el.onclick = () => {
 							const idx = effectiveLocations.findIndex(
 								(loc) =>
@@ -338,7 +531,24 @@
 						});
 
 						if (effectiveLocations.length > 0) {
+							const firstLocation = effectiveLocations[0];
+							globe!.ringsData([
+								{
+									lat: parseFloat(String(firstLocation.lat)),
+									lng: parseFloat(String(firstLocation.lng))
+								}
+							]);
 							currentIndex = 0;
+
+							// Setup auto-play
+							if (cfg.autoplay?.enabled && globeContainer) {
+								const interactionElements = [globeContainer, document];
+								createAutoPlay(
+									cfg.autoplay,
+									() => changeLocation(currentIndex + 1),
+									interactionElements
+								)(true);
+							}
 						}
 					});
 
@@ -414,9 +624,7 @@
 	{@attach attachGlobeContainer}
 ></div>
 
-<style lang="postcss">
-	@reference "@layerd/ui/ui.css";
-
+<style>
 	.globe-container {
 		position: relative;
 		width: 100%;
@@ -441,57 +649,23 @@
 	}
 
 	:global(.svg-marker .fg) {
-		fill: blue;
+		fill: #333;
 		transition: fill 0.3s ease;
 	}
 
-	/* :global(.svg-marker.active) {
-		transform: scale(2);
-		animation: blink 6s ease-in-out infinite;
-	} */
-	/* SVG Marker (active) */
 	:global(.svg-marker.active) {
-		@apply scale-250 md:scale-200 inline-block -translate-y-4 md:translate-y-0;
-		animation: float 6s ease-in-out infinite;
+		transform: scale(1.2);
 	}
 
 	:global(.svg-marker.active .stroke) {
-		stroke: white;
+		stroke: lime;
 	}
 
 	:global(.svg-marker.active .bg) {
-		fill: white;
+		fill: lime;
 	}
 
-	:global(.svg-marker:not(.active):hover) {
+	:global(.svg-marker:hover) {
 		transform: scale(1.1);
-	}
-
-	/* ---------------------------------------- */
-	/* ANIMATIONS                          */
-	/* ---------------------------------------- */
-	@keyframes float {
-		0% {
-			transform: translatey(0px);
-		}
-		50% {
-			transform: translatey(-2px);
-		}
-		100% {
-			transform: translatey(0px);
-		}
-	}
-
-	@keyframes blink {
-		0% {
-			fill: var(--color-primary);
-		}
-		50% {
-			fill: var(--color-primary);
-			opacity: 0.75;
-		}
-		100% {
-			fill: var(--color-primary);
-		}
 	}
 </style>
