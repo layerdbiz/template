@@ -102,25 +102,9 @@
 		}
 	});
 
-	const locations = [
-		{
-			location: 'New York',
-			lat: 40.7128,
-			lng: -74.006,
-			phone: '+1 (212) 555-0100',
-			email: 'ny@example.com'
-		}
-	];
-
-	const ports = [
-		{
-			port: 'Brooklyn Port',
-			city: 'Brooklyn',
-			location: 'New York',
-			lat: 40.6526,
-			lng: -74.0102
-		}
-	];
+	const locations =
+		'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/locations';
+	const ports = 'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/ports';
 </script>
 
 <!-- HERO 
@@ -192,9 +176,9 @@
 	>
 		<Globe
 			data={{
+				polygons: '/data/countries.geojson',
 				locations: locations,
-				ports: ports,
-				polygons: '/data/countries.geojson'
+				ports: ports
 			}}
 			globe={{
 				// image: '/images/skins/earth-blue-marble.jpg',
@@ -207,12 +191,20 @@
 						: 972
 					: typeof window !== 'undefined'
 						? window.innerHeight * 1.72
-						: 1856
+						: 1856,
+				altitude: mq.md ? 0.8 : 0.2,
+				latitude: mq.md ? 36 : 21
 			}}
 			atmosphere={{
 				show: true,
 				color: 'lightskyblue',
 				altitude: mq.md ? 0.25 : 0.08
+			}}
+			polygon={{
+				capColor: '#181e2b',
+				sideColor: '#0b101c',
+				strokeColor: '#3b4250',
+				altitude: mq.md ? 0.005 : 0.002
 			}}
 			vignette={{
 				enabled: false,
@@ -220,26 +212,26 @@
 				fadeEnd: 1.0,
 				opacity: 0.7
 			}}
-			position={{
-				altitude: mq.md ? 0.8 : 0.2,
-				latitude: mq.md ? 36 : 21
-			}}
-			points={{
-				altitude: 0.001,
-				color: 'rgba(0, 0, 255, 1)'
-			}}
-			labels={{
-				size: mq.md ? 0.75 : 0.25,
-				dotRadius: mq.md ? 0.3 : 0.1,
-				textColor: '#ffffff',
-				dotColor: '#ffffff'
-			}}
 			rings={{
 				color: '#ffffff',
 				maxRadius: mq.md ? 4 : 2,
 				propagationSpeed: mq.md ? 4 : 2,
 				repeatPeriod: 1000,
-				altitude: 0
+				altitude: mq.md ? 0.006 : 0.003
+			}}
+			points={{
+				altitude: mq.md ? 0.007 : 0.01,
+				color: 'rgba(0, 0, 255, 0)'
+			}}
+			labels={{
+				size: mq.md ? 0.75 : 0.25,
+				dotRadius: mq.md ? 0.3 : 0.1,
+				textColor: '#ffffff',
+				dotColor: '#ffffff',
+				altitude: mq.md ? 0.008 : 0.005
+			}}
+			html={{
+				altitude: mq.md ? 0.009 : 0.01
 			}}
 			arcs={{
 				relativeLength: 0.4,
@@ -251,7 +243,9 @@
 				dashInitialGap: 1,
 				altitude: null,
 				altitudeAutoscale: mq.md ? 0.3 : 0.2,
-				color: 'rgba(255, 255, 255, 1)'
+				startAltitude: mq.md ? 0.007 : 0.004,
+				endAltitude: mq.md ? 0.007 : 0.004,
+				color: '#ffffff'
 			}}
 			animation={{
 				duration: 1000
@@ -261,12 +255,6 @@
 				interval: 7000,
 				pauseOnInteraction: true,
 				resumeDelay: 60000
-			}}
-			polygon={{
-				capColor: '#181e2b',
-				sideColor: '#0b101c',
-				strokeColor: '#3b4250',
-				altitude: mq.md ? 0.005 : 0.002
 			}}
 		/>
 	</div>

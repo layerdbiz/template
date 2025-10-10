@@ -46,8 +46,8 @@ export interface Ring {
 // ============================================================================
 
 export interface GlobeDataConfig {
-	locations?: Location[];
-	ports?: Port[];
+	locations?: Location[] | string;
+	ports?: Port[] | string;
 	hexPolygons?: string;
 	polygons?: string;
 }
@@ -58,6 +58,8 @@ export interface GlobeAppearanceConfig {
 	height?: number;
 	left?: number;
 	top?: number;
+	altitude?: number;
+	latitude?: number;
 }
 
 export interface GlobeAtmosphereConfig {
@@ -91,11 +93,6 @@ export interface GlobeVignetteConfig {
 	opacity?: number;
 }
 
-export interface GlobePositionConfig {
-	altitude?: number;
-	latitude?: number;
-}
-
 export interface GlobePointsConfig {
 	altitude?: number;
 	color?: string;
@@ -107,6 +104,7 @@ export interface GlobeLabelsConfig {
 	textColor?: string;
 	dotColor?: string;
 	orientation?: "top" | "bottom" | "left" | "right";
+	altitude?: number;
 }
 
 export interface GlobeRingsConfig {
@@ -128,6 +126,8 @@ export interface GlobeArcsConfig {
 	altitude?: number | null;
 	altitudeAutoscale?: number;
 	color?: string;
+	startAltitude?: number;
+	endAltitude?: number;
 }
 
 export interface GlobeAnimationConfig {
@@ -141,6 +141,10 @@ export interface GlobeAutoPlayConfig {
 	resumeDelay?: number;
 }
 
+export interface GlobeHtmlConfig {
+	altitude?: number;
+}
+
 export interface GlobeConfig {
 	data?: GlobeDataConfig;
 	globe?: GlobeAppearanceConfig;
@@ -148,13 +152,13 @@ export interface GlobeConfig {
 	hexPolygon?: GlobeHexPolygonConfig;
 	polygon?: GlobePolygonConfig;
 	vignette?: GlobeVignetteConfig;
-	position?: GlobePositionConfig;
 	points?: GlobePointsConfig;
 	labels?: GlobeLabelsConfig;
 	rings?: GlobeRingsConfig;
 	arcs?: GlobeArcsConfig;
 	animation?: GlobeAnimationConfig;
 	autoplay?: GlobeAutoPlayConfig;
+	html?: GlobeHtmlConfig;
 }
 
 export interface Label {
@@ -167,8 +171,8 @@ export interface Label {
 }
 
 export interface GlobeProps {
-	locations?: Location[];
-	ports?: Port[];
+	locations?: Location[] | string;
+	ports?: Port[] | string;
 	config?: GlobeConfig;
 	class?: string;
 
@@ -179,13 +183,13 @@ export interface GlobeProps {
 	hexPolygon?: GlobeHexPolygonConfig;
 	polygon?: GlobePolygonConfig;
 	vignette?: GlobeVignetteConfig;
-	position?: GlobePositionConfig;
 	points?: GlobePointsConfig;
 	labels?: GlobeLabelsConfig;
 	rings?: GlobeRingsConfig;
 	arcs?: GlobeArcsConfig;
 	animation?: GlobeAnimationConfig;
 	autoplay?: GlobeAutoPlayConfig;
+	html?: GlobeHtmlConfig;
 }
 
 // ============================================================================
@@ -216,18 +220,28 @@ export function createDefaultConfig(
 	// Label settings
 	const labelSize = isSmallScreen ? 0.75 : 0.25;
 	const labelDotRadius = isSmallScreen ? 0.3 : 0.1;
+	const labelAltitude = 0.015;
 
 	// Ring settings
 	const ringMaxRadius = isSmallScreen ? 4 : 2;
 	const ringPropagationSpeed = isSmallScreen ? 4 : 2;
+	const ringAltitude = 0.002;
 
 	// Arc settings
 	const arcStroke = isSmallScreen ? 0.2 : 0.05;
 	const arcAltitude = null;
 	const arcAltitudeAutoscale = isSmallScreen ? 0.3 : 0.2;
+	const arcStartAltitude = 0.003;
+	const arcEndAltitude = 0.003;
 
 	// Atmosphere settings
 	const atmosphereAltitude = isSmallScreen ? 0 : 0.15;
+
+	// Polygon settings
+	const polygonAltitude = 0.005;
+
+	// HTML marker settings
+	const htmlAltitude = 0.02;
 
 	return {
 		globe: {
@@ -236,6 +250,8 @@ export function createDefaultConfig(
 			height: globeHeight,
 			left: globeLeft,
 			top: globeTop,
+			altitude: povAltitude,
+			latitude: povLatitude,
 		},
 		atmosphere: {
 			show: true,
@@ -248,12 +264,8 @@ export function createDefaultConfig(
 			fadeEnd: 1.0,
 			opacity: 0.7,
 		},
-		position: {
-			altitude: povAltitude,
-			latitude: povLatitude,
-		},
 		points: {
-			altitude: 0.001,
+			altitude: 0.003,
 			color: "rgba(0, 0, 255, 1)",
 		},
 		labels: {
@@ -261,13 +273,14 @@ export function createDefaultConfig(
 			dotRadius: labelDotRadius,
 			textColor: "rgba(255, 255, 255, 1)",
 			dotColor: "#ffffff",
+			altitude: labelAltitude,
 		},
 		rings: {
 			color: "#ffffff",
 			maxRadius: ringMaxRadius,
 			propagationSpeed: ringPropagationSpeed,
 			repeatPeriod: 1000,
-			altitude: 0,
+			altitude: ringAltitude,
 		},
 		arcs: {
 			relativeLength: 0.4,
@@ -279,7 +292,12 @@ export function createDefaultConfig(
 			dashInitialGap: 1,
 			altitude: arcAltitude,
 			altitudeAutoscale: arcAltitudeAutoscale,
+			startAltitude: arcStartAltitude,
+			endAltitude: arcEndAltitude,
 			color: "rgba(255, 255, 255, 1)",
+		},
+		polygon: {
+			altitude: polygonAltitude,
 		},
 		animation: {
 			duration: 1000,
@@ -289,6 +307,9 @@ export function createDefaultConfig(
 			interval: 7000,
 			pauseOnInteraction: true,
 			resumeDelay: 60000,
+		},
+		html: {
+			altitude: htmlAltitude,
 		},
 	};
 }
@@ -309,13 +330,13 @@ export function mergeConfigs(
 		result.hexPolygon = { ...result.hexPolygon, ...config.hexPolygon };
 		result.polygon = { ...result.polygon, ...config.polygon };
 		result.vignette = { ...result.vignette, ...config.vignette };
-		result.position = { ...result.position, ...config.position };
 		result.points = { ...result.points, ...config.points };
 		result.labels = { ...result.labels, ...config.labels };
 		result.rings = { ...result.rings, ...config.rings };
 		result.arcs = { ...result.arcs, ...config.arcs };
 		result.animation = { ...result.animation, ...config.animation };
 		result.autoplay = { ...result.autoplay, ...config.autoplay };
+		result.html = { ...result.html, ...config.html };
 	}
 	return result;
 }

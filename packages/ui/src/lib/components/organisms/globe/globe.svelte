@@ -51,6 +51,11 @@
 	// Store marker elements for class toggling
 	let markerElements = $state<Map<string, HTMLElement>>(new Map());
 
+	// Store fetched data
+	let fetchedLocations = $state<Location[]>([]);
+	let fetchedPorts = $state<Port[]>([]);
+	let isLoadingData = $state(false);
+
 	// Create a reactive, merged configuration
 	const mergedConfig = $derived(
 		mergeConfigs(
@@ -61,8 +66,16 @@
 	);
 
 	// Get locations and ports from data config or direct props
-	const effectiveLocations = $derived(mergedConfig.data?.locations ?? locations);
-	const effectivePorts = $derived(mergedConfig.data?.ports ?? ports);
+	const locationsSource = $derived(mergedConfig.data?.locations ?? locations);
+	const portsSource = $derived(mergedConfig.data?.ports ?? ports);
+
+	// Resolve locations and ports (fetch if URL, use directly if array)
+	const effectiveLocations = $derived(
+		typeof locationsSource === 'string' ? fetchedLocations : (locationsSource as Location[]) || []
+	);
+	const effectivePorts = $derived(
+		typeof portsSource === 'string' ? fetchedPorts : (portsSource as Port[]) || []
+	);
 
 	// Current location and ports
 	const currentLocation = $derived(effectiveLocations[currentIndex] || null);
@@ -98,7 +111,11 @@
 	function changeLocation(newIndex: number) {
 		const total = effectiveLocations.length;
 		if (total === 0) return;
-		currentIndex = (newIndex + total) % total;
+		const normalizedIndex = (newIndex + total) % total;
+		console.log(
+			`🎯 changeLocation() called: newIndex=${newIndex}, normalized=${normalizedIndex}, current=${currentIndex}`
+		);
+		currentIndex = normalizedIndex;
 	}
 
 	function emitArc(startLocation: Location, endLocation: Location) {
@@ -115,6 +132,10 @@
 		const FLIGHT_TIME = cfg.arcs?.flightTime ?? 2000;
 		const ARC_REL_LEN = cfg.arcs?.relativeLength ?? 0.4;
 
+		console.log(
+			`🚀 EMITTING ARC: ${startLocation.location} (${startLat}, ${startLng}) → ${endLocation.location} (${endLat}, ${endLng})`
+		);
+
 		// Create and add the arc
 		const arc: Arc = {
 			startLat,
@@ -123,54 +144,79 @@
 			endLng,
 			color: cfg.arcs?.color ?? 'rgba(255, 255, 255, 1)'
 		};
-		// Use untrack to read current state without dependency
-		const currentArcs = untrack(() => activeArcs);
-		const newArcs = [...currentArcs, arc];
-		activeArcs = newArcs;
+
+		// Add arc to active arcs array
+		const newArcs = [...activeArcs, arc];
+		untrack(() => {
+			activeArcs = newArcs;
+		});
 		globe.arcsData(newArcs);
+		console.log(`   ✈️  Arc added, total arcs: ${newArcs.length}`);
 
 		// Remove arc after animation completes
 		setTimeout(() => {
-			activeArcs = activeArcs.filter((d) => d !== arc);
+			untrack(() => {
+				activeArcs = activeArcs.filter((d) => d !== arc);
+			});
 			globe.arcsData(activeArcs);
+			console.log(
+				`   ✈️  Arc removed (${startLocation.location} → ${endLocation.location}), remaining arcs: ${activeArcs.length}`
+			);
 		}, FLIGHT_TIME * 2);
 
 		// Add start location rings
 		const startRing: Ring = { lat: startLat, lng: startLng };
-		// Use untrack to read current state without dependency
-		const currentRings = untrack(() => activeRings);
-		const newStartRings = [...currentRings, startRing];
-		activeRings = newStartRings;
+		const newStartRings = [...activeRings, startRing];
+		untrack(() => {
+			activeRings = newStartRings;
+		});
 		globe.ringsData(newStartRings);
+		console.log(
+			`   � START ring added at ${startLocation.location} (${startLat}, ${startLng}), total rings: ${newStartRings.length}`
+		);
 
-		// Remove start rings after partial animation
+		// Remove start rings after partial animation - FILTER BY VALUES, NOT REFERENCE
 		setTimeout(() => {
-			activeRings = activeRings.filter((r) => r !== startRing);
+			untrack(() => {
+				activeRings = activeRings.filter((r) => !(r.lat === startLat && r.lng === startLng));
+			});
 			globe.ringsData(activeRings);
+			console.log(
+				`   � START ring removed from ${startLocation.location} (${startLat}, ${startLng}), remaining rings: ${activeRings.length}`
+			);
 		}, FLIGHT_TIME * ARC_REL_LEN);
 
 		// Add end location rings with delay
 		setTimeout(() => {
 			const endRing: Ring = { lat: endLat, lng: endLng };
-			const currentRings2 = untrack(() => activeRings);
-			const newEndRings = [...currentRings2, endRing];
-			activeRings = newEndRings;
+			const newEndRings = [...activeRings, endRing];
+			untrack(() => {
+				activeRings = newEndRings;
+			});
 			globe.ringsData(newEndRings);
+			console.log(
+				`   � END ring added at ${endLocation.location} (${endLat}, ${endLng}), total rings: ${newEndRings.length}`
+			);
 
-			// Remove end rings after partial animation
+			// Remove end rings after partial animation - FILTER BY VALUES, NOT REFERENCE
 			setTimeout(() => {
-				activeRings = activeRings.filter((r) => r !== endRing);
+				untrack(() => {
+					activeRings = activeRings.filter((r) => !(r.lat === endLat && r.lng === endLng));
+				});
 				globe.ringsData(activeRings);
+				console.log(
+					`   � END ring removed from ${endLocation.location} (${endLat}, ${endLng}), remaining rings: ${activeRings.length}`
+				);
+
+				// After end rings are removed, THEN set the final ring
+				setTimeout(() => {
+					globe.ringsData([{ lat: endLat, lng: endLng }]);
+					console.log(
+						`   ✅ FINAL ring set at ${endLocation.location} (${endLat}, ${endLng}) - Arc animation complete`
+					);
+				}, 100);
 			}, FLIGHT_TIME * ARC_REL_LEN);
 		}, FLIGHT_TIME);
-
-		// After all animations, set current location to active
-		setTimeout(
-			() => {
-				globe.ringsData([{ lat: endLat, lng: endLng }]);
-			},
-			FLIGHT_TIME * (1 + ARC_REL_LEN)
-		);
 	}
 
 	function handleKeyboard(event: KeyboardEvent) {
@@ -187,18 +233,71 @@
 	// Effects (Svelte 5 $effect)
 	// ============================================================================
 
+	// Fetch data when URLs are provided
+	$effect(() => {
+		if (!browser) return;
+
+		const locSrc = locationsSource;
+		const portSrc = portsSource;
+
+		const needsFetch = typeof locSrc === 'string' || typeof portSrc === 'string';
+		if (!needsFetch) return;
+
+		isLoadingData = true;
+		const promises: Promise<void>[] = [];
+
+		// Fetch locations if URL is provided
+		if (typeof locSrc === 'string') {
+			console.log('🌍 Fetching locations from:', locSrc);
+			promises.push(
+				fetch(locSrc)
+					.then((res) => res.json())
+					.then((data) => {
+						fetchedLocations = data;
+						console.log('✅ Locations loaded:', data.length, 'items');
+					})
+					.catch((err) => {
+						console.error('❌ Failed to fetch locations:', err);
+					})
+			);
+		}
+
+		// Fetch ports if URL is provided
+		if (typeof portSrc === 'string') {
+			console.log('🌍 Fetching ports from:', portSrc);
+			promises.push(
+				fetch(portSrc)
+					.then((res) => res.json())
+					.then((data) => {
+						fetchedPorts = data;
+						console.log('✅ Ports loaded:', data.length, 'items');
+					})
+					.catch((err) => {
+						console.error('❌ Failed to fetch ports:', err);
+					})
+			);
+		}
+
+		// Wait for all fetches to complete
+		Promise.all(promises).finally(() => {
+			isLoadingData = false;
+			console.log('🎉 Data loading complete');
+		});
+	});
+
 	// Update globe rings and view when current location changes
 	$effect(() => {
 		const globe = globeInstance;
 		const location = currentLocation;
-		const prevLoc = previousLocation;
+		const prevLoc = untrack(() => previousLocation);
 		// Use untrack to read config without creating dependency
 		const cfg = untrack(() => mergedConfig);
 
 		if (!globe || !location) return;
 
-		// Clear any existing rings immediately
-		globe.ringsData([]);
+		console.log(
+			`📍 LOCATION EFFECT TRIGGERED - Current: ${location.location}, Previous: ${prevLoc?.location ?? 'null'}`
+		);
 
 		// First time initialization - single ring animation
 		if (!prevLoc) {
@@ -206,6 +305,12 @@
 				lat: parseFloat(String(location.lat)),
 				lng: parseFloat(String(location.lng))
 			};
+
+			console.log(`   🔰 FIRST LOAD - Setting initial ring at ${location.location}`);
+
+			// Clear any existing rings immediately on first load
+			globe.ringsData([]);
+
 			setTimeout(() => {
 				globe.ringsData([ring]);
 
@@ -218,7 +323,7 @@
 				);
 			}, 100);
 
-			// Use untrack to avoid triggering effect when setting previousLocation
+			// Update previous location using untrack to avoid triggering this effect
 			untrack(() => {
 				previousLocation = location;
 			});
@@ -226,9 +331,9 @@
 			// Update globe view
 			globe.pointOfView(
 				{
-					lat: parseFloat(String(location.lat)) - (cfg.position?.latitude ?? 0),
+					lat: parseFloat(String(location.lat)) - (cfg.globe?.latitude ?? 0),
 					lng: parseFloat(String(location.lng)),
-					altitude: cfg.position?.altitude ?? 0.25
+					altitude: cfg.globe?.altitude ?? 0.25
 				},
 				cfg.animation?.duration ?? 1000
 			);
@@ -243,10 +348,16 @@
 			prevLoc.lat !== location.lat ||
 			prevLoc.lng !== location.lng;
 
+		console.log(`   🔄 Location changed: ${locationChanged}`);
+		console.log(`      From: ${prevLoc.location} (${prevLoc.lat}, ${prevLoc.lng})`);
+		console.log(`      To: ${location.location} (${location.lat}, ${location.lng})`);
+
 		if (locationChanged) {
+			console.log(`   ⚡ CALLING emitArc()`);
+			// DO NOT clear rings here - let emitArc handle everything
 			emitArc(prevLoc, location);
 
-			// Use untrack to avoid triggering effect when setting previousLocation
+			// Update previous location using untrack to avoid triggering this effect
 			untrack(() => {
 				previousLocation = location;
 			});
@@ -254,12 +365,14 @@
 			// Update globe view
 			globe.pointOfView(
 				{
-					lat: parseFloat(String(location.lat)) - (cfg.position?.latitude ?? 0),
+					lat: parseFloat(String(location.lat)) - (cfg.globe?.latitude ?? 0),
 					lng: parseFloat(String(location.lng)),
-					altitude: cfg.position?.altitude ?? 0.25
+					altitude: cfg.globe?.altitude ?? 0.25
 				},
 				cfg.animation?.duration ?? 1000
 			);
+		} else {
+			console.log(`   ⏭️  SKIPPED - No actual location change detected`);
 		}
 	});
 
@@ -344,7 +457,7 @@
 				if (isDestroyed) return;
 
 				const cfg = untrack(() => mergedConfig);
-				const altitude = cfg.position?.altitude ?? 0.5;
+				const altitude = cfg.globe?.altitude ?? 0.5;
 
 				globe = new Globe(globeContainer)
 					.backgroundColor('rgba(0,0,0,0)')
@@ -412,7 +525,7 @@
 				}
 
 				globe
-					// RINGS - Above countries (0.002)
+					// RINGS - Above countries
 					.ringLat((d: any) => d.lat)
 					.ringLng((d: any) => d.lng)
 					.ringAltitude(cfg.rings?.altitude ?? 0.002)
@@ -434,23 +547,25 @@
 					.arcDashAnimateTime(cfg.arcs?.flightTime ?? 2000)
 					.arcAltitude(cfg.arcs?.altitude ?? null)
 					.arcAltitudeAutoScale(cfg.arcs?.altitudeAutoscale ?? 0.3)
+					.arcStartAltitude(cfg.arcs?.startAltitude ?? 0.003)
+					.arcEndAltitude(cfg.arcs?.endAltitude ?? 0.003)
 					.arcsTransitionDuration(0)
 					.arcLabel((d: any) => `${d.port || 'Port'} - ${d.city || 'Unknown'}`)
-					// POINTS - Above rings (0.003) - Solid blue dots (base layer)
+					// POINTS - Solid blue dots (base layer)
 					.pointsData(effectiveLocations)
 					.pointAltitude(() => cfg.points?.altitude ?? 0.003)
 					.pointColor(() => cfg.points?.color ?? '#0066ff')
 					.pointRadius(0.25)
-					// LABELS - Directly on top of blue points (0.004)
+					// LABELS - Floating above everything else
 					.labelColor(() => cfg.labels?.textColor ?? 'rgba(255, 255, 255, 1)')
 					.labelDotOrientation((d: any) => d.orientation)
 					.labelDotRadius(() => cfg.labels?.dotRadius ?? 0.25)
 					.labelSize(() => cfg.labels?.size ?? 1)
 					.labelText('label')
 					.labelLabel((d: any) => `<div>${d.label}</div>`)
-					.labelAltitude(0.001)
+					.labelAltitude(cfg.labels?.altitude ?? 0.015)
 					.labelResolution(120)
-					// HTML - Floating above everything (0.006)
+					// HTML - Floating above everything
 					.htmlElementsData(effectiveLocations)
 					.htmlElement((d: any) => {
 						const el = document.createElement('div');
@@ -480,7 +595,7 @@
 					})
 					.htmlLat((d: any) => d.lat)
 					.htmlLng((d: any) => d.lng)
-					.htmlAltitude(0.01)
+					.htmlAltitude(cfg.html?.altitude ?? 0.02)
 					// FIRST LOAD
 					.onGlobeReady(() => {
 						if (isDestroyed) return;
@@ -569,7 +684,7 @@
 					.width(window.innerWidth)
 					.height(window.innerHeight)
 					.globeOffset([cfg.globe?.left ?? 0, cfg.globe?.top ?? 0])
-					.pointOfView({ lat: 0, lng: 0, altitude: cfg.position?.altitude ?? 0.5 }, 1000);
+					.pointOfView({ lat: 0, lng: 0, altitude: cfg.globe?.altitude ?? 0.5 }, 1000);
 			}
 		};
 

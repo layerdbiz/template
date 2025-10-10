@@ -14,6 +14,7 @@
     "vercel/turborepo/docs/site/content/docs",
     "pnpm/pnpm.io/docs",
     "tailwindlabs/tailwindcss.com/src/docs",
-    "oneezy/ui"
+    "oneezy/ui",
+    "vasturiano/globe.gl"
   ]
 }
