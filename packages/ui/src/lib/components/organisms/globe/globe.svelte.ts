@@ -117,27 +117,24 @@ export interface GlobeProps {
 
 /**
  * Creates default globe configuration with responsive values
- * Uses mq.sm to determine if we're on a small screen
+ * Uses mq.md to determine if we're on a small screen
  */
 export function createDefaultConfig(
-	width: number = typeof window !== 'undefined' ? window.innerWidth : 1920,
-	height: number = typeof window !== 'undefined' ? window.innerHeight : 1080
+	width: number = typeof window !== "undefined" ? window.innerWidth : 1920,
+	height: number = typeof window !== "undefined" ? window.innerHeight : 1080,
 ): GlobeConfig {
-	// Use mq.sm directly for responsive values (0-639px = small screen)
-	const isSmallScreen = mq.sm;
-
 	// Responsive values based on screen size
 	const globeWidth = width;
 	const globeHeight = height;
 	const globeLeft = 0;
-	const globeTop = isSmallScreen ? height * 0.9 : height * 1.72;
+	const globeTop = mq.md ? height * 0.9 : height * 1.72;
 
 	// Camera settings
-	const povAltitude = isSmallScreen ? 0.8 : 0.2;
-	const povLatitude = isSmallScreen ? 36 : 21;
+	const povAltitude = mq.md ? 0.8 : 0.2;
+	const povLatitude = mq.md ? 36 : 21;
 
 	// Atmosphere settings
-	const atmosphereAltitude = isSmallScreen ? 0 : 0.15;
+	const atmosphereAltitude = mq.md ? 0 : 0.15;
 
 	// Polygon settings
 	const polygonAltitude = 0.005;
@@ -147,38 +144,38 @@ export function createDefaultConfig(
 
 	return {
 		globe: {
-			image: '/images/skins/earth-blue-marble.jpg',
+			image: "/images/skins/earth-blue-marble.jpg",
 			width: globeWidth,
 			height: globeHeight,
 			left: globeLeft,
 			top: globeTop,
 			altitude: povAltitude,
-			latitude: povLatitude
+			latitude: povLatitude,
 		},
 		atmosphere: {
 			show: true,
-			color: 'lightskyblue',
-			altitude: atmosphereAltitude
+			color: "lightskyblue",
+			altitude: atmosphereAltitude,
 		},
 		vignette: {
 			enabled: true,
 			fadeStart: 0.3,
 			fadeEnd: 1.0,
-			opacity: 0.7
+			opacity: 0.7,
 		},
 		points: {
 			altitude: 0.003,
-			color: 'rgba(0, 0, 255, 1)'
+			color: "rgba(0, 0, 255, 1)",
 		},
 		polygon: {
-			altitude: polygonAltitude
+			altitude: polygonAltitude,
 		},
 		animation: {
-			duration: 1000
+			duration: 1000,
 		},
 		html: {
-			altitude: htmlAltitude
-		}
+			altitude: htmlAltitude,
+		},
 	};
 }
 
@@ -186,7 +183,9 @@ export function createDefaultConfig(
  * Deep merge multiple globe configurations.
  * The last object in the array has the highest precedence.
  */
-export function mergeConfigs(...configs: (GlobeConfig | undefined)[]): GlobeConfig {
+export function mergeConfigs(
+	...configs: (GlobeConfig | undefined)[]
+): GlobeConfig {
 	const result: GlobeConfig = {};
 	for (const config of configs) {
 		if (!config) continue;
