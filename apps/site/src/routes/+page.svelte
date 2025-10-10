@@ -229,7 +229,7 @@
 				]
 			}}
 			html={{
-				altitude: mq.md ? 0.009 : 0.009
+				altitude: mq.md ? 0.009 : 0.005
 			}}
 			arcs={{
 				color: '#ffffff',

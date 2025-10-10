@@ -10,13 +10,7 @@
 	import { untrack } from 'svelte';
 	import * as THREE from 'three';
 	import Globe from 'globe.gl';
-	import {
-		type GlobeProps,
-		type Location,
-		createDefaultConfig,
-		markerSVG,
-		mergeConfigs
-	} from '@layerd/ui';
+	import { type GlobeProps, type Location, createDefaultConfig, mergeConfigs } from '@layerd/ui';
 
 	let {
 		locations = $bindable([]),
@@ -517,17 +511,28 @@
 			// Use tracked marker elements instead of querySelectorAll
 			markerElements.forEach((markerEl, key) => {
 				const marker = markerEl.querySelector('.svg-marker');
+				const markerWrapper = markerEl.closest('.globe-marker');
+				const label = markerWrapper?.querySelector('.location-label') as HTMLElement;
 				if (!marker) return;
 
 				const [lat, lng] = key.split(',').map(Number);
 				const isActive = lat === currentLat && lng === currentLng;
 
 				marker.classList.toggle('active', isActive);
+
+				// Show/hide label by toggling opacity
+				if (label) {
+					if (isActive) {
+						label.classList.remove('opacity-0');
+						label.classList.add('opacity-100');
+					} else {
+						label.classList.remove('opacity-100');
+						label.classList.add('opacity-0');
+					}
+				}
 			});
 		}, 500);
-	});
-
-	// Recreate globe when media query breakpoint changes
+	}); // Recreate globe when media query breakpoint changes
 	$effect(() => {
 		if (!globeInstance) return;
 
@@ -681,7 +686,7 @@
 			const pointLayers = cfg.points?.layers || [
 				{
 					altitude: cfg.points?.altitude ?? 0.003,
-					base: cfg.points?.base ?? 0,
+					base: cfg.points?.base ?? cfg.points?.base ?? 0, // Support both property names
 					color: cfg.points?.color ?? '#0066ff',
 					radius: cfg.points?.radius ?? 0.25,
 					zOffset: 0
@@ -690,7 +695,10 @@
 
 			// Check if any layer needs base or if we have multiple layers
 			const needsCustomObjects =
-				pointLayers.some((layer) => (layer.base ?? 0) > 0) || pointLayers.length > 1;
+				pointLayers.some((layer) => {
+					const baseAlt = layer.base ?? layer.base ?? 0;
+					return baseAlt > 0;
+				}) || pointLayers.length > 1;
 
 			if (needsCustomObjects) {
 				// Use 3D Objects Layer for elevated points or multi-layer points
@@ -707,7 +715,11 @@
 					.objectsData(layeredLocations)
 					.objectLat((d: any) => d.lat)
 					.objectLng((d: any) => d.lng)
-					.objectAltitude((d: any) => d.__layerConfig.base ?? 0) // Base starts at this altitude
+					.objectAltitude((d: any) => {
+						// Support both base and base property names
+						const base = d.__layerConfig.base ?? d.__layerConfig.base ?? 0;
+						return base;
+					})
 					.objectThreeObject((d: any) => {
 						const layer = d.__layerConfig;
 						const pointAltitude = layer.altitude ?? 0.003;
@@ -762,21 +774,35 @@
 				// HTML - Location markers with click handlers
 				.htmlElementsData(effectiveLocations)
 				.htmlElement((d: any) => {
-					const el = document.createElement('div');
-					el.innerHTML = markerSVG;
-					el.dataset.lat = String(d.lat);
-					el.dataset.lng = String(d.lng);
+					const wrapper = document.createElement('div');
+					wrapper.innerHTML = `
+						<div class="globe-marker relative flex flex-col items-center justify-center pointer-events-none">
+							<i class="globe-marker-icon pointer-events-auto cursor-pointer block" 
+							     data-lat="${d.lat}" 
+							     data-lng="${d.lng}">
+								
+									 <svg xmlns="http://www.w3.org/2000/svg" class="svg svg-marker w-8 h-8 origin-bottom cursor-pointer duration-300" fill="none" viewBox="0 0 87 122">
+										<path class="stroke" stroke-width="4" d="m43.0833 115.667-1.4842 1.34 1.4842 1.643 1.4842-1.643-1.4842-1.34Zm0 0c1.4842 1.34 1.4846 1.34 1.4851 1.339l.0018-.002.0062-.007.023-.025.0875-.098c.0764-.085.1886-.211.3343-.376.2914-.33.7167-.816 1.2567-1.442 1.0799-1.254 2.6193-3.074 4.4651-5.348 3.6898-4.546 8.6129-10.9197 13.5399-18.2222 4.9232-7.2969 9.8751-15.5579 13.6022-23.8774 3.7154-8.2933 6.2816-16.7923 6.2816-24.5251A41.0836 41.0836 0 0 0 14.033 14.033 41.0835 41.0835 0 0 0 2 43.0833c0 7.7328 2.5662 16.2318 6.2816 24.5251 3.7271 8.3195 8.679 16.5805 13.6021 23.8774 4.9271 7.3025 9.8501 13.6762 13.5399 18.2222 1.8458 2.274 3.3852 4.094 4.4652 5.348.54.626.9652 1.112 1.2566 1.442.1457.165.258.291.3344.376l.0874.098.023.025.0063.007.0017.002c.0006.001.0009.001 1.4851-1.339Z"/>
+										<path class="bg fill-white" d="M60 44c0 9.3888-7.6112 17-17 17s-17-7.6112-17-17 7.6112-17 17-17 17 7.6112 17 17Z"/>
+										<path class="fg fill-primary-600" d="M43.0833 57.0417a13.9584 13.9584 0 1 1 .0001-27.9168 13.9584 13.9584 0 0 1-.0001 27.9168Zm0-53.0417a39.0837 39.0837 0 0 0-27.6361 11.4472A39.0837 39.0837 0 0 0 4 43.0833c0 29.3125 39.0833 72.5837 39.0833 72.5837s39.0834-43.2712 39.0834-72.5837A39.0834 39.0834 0 0 0 43.0833 4Z"/>
+									</svg>
+							</i>
+							<h4 class="location-label absolute top-full translate-y-full mt-2 text-sm font-normal text-white m-0 px-2 py-1 bg-black/60 rounded whitespace-nowrap pointer-events-none opacity-0 transition-all duration-300">
+								${d.location || 'Unknown Location'}
+							</h4>
+						</div>
+					`;
+
+					const marker = wrapper.querySelector('.globe-marker-icon') as HTMLElement;
 
 					// Apply attachment for lifecycle tracking
 					const markerKey = createMarkerAttachment(
 						parseFloat(String(d.lat)),
 						parseFloat(String(d.lng))
 					);
-					markerKey(el);
+					markerKey(marker);
 
-					el.style.pointerEvents = 'auto';
-					el.style.cursor = 'pointer';
-					el.onclick = () => {
+					marker.onclick = () => {
 						const idx = effectiveLocations.findIndex(
 							(loc) =>
 								parseFloat(String(loc.lat)) === parseFloat(String(d.lat)) &&
@@ -798,7 +824,8 @@
 							}
 						}
 					};
-					return el;
+
+					return wrapper.firstElementChild as HTMLElement;
 				})
 				.htmlLat((d: any) => d.lat)
 				.htmlLng((d: any) => d.lng)
@@ -834,16 +861,8 @@
 			// Display user-friendly error message
 			if (globeContainer) {
 				globeContainer.innerHTML = `
-					<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: white; text-align: center; padding: 20px;">
-						<div>
-							<h3 style="margin-bottom: 10px;">Unable to load 3D Globe</h3>
-							<p style="opacity: 0.7; font-size: 14px;">WebGL context error. Please try:</p>
-							<ul style="list-style: none; padding: 0; opacity: 0.7; font-size: 14px;">
-								<li>• Refresh the page (Ctrl+Shift+R)</li>
-								<li>• Close other browser tabs</li>
-								<li>• Restart your browser</li>
-							</ul>
-						</div>
+					<div class="flex items-center justify-center h-full text-white text-center p-4">
+						<h3>Unable to load Globe</h3>
 					</div>
 				`;
 			}
@@ -890,46 +909,28 @@
 <style lang="postcss">
 	@reference "@layerd/ui/ui.css";
 
-	:global(.svg-marker) {
-		width: 40px;
-		height: 40px;
-		cursor: pointer;
-		transition: all 0.3s ease;
-	}
-
-	:global(.svg-marker.active .stroke) {
-		stroke: white;
-		transition: stroke 0.3s ease;
-	}
-
-	:global(.svg-marker .bg) {
-		fill: white;
-		transition: fill 0.3s ease;
-	}
-
-	:global(.svg-marker .fg) {
-		fill: var(--color-primary-600);
-		transition: fill 0.3s ease;
-	}
-
 	/* SVG Marker (active) */
-	:global(.svg-marker.active) {
-		@apply md:scale-200 inline-block -translate-y-4 scale-150 md:translate-y-0;
-		animation: float 6s ease-in-out infinite;
-	}
+	:global {
+		.svg-marker.active {
+			@apply md:scale-250 inline-block -translate-y-4 scale-150 md:translate-y-0;
+			animation: float 6s ease-in-out infinite;
+		}
 
-	:global(.svg-marker.active .stroke) {
-		stroke: white;
-	}
+		.svg-marker.active .stroke {
+			@apply stroke-white;
+		}
 
-	:global(.svg-marker.active .bg) {
-		fill: white;
-	}
+		.svg-marker.active .bg {
+			@apply fill-white;
+		}
+		.svg-marker.active .fg {
+			@apply fill-primary-600;
+		}
 
-	:global(.svg-marker:not(.active):hover) {
-		transform: scale(1.1);
+		.svg-marker:not(.active):hover {
+			@apply scale-105;
+		}
 	}
-
 	/* ---------------------------------------- */
 	/* ANIMATIONS                          */
 	/* ---------------------------------------- */
