@@ -82,6 +82,13 @@ export interface GlobeHtmlConfig {
 	altitude?: number;
 }
 
+export interface GlobeAutoplayConfig {
+	enabled?: boolean;
+	interval?: number;
+	pauseOnInteraction?: boolean;
+	resumeDelay?: number;
+}
+
 export interface GlobeConfig {
 	data?: GlobeDataConfig;
 	globe?: GlobeAppearanceConfig;
@@ -92,6 +99,7 @@ export interface GlobeConfig {
 	points?: GlobePointsConfig;
 	animation?: GlobeAnimationConfig;
 	html?: GlobeHtmlConfig;
+	autoplay?: GlobeAutoplayConfig;
 }
 
 export interface GlobeProps {
@@ -109,6 +117,7 @@ export interface GlobeProps {
 	points?: GlobePointsConfig;
 	animation?: GlobeAnimationConfig;
 	html?: GlobeHtmlConfig;
+	autoplay?: GlobeAutoplayConfig;
 }
 
 // ============================================================================
@@ -198,6 +207,7 @@ export function mergeConfigs(
 		result.points = { ...result.points, ...config.points };
 		result.animation = { ...result.animation, ...config.animation };
 		result.html = { ...result.html, ...config.html };
+		result.autoplay = { ...result.autoplay, ...config.autoplay };
 	}
 	return result;
 }

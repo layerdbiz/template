@@ -209,13 +209,6 @@
 				fadeEnd: 1.0,
 				opacity: 0.7
 			}}
-			rings={{
-				color: '#ffffff',
-				maxRadius: mq.md ? 4 : 2,
-				propagationSpeed: mq.md ? 4 : 2,
-				repeatPeriod: 1000,
-				altitude: mq.md ? 0.006 : 0.003
-			}}
 			points={{
 				altitude: mq.md ? 0.007 : 0.01,
 				color: 'rgba(0, 0, 255, 0)'
@@ -231,18 +224,25 @@
 				altitude: mq.md ? 0.009 : 0.01
 			}}
 			arcs={{
-				relativeLength: 0.4,
-				flightTime: 2000,
-				numRings: 5,
-				stroke: mq.md ? 0.2 : 0.05,
-				dashLength: 0.6,
-				dashGap: 2,
-				dashInitialGap: 1,
-				altitude: null,
-				altitudeAutoscale: mq.md ? 0.3 : 0.2,
-				startAltitude: mq.md ? 0.007 : 0.004,
-				endAltitude: mq.md ? 0.007 : 0.004,
-				color: '#ffffff'
+				color: '#ffffff', // arc color
+				stroke: mq.md ? 0.2 : 0.05, // arc thickness
+				duration: 2000, // the flight time in milliseconds
+				dashRelativeLength: 0.4, // relative to whole arc
+				dashLength: 0.6, // length of the dash portion of the arc
+				dashGap: 2, // length of the gap portion of the arc
+				dashInitialGap: 1, // initial gap before the dash
+				altitude: null, // null = auto altitude based on distance
+				altitudeAutoscale: mq.md ? 0.3 : 0.2, // scale factor for altitude when altitude is null
+				startAltitude: mq.md ? 0.007 : 0.004, // starting altitude
+				endAltitude: mq.md ? 0.007 : 0.004 // ending altitude
+			}}
+			rings={{
+				color: '#ffffff', // ring color
+				stroke: mq.md ? 0.03 : 0.01, // ring thickness
+				radius: mq.md ? 4 : 2, // maximum ring radius
+				speed: mq.md ? 4 : 2, // propagation speed
+				repeat: 1000, // repeat period
+				altitude: mq.md ? 0.006 : 0.003 // ring altitude
 			}}
 			animation={{
 				duration: 1000

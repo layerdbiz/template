@@ -218,6 +218,12 @@
 			animation={{
 				duration: 1000
 			}}
+			autoplay={{
+				enabled: true,
+				interval: 7000,
+				pauseOnInteraction: true,
+				resumeDelay: 60000
+			}}
 		/>
 	</div>
 

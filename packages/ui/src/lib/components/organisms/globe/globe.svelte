@@ -102,19 +102,177 @@
 		};
 	}
 
+	// ============================================================================
+	// Location Navigation Functions
+	// ============================================================================
+
+	/**
+	 * Change the active location by index
+	 * Handles wrapping for out-of-bounds indices
+	 */
 	function changeLocation(newIndex: number) {
 		const total = effectiveLocations.length;
 		if (total === 0) return;
 		currentIndex = (newIndex + total) % total;
 	}
 
+	/**
+	 * Set the active location by index (alias for changeLocation)
+	 */
+	function setActiveLocation(index: number) {
+		changeLocation(index);
+	}
+
+	/**
+	 * Move to the next location
+	 */
+	function nextLocation() {
+		changeLocation(currentIndex + 1);
+	}
+
+	/**
+	 * Move to the previous location
+	 */
+	function prevLocation() {
+		changeLocation(currentIndex - 1);
+	}
+
+	/**
+	 * Find and activate a location by matching the location object
+	 */
+	function goToLocation(location: Location) {
+		const idx = effectiveLocations.findIndex(
+			(loc) =>
+				parseFloat(String(loc.lat)) === parseFloat(String(location.lat)) &&
+				parseFloat(String(loc.lng)) === parseFloat(String(location.lng))
+		);
+		if (idx >= 0) {
+			changeLocation(idx);
+		}
+	}
+
+	/**
+	 * Auto-play state and control
+	 */
+	let autoPlayInterval: ReturnType<typeof setInterval> | null = $state(null);
+	let isAutoPlaying = $state(false);
+	let resumeTimeout: ReturnType<typeof setTimeout> | null = $state(null);
+
+	/**
+	 * Start auto-playing through locations
+	 * @param intervalMs - Time in milliseconds between location changes (default: 3000ms)
+	 */
+	function startAutoPlay(intervalMs: number = 3000) {
+		if (isAutoPlaying) return; // Already playing
+
+		isAutoPlaying = true;
+		autoPlayInterval = setInterval(() => {
+			nextLocation();
+		}, intervalMs);
+	}
+
+	/**
+	 * Stop auto-playing
+	 */
+	function stopAutoPlay() {
+		if (autoPlayInterval) {
+			clearInterval(autoPlayInterval);
+			autoPlayInterval = null;
+		}
+		if (resumeTimeout) {
+			clearTimeout(resumeTimeout);
+			resumeTimeout = null;
+		}
+		isAutoPlaying = false;
+	}
+
+	/**
+	 * Pause auto-play temporarily (for pauseOnInteraction)
+	 */
+	function pauseAutoPlay() {
+		if (autoPlayInterval) {
+			clearInterval(autoPlayInterval);
+			autoPlayInterval = null;
+		}
+		isAutoPlaying = false;
+	}
+
+	/**
+	 * Schedule resuming auto-play after a delay
+	 */
+	function scheduleResumeAutoPlay(intervalMs: number, resumeDelayMs: number) {
+		if (resumeTimeout) {
+			clearTimeout(resumeTimeout);
+		}
+		resumeTimeout = setTimeout(() => {
+			startAutoPlay(intervalMs);
+		}, resumeDelayMs);
+	}
+
+	/**
+	 * Toggle auto-play on/off
+	 */
+	function toggleAutoPlay(intervalMs: number = 3000) {
+		if (isAutoPlaying) {
+			stopAutoPlay();
+		} else {
+			startAutoPlay(intervalMs);
+		}
+	}
+
+	// Initialize autoplay based on config
+	$effect(() => {
+		// Only depend on config, not on isAutoPlaying state
+		const autoplayConfig = mergedConfig.autoplay;
+		const hasLocations = effectiveLocations.length > 0;
+
+		if (autoplayConfig?.enabled && hasLocations) {
+			const interval = autoplayConfig.interval ?? 3000;
+			// Use untrack to prevent reading isAutoPlaying from creating a dependency
+			if (!untrack(() => isAutoPlaying)) {
+				untrack(() => startAutoPlay(interval));
+			}
+		} else {
+			// Stop if disabled or no locations
+			untrack(() => stopAutoPlay());
+		}
+
+		return () => {
+			// Cleanup on effect re-run or unmount
+			untrack(() => stopAutoPlay());
+		};
+	});
+
+	// ============================================================================
+	// Keyboard Navigation
+	// ============================================================================
+
 	function handleKeyboard(event: KeyboardEvent) {
+		// Use untrack to read config without creating dependencies
+		const autoplayConfig = untrack(() => mergedConfig.autoplay);
+
 		if (event.key === 'ArrowLeft') {
-			changeLocation(currentIndex - 1);
+			prevLocation();
 			event.preventDefault();
+
+			// Handle pause on interaction
+			if (autoplayConfig?.pauseOnInteraction && untrack(() => isAutoPlaying)) {
+				pauseAutoPlay();
+				if (autoplayConfig.resumeDelay) {
+					scheduleResumeAutoPlay(autoplayConfig.interval ?? 3000, autoplayConfig.resumeDelay);
+				}
+			}
 		} else if (event.key === 'ArrowRight') {
-			changeLocation(currentIndex + 1);
+			nextLocation();
 			event.preventDefault();
+
+			// Handle pause on interaction
+			if (autoplayConfig?.pauseOnInteraction && untrack(() => isAutoPlaying)) {
+				pauseAutoPlay();
+				if (autoplayConfig.resumeDelay) {
+					scheduleResumeAutoPlay(autoplayConfig.interval ?? 3000, autoplayConfig.resumeDelay);
+				}
+			}
 		}
 	}
 
@@ -370,7 +528,19 @@
 								parseFloat(String(loc.lng)) === parseFloat(String(d.lng))
 						);
 						if (idx >= 0) {
-							changeLocation(idx);
+							setActiveLocation(idx);
+
+							// Handle pause on interaction
+							const autoplayConfig = mergedConfig.autoplay;
+							if (autoplayConfig?.pauseOnInteraction && isAutoPlaying) {
+								pauseAutoPlay();
+								if (autoplayConfig.resumeDelay) {
+									scheduleResumeAutoPlay(
+										autoplayConfig.interval ?? 3000,
+										autoplayConfig.resumeDelay
+									);
+								}
+							}
 						}
 					};
 					return el;
@@ -431,6 +601,10 @@
 
 		return () => {
 			window.removeEventListener('keydown', handleKeyboard);
+
+			// Stop auto-play
+			stopAutoPlay();
+
 			// Cleanup globe on component unmount
 			if (globeInstance) {
 				globeInstance._destructor();
