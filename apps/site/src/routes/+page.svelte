@@ -215,6 +215,19 @@
 			html={{
 				altitude: mq.md ? 0.009 : 0.009
 			}}
+			arcs={{
+				color: '#ffffff',
+				stroke: mq.md ? 0.2 : 0.05,
+				duration: 2000,
+				dashRelativeLength: 0.4,
+				dashLength: 0.6,
+				dashGap: 2,
+				dashInitialGap: 1,
+				altitude: null,
+				altitudeAutoscale: mq.md ? 0.3 : 0.2,
+				startAltitude: mq.md ? 0.007 : 0.004,
+				endAltitude: mq.md ? 0.007 : 0.004
+			}}
 			animation={{
 				duration: 1000
 			}}

@@ -152,6 +152,66 @@
 	}
 
 	/**
+	 * Animate arc between two locations
+	 * Called when location changes to show travel animation
+	 */
+	function animateArcTransition(fromLocation: Location, toLocation: Location) {
+		if (!globeInstance) return;
+
+		// Use untrack to read config without creating dependency
+		const cfg = untrack(() => mergedConfig);
+		const arcsConfig = cfg.arcs;
+
+		if (!arcsConfig) return;
+
+		// Create arc data from previous to current location
+		const arcData = [
+			{
+				startLat: parseFloat(String(fromLocation.lat)),
+				startLng: parseFloat(String(fromLocation.lng)),
+				endLat: parseFloat(String(toLocation.lat)),
+				endLng: parseFloat(String(toLocation.lng))
+			}
+		];
+
+		// Get dash configuration
+		const dashLength = arcsConfig.dashLength ?? 0.6;
+		const dashGap = arcsConfig.dashGap ?? 2;
+		const dashInitialGap = arcsConfig.dashInitialGap ?? 1;
+		const duration = arcsConfig.duration ?? 2000;
+
+		// Calculate total dash cycle length (dash + gap)
+		// The animation time is for one full arc length, but we need to wait for the entire
+		// dash+gap pattern to complete its journey
+		const totalDashCycle = dashLength + dashGap;
+
+		// The time it takes for the full dash pattern (including gap) to traverse the arc
+		// We need to account for the initial gap as well
+		const fullAnimationTime = duration * (1 + dashGap / totalDashCycle);
+
+		// Configure arc visualization
+		globeInstance
+			.arcsData(arcData)
+			.arcColor(() => arcsConfig.color ?? '#ffffff')
+			.arcStroke(() => arcsConfig.stroke ?? 0.5)
+			.arcDashLength(dashLength)
+			.arcDashGap(dashGap)
+			.arcDashInitialGap(dashInitialGap)
+			.arcDashAnimateTime(duration)
+			.arcAltitude(arcsConfig.altitude !== undefined ? arcsConfig.altitude : null)
+			.arcAltitudeAutoScale(arcsConfig.altitudeAutoscale ?? 0.5)
+			.arcStartAltitude(() => arcsConfig.startAltitude ?? 0.003)
+			.arcEndAltitude(() => arcsConfig.endAltitude ?? 0.003);
+
+		// Clear arcs after the full animation completes (dash + gap)
+		setTimeout(() => {
+			if (globeInstance) {
+				globeInstance.arcsData([]);
+			}
+		}, fullAnimationTime);
+	}
+
+	/**
 	 * Auto-play state and control
 	 */
 	let autoPlayInterval: ReturnType<typeof setInterval> | null = $state(null);
@@ -322,6 +382,9 @@
 			untrack(() => {
 				previousLocation = location;
 			});
+
+			// Animate arc from previous to current location
+			animateArcTransition(prevLoc, location);
 
 			// Update globe view
 			globe.pointOfView(

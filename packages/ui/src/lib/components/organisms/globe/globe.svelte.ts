@@ -89,6 +89,20 @@ export interface GlobeAutoplayConfig {
 	resumeDelay?: number;
 }
 
+export interface GlobeArcsConfig {
+	color?: string;
+	stroke?: number;
+	duration?: number;
+	dashRelativeLength?: number;
+	dashLength?: number;
+	dashGap?: number;
+	dashInitialGap?: number;
+	altitude?: number | null;
+	altitudeAutoscale?: number;
+	startAltitude?: number;
+	endAltitude?: number;
+}
+
 export interface GlobeConfig {
 	data?: GlobeDataConfig;
 	globe?: GlobeAppearanceConfig;
@@ -100,6 +114,7 @@ export interface GlobeConfig {
 	animation?: GlobeAnimationConfig;
 	html?: GlobeHtmlConfig;
 	autoplay?: GlobeAutoplayConfig;
+	arcs?: GlobeArcsConfig;
 }
 
 export interface GlobeProps {
@@ -118,6 +133,7 @@ export interface GlobeProps {
 	animation?: GlobeAnimationConfig;
 	html?: GlobeHtmlConfig;
 	autoplay?: GlobeAutoplayConfig;
+	arcs?: GlobeArcsConfig;
 }
 
 // ============================================================================
@@ -208,6 +224,7 @@ export function mergeConfigs(
 		result.animation = { ...result.animation, ...config.animation };
 		result.html = { ...result.html, ...config.html };
 		result.autoplay = { ...result.autoplay, ...config.autoplay };
+		result.arcs = { ...result.arcs, ...config.arcs };
 	}
 	return result;
 }
