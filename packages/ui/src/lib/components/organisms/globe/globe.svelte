@@ -35,6 +35,7 @@
 	let globeInstance: GlobeInstance | null = $state(null);
 	let currentIndex = $state(0);
 	let previousLocation: Location | null = $state(null);
+	let displayPreviousLocation: Location | null = $state(null); // Visual previous location for point transitions
 	let windowWidth = $state(1920);
 	let windowHeight = $state(1080);
 	let processedLocations = $state<Location[]>([]);
@@ -104,6 +105,9 @@
 
 	// Current location and ports
 	const currentLocation = $derived(effectiveLocations[currentIndex] || null);
+
+	// Active location as array for points rendering
+	const activeLocationArray = $derived(currentLocation ? [currentLocation] : []);
 
 	// Get ports for current location
 	const currentPorts = $derived(
@@ -492,6 +496,7 @@
 			// Use untrack to avoid triggering effect when setting previousLocation
 			untrack(() => {
 				previousLocation = location;
+				displayPreviousLocation = location; // Initialize displayPreviousLocation too
 			});
 
 			// Update globe view
@@ -515,13 +520,16 @@
 			prevLoc.lng !== location.lng;
 
 		if (locationChanged) {
-			// Use untrack to avoid triggering effect when setting previousLocation
+			// Capture the OLD previous location for visual transitions
+			const visualPrevLoc = prevLoc;
+
+			// Update previousLocation immediately for arc/marker logic
 			untrack(() => {
 				previousLocation = location;
 			});
 
 			// Animate arc from previous to current location
-			animateArcTransition(prevLoc, location);
+			animateArcTransition(visualPrevLoc, location);
 
 			// Update globe view
 			globe.pointOfView(
@@ -532,6 +540,14 @@
 				},
 				cfg.animation?.duration ?? 1000
 			);
+
+			// Update displayPreviousLocation AFTER arc completes for smooth point transitions
+			const arcDuration = cfg.arcs?.duration ?? 2000;
+			setTimeout(() => {
+				untrack(() => {
+					displayPreviousLocation = location;
+				});
+			}, arcDuration);
 		}
 	});
 
@@ -789,6 +805,85 @@
 		}
 	});
 
+	// Update points when active location changes
+	$effect(() => {
+		const globe = globeInstance;
+		const activeLocation = activeLocationArray;
+		const prevLoc = displayPreviousLocation; // Use displayPreviousLocation for visual transitions
+		const loc = currentLocation;
+
+		if (!globe) return;
+
+		// Use untrack to read config without creating dependency
+		const cfg = untrack(() => mergedConfig);
+		const arcDuration = cfg.arcs?.duration ?? 2000;
+
+		// Determine delay: no delay ONLY for first location (no previous location = no arc)
+		// For all subsequent navigations (keyboard OR click), ALWAYS wait for arc to complete
+		const isFirstLocation = !prevLoc;
+		const delay = isFirstLocation ? 0 : arcDuration;
+
+		console.log('📍 Updating points for active location:', {
+			currentLocation: loc?.location,
+			displayPreviousLocation: prevLoc?.location,
+			activeLocation,
+			delay,
+			isFirstLocation,
+			hasPreviousLocation: !!prevLoc,
+			willShowBothPoints: !isFirstLocation && prevLoc && delay > 0
+		});
+
+		// POINTS LAYER RENDERING
+		// Support both single layer (backward compatible) and multiple layers
+		const pointLayers = cfg.points?.layers || [
+			{
+				altitude: cfg.points?.altitude ?? 0.003,
+				base: cfg.points?.base ?? cfg.points?.base ?? 0,
+				color: cfg.points?.color ?? '#0066ff',
+				radius: cfg.points?.radius ?? 0.25,
+				zOffset: 0
+			}
+		];
+
+		// Check if any layer needs base or if we have multiple layers
+		const needsCustomObjects =
+			pointLayers.some((layer) => {
+				const baseAlt = layer.base ?? layer.base ?? 0;
+				return baseAlt > 0;
+			}) || pointLayers.length > 1;
+
+		// ALWAYS show both points during arc animation (previous + current)
+		// This ensures the arc visually emerges from the previous point and lands on the new point
+		const locationsToShow =
+			!isFirstLocation && prevLoc && delay > 0 ? [prevLoc, loc] : activeLocation;
+
+		console.log('📍 Locations to show:', {
+			showingBothPoints: locationsToShow.length > 1,
+			locations: locationsToShow.map((l: Location) => l.location)
+		});
+
+		// Update points immediately based on displayPreviousLocation state
+		// When displayPreviousLocation updates (after arc completes), this effect will re-run automatically
+		// and locationsToShow will be recalculated to show only the active location
+		if (needsCustomObjects) {
+			// Use 3D Objects Layer for elevated points or multi-layer points
+			const layeredLocations = locationsToShow.flatMap((location: Location) =>
+				pointLayers.map((layer, layerIndex) => ({
+					...location,
+					__layerIndex: layerIndex,
+					__layerConfig: layer
+				}))
+			);
+
+			globe.objectsData(layeredLocations);
+			console.log('✅ Points updated:', layeredLocations.length, 'layers');
+		} else {
+			// Use standard Points Layer
+			globe.pointsData(locationsToShow);
+			console.log('✅ Points updated:', locationsToShow.length, 'points');
+		}
+	});
+
 	// Recreate globe when media query breakpoint changes
 	$effect(() => {
 		if (!globeInstance) return;
@@ -839,6 +934,7 @@
 
 			// Reset previousLocation so the location-centering effect runs again
 			previousLocation = null;
+			displayPreviousLocation = null;
 
 			// Initialization effect will automatically recreate with new props
 		}
@@ -965,7 +1061,7 @@
 			if (needsCustomObjects) {
 				// Use 3D Objects Layer for elevated points or multi-layer points
 				// Create a separate object for each layer at each location
-				const layeredLocations = effectiveLocations.flatMap((loc: Location) =>
+				const layeredLocations = activeLocationArray.flatMap((loc: Location) =>
 					pointLayers.map((layer, layerIndex) => ({
 						...loc,
 						__layerIndex: layerIndex,
@@ -1026,7 +1122,7 @@
 				// Use standard Points Layer when no base and single layer
 				const singleLayer = pointLayers[0];
 				globe
-					.pointsData(effectiveLocations)
+					.pointsData(activeLocationArray)
 					.pointAltitude(() => singleLayer.altitude ?? 0.003)
 					.pointColor(() => singleLayer.color ?? '#0066ff')
 					.pointRadius(singleLayer.radius ?? 0.25);
@@ -1049,14 +1145,14 @@
 							     data-lat="${d.lat}" 
 							     data-lng="${d.lng}">
 								
-									 <svg xmlns="http://www.w3.org/2000/svg" class="svg svg-marker w-6 h-6 md:w-9 md:h-9 origin-bottom cursor-pointer duration-300 ${isFirstLocation ? 'active' : ''}" fill="none" viewBox="0 0 87 122">
+									 <svg xmlns="http://www.w3.org/2000/svg" class="svg svg-marker translate-y-4 md:translate-y-0 w-6 h-6 md:w-9 md:h-9 origin-bottom cursor-pointer duration-300 ${isFirstLocation ? 'active' : ''}" fill="none" viewBox="0 0 87 122">
 										<path class="stroke" stroke-width="4" d="m43.0833 115.667-1.4842 1.34 1.4842 1.643 1.4842-1.643-1.4842-1.34Zm0 0c1.4842 1.34 1.4846 1.34 1.4851 1.339l.0018-.002.0062-.007.023-.025.0875-.098c.0764-.085.1886-.211.3343-.376.2914-.33.7167-.816 1.2567-1.442 1.0799-1.254 2.6193-3.074 4.4651-5.348 3.6898-4.546 8.6129-10.9197 13.5399-18.2222 4.9232-7.2969 9.8751-15.5579 13.6022-23.8774 3.7154-8.2933 6.2816-16.7923 6.2816-24.5251A41.0836 41.0836 0 0 0 14.033 14.033 41.0835 41.0835 0 0 0 2 43.0833c0 7.7328 2.5662 16.2318 6.2816 24.5251 3.7271 8.3195 8.679 16.5805 13.6021 23.8774 4.9271 7.3025 9.8501 13.6762 13.5399 18.2222 1.8458 2.274 3.3852 4.094 4.4652 5.348.54.626.9652 1.112 1.2566 1.442.1457.165.258.291.3344.376l.0874.098.023.025.0063.007.0017.002c.0006.001.0009.001 1.4851-1.339Z"/>
 										<path class="bg fill-white" d="M60 44c0 9.3888-7.6112 17-17 17s-17-7.6112-17-17 7.6112-17 17-17 17 7.6112 17 17Z"/>
 										<path class="fg fill-primary-600" d="M43.0833 57.0417a13.9584 13.9584 0 1 1 .0001-27.9168 13.9584 13.9584 0 0 1-.0001 27.9168Zm0-53.0417a39.0837 39.0837 0 0 0-27.6361 11.4472A39.0837 39.0837 0 0 0 4 43.0833c0 29.3125 39.0833 72.5837 39.0833 72.5837s39.0834-43.2712 39.0834-72.5837A39.0834 39.0834 0 0 0 43.0833 4Z"/>
 									</svg>
 							</i>
 							<h4 class="location-label font-semibold uppercase flex items-center justify-center gap-2 absolute top-full translate-y-full mt-2 text-xs md:text-sm font-normal text-white m-0 p-2 bg-black/60 rounded whitespace-nowrap pointer-events-none ${isFirstLocation ? 'opacity-100' : 'opacity-0'} transition-all duration-300">
-								<i class="text-md md:text-xl icon-${d.flag}"></i>
+								<i class="text-sm md:text-xl icon-${d.flag}"></i>
 								<span>${d.location || 'Unknown Location'}</span>
 							</h4>
 						</div>
@@ -1243,9 +1339,10 @@
 		.svg-marker.active .bg {
 			@apply fill-white;
 		}
+		/* 		
 		.svg-marker.active .fg {
 			@apply fill-primary-500;
-		}
+		} */
 
 		.svg-marker:not(.active):hover {
 			@apply scale-105;
