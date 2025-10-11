@@ -62,6 +62,7 @@ export interface GlobeHexPolygonConfig {
 	color?: string | ((properties: any) => string);
 	altitude?: number;
 	curvatureResolution?: number;
+	transitionDuration?: number;
 }
 
 export interface GlobePolygonConfig {
@@ -72,13 +73,6 @@ export interface GlobePolygonConfig {
 	capCurvatureResolution?: number;
 	sideResolution?: number;
 	transitionDuration?: number;
-}
-
-export interface GlobeVignetteConfig {
-	enabled?: boolean;
-	fadeStart?: number;
-	fadeEnd?: number;
-	opacity?: number;
 }
 
 export interface GlobePointLayerConfig {
@@ -153,7 +147,6 @@ export interface GlobeConfig {
 	atmosphere?: GlobeAtmosphereConfig;
 	hexPolygon?: GlobeHexPolygonConfig;
 	polygon?: GlobePolygonConfig;
-	vignette?: GlobeVignetteConfig;
 	points?: GlobePointsConfig;
 	animation?: GlobeAnimationConfig;
 	html?: GlobeHtmlConfig;
@@ -174,7 +167,6 @@ export interface GlobeProps {
 	atmosphere?: GlobeAtmosphereConfig;
 	hexPolygon?: GlobeHexPolygonConfig;
 	polygon?: GlobePolygonConfig;
-	vignette?: GlobeVignetteConfig;
 	points?: GlobePointsConfig;
 	animation?: GlobeAnimationConfig;
 	html?: GlobeHtmlConfig;
@@ -230,12 +222,6 @@ export function createDefaultConfig(
 			color: "lightskyblue",
 			altitude: atmosphereAltitude,
 		},
-		vignette: {
-			enabled: true,
-			fadeStart: 0.3,
-			fadeEnd: 1.0,
-			opacity: 0.7,
-		},
 		points: {
 			altitude: 0.003,
 			color: "rgba(0, 0, 255, 1)",
@@ -267,7 +253,6 @@ export function mergeConfigs(
 		result.atmosphere = { ...result.atmosphere, ...config.atmosphere };
 		result.hexPolygon = { ...result.hexPolygon, ...config.hexPolygon };
 		result.polygon = { ...result.polygon, ...config.polygon };
-		result.vignette = { ...result.vignette, ...config.vignette };
 		result.points = { ...result.points, ...config.points };
 		result.animation = { ...result.animation, ...config.animation };
 		result.html = { ...result.html, ...config.html };

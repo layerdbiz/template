@@ -167,9 +167,8 @@
 	</section>
 
 	<!-- globe -->
-	<div
-		class="fade-in bleed mask-b-from-90% mask-b-to-100% pointer-events-auto !absolute inset-0 overflow-clip"
-	>
+	<div class="fade-in bleed pointer-events-auto !absolute inset-0 overflow-clip">
+		<!-- <div class="fade-in bleed mask-b-from-90% mask-b-to-100% pointer-events-auto !absolute inset-0 overflow-clip"> -->
 		<Globe
 			data={{
 				polygons: '/data/countries.geojson',
@@ -193,44 +192,38 @@
 				latitude: mq.md ? 36 : 21
 			}}
 			atmosphere={{
-				show: true,
-				color: 'lightskyblue',
-				altitude: mq.md ? 0.25 : 0.08
+				show: mq.md ? true : false,
+				color: '#155dfc',
+				altitude: mq.md ? 0.2 : 0.08
 			}}
 			polygon={{
-				capColor: '#181e2b',
-				sideColor: '#0b101c',
-				strokeColor: '#3b4250',
-				altitude: mq.md ? 0.005 : 0.0015
-			}}
-			vignette={{
-				enabled: false,
-				fadeStart: 0.3,
-				fadeEnd: 1.0,
-				opacity: 0.7
+				capColor: 'rgba(0,0,0,0)',
+				sideColor: 'rgba(0,0,255,0)',
+				strokeColor: 'rgba(0,0,0,0)',
+				altitude: mq.md ? 0 : 0
 			}}
 			points={{
 				layers: [
 					// blue dot (bg)
 					{
-						base: mq.md ? 0.01 : 0.001,
-						altitude: mq.md ? 0.01 : 0.0015,
+						base: mq.md ? 0.0001 : 0.0005,
+						altitude: mq.md ? 0.01 : 0.0005,
 						color: '#155dfc',
-						radius: mq.md ? 0.4 : 0.3,
+						radius: mq.md ? 1 : 0.3,
 						zOffset: 0
 					},
 					// white dot (fg)
 					{
-						base: mq.md ? 0.01 : 0.0015,
-						altitude: mq.md ? 0.012 : 0.001,
+						base: mq.md ? 0.00014 : 0.0009,
+						altitude: mq.md ? 0.015 : 0.00025,
 						color: '#ffffff',
-						radius: mq.md ? 0.2 : 0.15,
+						radius: mq.md ? 0.5 : 0.15,
 						zOffset: 0.001 // Slightly forward to ensure it's on top
 					}
 				]
 			}}
 			html={{
-				altitude: mq.md ? 0.009 : 0.005
+				altitude: mq.md ? 0.05 : 0.005
 			}}
 			labels={{
 				size: mq.md ? 0.75 : 0.15,
@@ -249,22 +242,22 @@
 				dashInitialGap: 1,
 				altitude: null,
 				altitudeAutoscale: mq.md ? 0.3 : 0.2,
-				startAltitude: mq.md ? 0 : 0.002,
-				endAltitude: mq.md ? 0 : 0.0016
+				startAltitude: mq.md ? 0 : 0.001,
+				endAltitude: mq.md ? 0 : 0.001
 			}}
 			rings={{
 				color: '#ffffff',
 				rings: 4,
 				radius: mq.md ? 4 : 2,
 				speed: mq.md ? 4 : 2,
-				altitude: mq.md ? 0.006 : 0.0015,
+				altitude: mq.md ? 0.006 : 0.0001,
 				duration: 700
 			}}
 			animation={{
 				duration: 1000
 			}}
 			autoplay={{
-				enabled: true,
+				enabled: false,
 				interval: 7000,
 				pauseOnInteraction: true,
 				resumeDelay: 60000
@@ -284,17 +277,18 @@
 	------------------------------------------>
 	<Image
 		bg
-		class="mask-t-from-0% mask-t-to-50% pointer-events-none origin-bottom overflow-hidden"
+		class="mask-t-from-0% mask-t-to-50% pointer-events-none origin-bottom overflow-clip"
 		overlay="bg-radial from-transparent to-black from-0% to-100% scale-x-125"
 	/>
 	<Image
 		bg
 		overlay="bg-black/30"
 	/>
+
 	<!-- GRADIENT WRAPPER
 	------------------------------------------>
 	<div
-		class="z-1 scale-y-40 lg:scale-y-60 pointer-events-none absolute inset-0 top-auto isolate size-full origin-bottom blur-xl"
+		class="z-1 scale-y-30 lg:scale-y-60 pointer-events-none absolute inset-0 top-auto isolate size-full origin-bottom opacity-100 blur-xl"
 	>
 		<!-- top blue radial -->
 		<Image
@@ -310,6 +304,9 @@
 			overlay="bg-radial from-transparent to-primary from-20% to-100% "
 		/>
 	</div>
+	<div
+		class="pointer-events-none absolute inset-0 top-auto isolate h-14 bg-gradient-to-b from-transparent to-black opacity-100"
+	></div>
 </Section>
 
 <!-- TRUSTED BY 
@@ -330,12 +327,12 @@
 	<!-- partners -->
 	{#if !mq.lg}
 		<!-- Desktop: 8 cols x 2 rows grid -->
-		<div class="mask-x-lg lg:mask-[unset] grid grid-cols-8 gap-8 pb-20 invert">
+		<div class="mask-x-lg lg:mask-[unset] flex items-center justify-center gap-8 pb-20 invert">
 			{#each await getPartnersData() as partner (partner.id)}
 				<img
 					src={partner.img}
 					alt={partner.name}
-					class="h-12 w-auto place-self-center object-contain"
+					class="h-24 w-36 place-self-center object-contain"
 				/>
 			{/each}
 		</div>

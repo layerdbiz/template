@@ -1,12 +1,11 @@
 <!--
 @component Globe
 @tags organism, 3d, visualization, interactive, map, globe
-@description A 3D interactive globe component using Globe.gl and Three.js
 -->
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { mq } from '@layerd/ui';
+	import { Image, mq } from '@layerd/ui';
 	import { untrack } from 'svelte';
 	import * as THREE from 'three';
 	import Globe from 'globe.gl';
@@ -231,17 +230,12 @@
 		const arcDashLength = arcsConfig?.dashLength ?? 0.6;
 
 		// Calculate ring duration based on arc dash length if not explicitly set
-		// This matches the emit-arcs-on-click example: FLIGHT_TIME * ARC_REL_LEN
 		const ringDuration = ringsConfig.duration ?? arcDuration * arcDashLength;
 
 		// Calculate repeat period to show multiple rings
-		// If repeat is explicitly set, use it; otherwise calculate based on numRings
-		// This matches the emit-arcs-on-click example: FLIGHT_TIME * ARC_REL_LEN / NUM_RINGS
-		// This creates evenly spaced rings that emit over the duration
 		const repeatPeriod = ringsConfig.repeat ?? ringDuration / numRings;
 
 		// Configure ring visualization with all active rings
-		// Use color function for fade effect if color is a string
 		const ringColor =
 			typeof ringsConfig.color === 'function'
 				? ringsConfig.color
@@ -280,7 +274,6 @@
 
 	/**
 	 * Animate arc between two locations
-	 * Called when location changes to show travel animation
 	 */
 	function animateArcTransition(fromLocation: Location, toLocation: Location) {
 		if (!globeInstance) return;
@@ -310,12 +303,9 @@
 		const duration = arcsConfig.duration ?? 2000;
 
 		// Calculate total dash cycle length (dash + gap)
-		// The animation time is for one full arc length, but we need to wait for the entire
-		// dash+gap pattern to complete its journey
 		const totalDashCycle = dashLength + dashGap;
 
 		// The time it takes for the full dash pattern (including gap) to traverse the arc
-		// We need to account for the initial gap as well
 		const fullAnimationTime = duration * (1 + dashGap / totalDashCycle);
 
 		// Add new arc to active arcs array
@@ -454,7 +444,6 @@
 	// ============================================================================
 	// Keyboard Navigation
 	// ============================================================================
-
 	function handleKeyboard(event: KeyboardEvent) {
 		// Use untrack to read config without creating dependencies
 		const autoplayConfig = untrack(() => mergedConfig.autoplay);
@@ -583,8 +572,6 @@
 		});
 
 		// Add active class to new location with appropriate delay
-		// No delay for: first location (no arc), or clicked marker (immediate feedback)
-		// Otherwise: wait for arc to arrive (arcDuration)
 		const delay = isFirstLocation || wasClickNavigation ? 0 : arcDuration;
 
 		setTimeout(() => {
@@ -608,21 +595,80 @@
 			});
 
 			// Reset the click navigation flag after use
-			// Use untrack to avoid creating a reactive dependency
 			untrack(() => {
 				wasClickNavigation = false;
 			});
 		}, delay);
 	});
 
-	// Update labels when current location changes (following same timing pattern as markers)
+	// Render all labels once when globe initializes, then control visibility via opacity
+	let labelsInitialized = $state(false);
+	let labelOpacityMap = $state<Map<string, number>>(new Map());
+
+	// Initialize all labels once when globe is ready
+	$effect(() => {
+		const globe = globeInstance;
+		if (!globe || labelsInitialized) return;
+
+		// Use untrack to read config without creating dependency
+		const cfg = untrack(() => mergedConfig);
+		const labelsConfig = cfg.labels;
+
+		if (!labelsConfig) {
+			console.log('⚠️ No labels config provided');
+			return;
+		}
+
+		// Get all unique ports from all locations
+		const allPorts = new Set<string>();
+		const portsByKey = new Map<string, Port>();
+
+		effectiveLocations.forEach((location) => {
+			const portsForLocation = processedPorts.filter((p: Port) => p.location === location.location);
+			portsForLocation.forEach((port: Port) => {
+				const key = `${port.lat},${port.lng}`;
+				if (!allPorts.has(key)) {
+					allPorts.add(key);
+					portsByKey.set(key, port);
+				}
+			});
+		});
+
+		// Create label data for all ports (starting with opacity 0)
+		const allLabelData = Array.from(portsByKey.values()).map((port) => ({
+			lat: parseFloat(String(port.lat)),
+			lng: parseFloat(String(port.lng)),
+			city: port.city,
+			port: port.port,
+			orientation: 'bottom',
+			opacity: 0 // Start invisible
+		}));
+
+		// Initialize opacity map (all labels start at 0)
+		const initialOpacityMap = new Map<string, number>();
+		allLabelData.forEach((label) => {
+			const key = `${label.lat},${label.lng}`;
+			initialOpacityMap.set(key, 0);
+		});
+		labelOpacityMap = initialOpacityMap;
+
+		console.log('🏷️ Initializing all labels:', allLabelData.length, 'labels');
+
+		// Set all labels at once (they'll be invisible initially)
+		globe.labelsData(allLabelData);
+		labelsInitialized = true;
+
+		console.log('✅ All labels initialized (invisible)');
+	});
+
+	// Update label visibility when current location changes
 	$effect(() => {
 		const globe = globeInstance;
 		const ports = currentPorts;
 		const loc = currentLocation;
 		const prevLoc = previousLocation;
 
-		if (!globe || !loc) return;
+		if (!globe || !loc || !labelsInitialized) return;
 
 		// Use untrack to read config without creating dependency
 		const cfg = untrack(() => mergedConfig);
@@ -630,7 +676,7 @@
 		const arcDuration = cfg.arcs?.duration ?? 2000;
 		const ringDuration = cfg.rings?.duration ?? 700;
 
-		console.log('🏷️ Labels effect triggered:', {
+		console.log('🏷️ Label visibility update triggered:', {
 			location: loc?.location,
 			portsCount: ports.length,
 			hasLabelsConfig: !!labelsConfig,
@@ -638,41 +684,107 @@
 		});
 
 		if (!labelsConfig) {
-			console.log('⚠️ No labels config provided');
 			return;
 		}
 
 		// Determine delay: no delay for first location (no arc), otherwise wait for arc to arrive
 		const isFirstLocation = !prevLoc;
 
-		// IMMEDIATELY clear all labels
-		globe.labelsData([]);
-		console.log('🏷️ Labels cleared');
+		// IMMEDIATELY fade out all labels with smooth animation
+		const scene = globe.scene();
+		const fadeDuration = 300; // 300ms smooth fade
 
-		// Add new labels with appropriate delay
-		// No delay for: first location (no arc), or clicked marker (immediate feedback)
-		// Otherwise: wait for arc + rings to complete, then add buffer for smooth transition
+		scene.traverse((object: any) => {
+			if (object.userData && object.userData.__data && object.userData.__data.city) {
+				const labelData = object.userData.__data;
+				const key = `${labelData.lat},${labelData.lng}`;
+
+				// Smooth fade out using animation frame
+				if (object.material && object.material.opacity > 0) {
+					const startOpacity = object.material.opacity;
+					const startTime = Date.now();
+
+					const animate = () => {
+						const elapsed = Date.now() - startTime;
+						const progress = Math.min(elapsed / fadeDuration, 1);
+						const currentOpacity = startOpacity * (1 - progress);
+
+						if (object.material) {
+							object.material.opacity = currentOpacity;
+							object.material.transparent = true;
+							object.material.needsUpdate = true;
+						}
+
+						if (progress < 1) {
+							requestAnimationFrame(animate);
+						} else {
+							labelOpacityMap.set(key, 0);
+						}
+					};
+
+					requestAnimationFrame(animate);
+				} else if (object.material) {
+					object.material.opacity = 0;
+					object.material.transparent = true;
+					object.material.needsUpdate = true;
+					labelOpacityMap.set(key, 0);
+				}
+			}
+		});
+
+		console.log('🏷️ All labels fading out smoothly');
+
+		// Calculate delay for fading in labels at current location
 		const baseDelay = isFirstLocation || wasClickNavigation ? 0 : arcDuration;
-		const ringBuffer = isFirstLocation || wasClickNavigation ? 0 : ringDuration + 1000; // Ring duration + 1200ms buffer
+		const ringBuffer = isFirstLocation || wasClickNavigation ? 0 : ringDuration + 1000;
 		const labelDelay = baseDelay + ringBuffer;
 
-		console.log('🏷️ Label delay calculated:', labelDelay, 'ms');
+		console.log('🏷️ Label fade-in delay calculated:', labelDelay, 'ms');
 
 		if (ports.length > 0) {
 			setTimeout(() => {
-				// Create label data with proper structure
-				const labelData = ports.map((port) => ({
-					lat: parseFloat(String(port.lat)),
-					lng: parseFloat(String(port.lng)),
-					city: port.city,
-					port: port.port,
-					orientation: 'bottom' // default orientation
-				}));
+				const scene = globe.scene();
 
-				console.log('🏷️ Setting labels:', labelData);
+				// Fade in labels for current location with smooth animation
+				scene.traverse((object: any) => {
+					if (object.userData && object.userData.__data && object.userData.__data.city) {
+						const labelData = object.userData.__data;
+						const key = `${labelData.lat},${labelData.lng}`;
 
-				// Set labels data
-				globe.labelsData(labelData);
+						// Check if this label belongs to current location's ports
+						const shouldShow = ports.some((port) => {
+							const portKey = `${parseFloat(String(port.lat))},${parseFloat(String(port.lng))}`;
+							return portKey === key;
+						});
+
+						if (shouldShow && object.material) {
+							const startOpacity = object.material.opacity || 0;
+							const startTime = Date.now();
+
+							const animate = () => {
+								const elapsed = Date.now() - startTime;
+								const progress = Math.min(elapsed / fadeDuration, 1);
+								const currentOpacity = startOpacity + (1 - startOpacity) * progress;
+
+								if (object.material) {
+									object.material.opacity = currentOpacity;
+									object.material.transparent = true;
+									object.material.needsUpdate = true;
+								}
+
+								if (progress < 1) {
+									requestAnimationFrame(animate);
+								} else {
+									labelOpacityMap.set(key, 1);
+								}
+							};
+
+							requestAnimationFrame(animate);
+						}
+					}
+				});
+
+				console.log('🏷️ Labels fading in smoothly for current location');
 			}, labelDelay);
 		}
 	});
@@ -714,6 +826,10 @@
 
 			// Clear all rings
 			activeRings = [];
+
+			// Reset labels initialization flag so labels will be recreated
+			labelsInitialized = false;
+			labelOpacityMap = new Map();
 
 			// Update tracking variables
 			lastMqSm = currentMqSm;
@@ -786,47 +902,48 @@
 				}
 			}
 
-			// COUNTRY OUTLINES
+			// COUNTRY OUTLINES - MULTI-LAYER SUPPORT
 			if (cfg.data?.polygons) {
 				fetch(cfg.data.polygons)
 					.then((res) => res.json())
 					.then((data) => {
 						if (!globe) return;
 
-						const capColor = cfg.polygon?.capColor ?? '#444444';
-						const sideColor = cfg.polygon?.sideColor ?? '#444444';
-						const strokeColor = cfg.polygon?.strokeColor ?? '#ffffff';
+						// HEXAGONS: Base solid countries (low altitude)
+						if (cfg.hexPolygon) {
+							globe
+								.hexPolygonsData(data.features || data)
+								.hexPolygonGeoJsonGeometry('geometry')
+								.hexPolygonResolution(cfg.hexPolygon?.resolution ?? 4)
+								.hexPolygonMargin(cfg.hexPolygon?.margin ?? 0.15)
+								.hexPolygonAltitude(cfg.hexPolygon?.altitude ?? 0)
+								.hexPolygonColor(
+									typeof cfg.hexPolygon?.color === 'function'
+										? cfg.hexPolygon.color
+										: () => cfg.hexPolygon?.color ?? '#181e2b'
+								)
+								.hexPolygonsTransitionDuration(cfg.hexPolygon?.transitionDuration ?? 0);
+							console.log('🔷 Hexagon base countries configured');
+						}
 
-						// Resolve color to string if it's a function
-						const resolvedCapColor = typeof capColor === 'function' ? capColor({}) : capColor;
-						const resolvedSideColor = typeof sideColor === 'function' ? sideColor({}) : sideColor;
-						const resolvedStrokeColor =
-							typeof strokeColor === 'function' ? strokeColor : strokeColor;
+						// POLYGONS: Blue glow effect (higher altitude, transparent cap, glowing sides)
+						if (cfg.polygon) {
+							const sideColor = cfg.polygon.sideColor ?? 'rgba(21, 93, 252, 0.6)'; // Blue with 60% opacity
+							const capColor = cfg.polygon.capColor ?? 'rgba(0, 0, 0, 0)'; // Fully transparent
 
-						globe
-							.polygonsData(data.features || data)
-							.polygonCapMaterial(
-								new THREE.MeshBasicMaterial({
-									color: resolvedCapColor,
-									transparent: false,
-									side: THREE.DoubleSide
-								})
-							)
-							.polygonSideMaterial(
-								new THREE.MeshBasicMaterial({
-									color: resolvedSideColor,
-									transparent: false,
-									side: THREE.DoubleSide
-								})
-							)
-							.polygonStrokeColor(() => resolvedStrokeColor)
-							.polygonAltitude(cfg.polygon?.altitude ?? 0.005)
-							.polygonsTransitionDuration(cfg.polygon?.transitionDuration ?? 0);
+							globe
+								.polygonsData(data.features || data)
+								.polygonCapColor(typeof capColor === 'function' ? capColor : () => capColor)
+								.polygonSideColor(typeof sideColor === 'function' ? sideColor : () => sideColor)
+								.polygonStrokeColor(() => 'rgba(0,0,0,0)') // No stroke
+								.polygonAltitude(cfg.polygon.altitude ?? 0.01)
+								.polygonsTransitionDuration(cfg.polygon.transitionDuration ?? 0);
+
+							console.log('✨ Polygon glow effect configured');
+						}
 					})
 					.catch((err) => console.error('Failed to load polygon data:', err));
-			}
-
-			// POINTS LAYER RENDERING
+			} // POINTS LAYER RENDERING
 			// Support both single layer (backward compatible) and multiple layers
 			const pointLayers = cfg.points?.layers || [
 				{
@@ -932,14 +1049,14 @@
 							     data-lat="${d.lat}" 
 							     data-lng="${d.lng}">
 								
-									 <svg xmlns="http://www.w3.org/2000/svg" class="svg svg-marker w-9 h-9 origin-bottom cursor-pointer duration-300 ${isFirstLocation ? 'active' : ''}" fill="none" viewBox="0 0 87 122">
+									 <svg xmlns="http://www.w3.org/2000/svg" class="svg svg-marker w-6 h-6 md:w-9 md:h-9 origin-bottom cursor-pointer duration-300 ${isFirstLocation ? 'active' : ''}" fill="none" viewBox="0 0 87 122">
 										<path class="stroke" stroke-width="4" d="m43.0833 115.667-1.4842 1.34 1.4842 1.643 1.4842-1.643-1.4842-1.34Zm0 0c1.4842 1.34 1.4846 1.34 1.4851 1.339l.0018-.002.0062-.007.023-.025.0875-.098c.0764-.085.1886-.211.3343-.376.2914-.33.7167-.816 1.2567-1.442 1.0799-1.254 2.6193-3.074 4.4651-5.348 3.6898-4.546 8.6129-10.9197 13.5399-18.2222 4.9232-7.2969 9.8751-15.5579 13.6022-23.8774 3.7154-8.2933 6.2816-16.7923 6.2816-24.5251A41.0836 41.0836 0 0 0 14.033 14.033 41.0835 41.0835 0 0 0 2 43.0833c0 7.7328 2.5662 16.2318 6.2816 24.5251 3.7271 8.3195 8.679 16.5805 13.6021 23.8774 4.9271 7.3025 9.8501 13.6762 13.5399 18.2222 1.8458 2.274 3.3852 4.094 4.4652 5.348.54.626.9652 1.112 1.2566 1.442.1457.165.258.291.3344.376l.0874.098.023.025.0063.007.0017.002c.0006.001.0009.001 1.4851-1.339Z"/>
 										<path class="bg fill-white" d="M60 44c0 9.3888-7.6112 17-17 17s-17-7.6112-17-17 7.6112-17 17-17 17 7.6112 17 17Z"/>
 										<path class="fg fill-primary-600" d="M43.0833 57.0417a13.9584 13.9584 0 1 1 .0001-27.9168 13.9584 13.9584 0 0 1-.0001 27.9168Zm0-53.0417a39.0837 39.0837 0 0 0-27.6361 11.4472A39.0837 39.0837 0 0 0 4 43.0833c0 29.3125 39.0833 72.5837 39.0833 72.5837s39.0834-43.2712 39.0834-72.5837A39.0834 39.0834 0 0 0 43.0833 4Z"/>
 									</svg>
 							</i>
-							<h4 class="location-label font-semibold uppercase flex items-center justify-center gap-2 absolute top-full translate-y-full mt-2 text-sm font-normal text-white m-0 p-2 bg-black/60 rounded whitespace-nowrap pointer-events-none ${isFirstLocation ? 'opacity-100' : 'opacity-0'} transition-all duration-300">
-								<i class="text-xl icon-${d.flag}"></i>
+							<h4 class="location-label font-semibold uppercase flex items-center justify-center gap-2 absolute top-full translate-y-full mt-2 text-xs md:text-sm font-normal text-white m-0 p-2 bg-black/60 rounded whitespace-nowrap pointer-events-none ${isFirstLocation ? 'opacity-100' : 'opacity-0'} transition-all duration-300">
+								<i class="text-md md:text-xl icon-${d.flag}"></i>
 								<span>${d.location || 'Unknown Location'}</span>
 							</h4>
 						</div>
@@ -985,22 +1102,48 @@
 				.htmlLng((d: any) => d.lng)
 				.htmlAltitude(cfg.html?.altitude ?? 0.02);
 
-			// LABELS - Configure labels layer (hidden by default, shown per location)
+			// LABELS - Configure labels layer with opacity-based visibility
 			const labelsConfig = cfg.labels;
 			console.log('🏷️ Configuring labels layer:', labelsConfig);
 			if (labelsConfig) {
 				globe
-					.labelsData([]) // Start with no labels
+					.labelsData([]) // Start with no labels (will be populated by effect)
 					.labelLat((d: any) => d.lat)
 					.labelLng((d: any) => d.lng)
 					.labelText((d: any) => d.city || d.port || 'Unknown')
 					.labelSize((d: any) => labelsConfig.size ?? 0.5)
 					.labelDotRadius((d: any) => labelsConfig.dotRadius ?? 0.2)
-					.labelColor((d: any) => labelsConfig.textColor ?? '#ffffff')
+					.labelColor((d: any) => {
+						// Use opacity from labelOpacityMap to control visibility
+						const key = `${d.lat},${d.lng}`;
+						const opacity = labelOpacityMap.get(key) ?? 0;
+						const baseColor = labelsConfig.textColor ?? '#ffffff';
+
+						// Convert hex/named color to rgba with opacity
+						if (baseColor.startsWith('#')) {
+							// Hex color
+							const r = parseInt(baseColor.slice(1, 3), 16);
+							const g = parseInt(baseColor.slice(3, 5), 16);
+							const b = parseInt(baseColor.slice(5, 7), 16);
+							return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+						} else if (baseColor.startsWith('rgb')) {
+							// Already rgb/rgba - replace opacity
+							return baseColor.replace(/rgba?\([^)]+\)/, (match) => {
+								const values = match.match(/\d+/g);
+								if (values && values.length >= 3) {
+									return `rgba(${values[0]}, ${values[1]}, ${values[2]}, ${opacity})`;
+								}
+								return match;
+							});
+						} else {
+							// Named color - default to white with opacity
+							return `rgba(255, 255, 255, ${opacity})`;
+						}
+					})
 					.labelDotOrientation((d: any) => d.orientation || labelsConfig.orientation || 'bottom')
 					.labelAltitude(labelsConfig.altitude ?? 0.01)
 					.labelResolution(labelsConfig.resolution ?? 20);
-				console.log('✅ Labels layer configured');
+				console.log('✅ Labels layer configured with opacity control');
 			} else {
 				console.log('⚠️ No labels config - skipping labels layer');
 			}
@@ -1073,6 +1216,11 @@
 	bind:innerHeight={windowHeight}
 />
 
+<Image
+	bg
+	class="-z-1 pointer-events-none h-svh w-svw overflow-clip"
+	overlay="bg-radial from-primary to-transparent from-30% to-60% translate-y-1/2 scale-x-125 absolute bottom-0 origin-bottom opacity-60 hidden md:block"
+/>
 <div
 	class="globe-container w-svh relative h-svh {className}"
 	{@attach attachGlobeContainer}
@@ -1084,7 +1232,7 @@
 	/* SVG Marker (active) */
 	:global {
 		.svg-marker.active {
-			@apply md:scale-250 inline-block -translate-y-2 scale-150;
+			@apply md:scale-250 scale-200 inline-block translate-y-2 md:-translate-y-2;
 			animation: float 6s ease-in-out infinite;
 		}
 
