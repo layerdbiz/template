@@ -313,6 +313,9 @@ importers:
       '@csstools/postcss-light-dark-function':
         specifier: ^2.0.11
         version: 2.0.11(postcss@8.5.6)
+      '@iconify-json/flagpack':
+        specifier: ^1.2.6
+        version: 1.2.6
       '@iconify/tailwind4':
         specifier: ^1.0.6
         version: 1.0.6(tailwindcss@4.1.13)
@@ -635,6 +638,9 @@ packages:
 
   '@iconify-json/devicon@1.2.45':
     resolution: {integrity: sha512-EgowZDawRGJb72FlKKcOPwoMpdDkrqAVWNHhK7qSLI9sYAm7OkfLm/Vvjuqul1XCWA4KBylFv0szWPVpTkzVIg==}
+
+  '@iconify-json/flagpack@1.2.6':
+    resolution: {integrity: sha512-4UMOAwKURxvGjr/EAYxt1wn8VyLM0XLlekFrXXXdXPaRB1kMd0p0zJD+TYunYQY9RiyD4xF0KSDt80zZxpRwJw==}
 
   '@iconify-json/heroicons@1.2.3':
     resolution: {integrity: sha512-n+vmCEgTesRsOpp5AB5ILB6srsgsYK+bieoQBNlafvoEhjVXLq8nIGN4B0v/s4DUfa0dOrjwE/cKJgIKdJXOEg==}
@@ -2773,6 +2779,10 @@ snapshots:
       '@iconify/types': 2.0.0
 
   '@iconify-json/devicon@1.2.45':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/flagpack@1.2.6':
     dependencies:
       '@iconify/types': 2.0.0
 

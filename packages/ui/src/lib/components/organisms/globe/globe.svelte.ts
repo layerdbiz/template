@@ -18,12 +18,24 @@ export interface Location {
 	email?: string;
 }
 
+export interface Port {
+	id: string;
+	location: string;
+	port: string;
+	city: string;
+	state_province?: string;
+	country: string;
+	lat: number | string;
+	lng: number | string;
+}
+
 // ============================================================================
 // New Nested Configuration Interfaces
 // ============================================================================
 
 export interface GlobeDataConfig {
 	locations?: Location[] | string;
+	ports?: Port[] | string;
 	hexPolygons?: string;
 	polygons?: string;
 }
@@ -125,6 +137,16 @@ export interface GlobeRingsConfig {
 	repeat?: number;
 }
 
+export interface GlobeLabelsConfig {
+	size?: number;
+	dotRadius?: number;
+	textColor?: string;
+	dotColor?: string;
+	altitude?: number;
+	resolution?: number;
+	orientation?: string;
+}
+
 export interface GlobeConfig {
 	data?: GlobeDataConfig;
 	globe?: GlobeAppearanceConfig;
@@ -138,6 +160,7 @@ export interface GlobeConfig {
 	autoplay?: GlobeAutoplayConfig;
 	arcs?: GlobeArcsConfig;
 	rings?: GlobeRingsConfig;
+	labels?: GlobeLabelsConfig;
 }
 
 export interface GlobeProps {
@@ -158,6 +181,7 @@ export interface GlobeProps {
 	autoplay?: GlobeAutoplayConfig;
 	arcs?: GlobeArcsConfig;
 	rings?: GlobeRingsConfig;
+	labels?: GlobeLabelsConfig;
 }
 
 // ============================================================================
@@ -247,6 +271,7 @@ export function mergeConfigs(
 		result.points = { ...result.points, ...config.points };
 		result.animation = { ...result.animation, ...config.animation };
 		result.html = { ...result.html, ...config.html };
+		result.labels = { ...result.labels, ...config.labels };
 		result.autoplay = { ...result.autoplay, ...config.autoplay };
 		result.arcs = { ...result.arcs, ...config.arcs };
 		result.rings = { ...result.rings, ...config.rings };

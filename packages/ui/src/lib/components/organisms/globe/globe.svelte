@@ -10,7 +10,13 @@
 	import { untrack } from 'svelte';
 	import * as THREE from 'three';
 	import Globe from 'globe.gl';
-	import { type GlobeProps, type Location, createDefaultConfig, mergeConfigs } from '@layerd/ui';
+	import {
+		type GlobeProps,
+		type Location,
+		type Port,
+		createDefaultConfig,
+		mergeConfigs
+	} from '@layerd/ui';
 
 	let {
 		locations = $bindable([]),
@@ -33,6 +39,7 @@
 	let windowWidth = $state(1920);
 	let windowHeight = $state(1080);
 	let processedLocations = $state<Location[]>([]);
+	let processedPorts = $state<Port[]>([]);
 	let activeArcs = $state<any[]>([]); // Track all active arcs
 	let arcCleanupTimeouts = $state<Map<string, ReturnType<typeof setTimeout>>>(new Map()); // Track cleanup timeouts per arc
 	let activeRings = $state<any[]>([]); // Track all active rings
@@ -73,11 +80,48 @@
 		}
 	});
 
+	// Fetch ports data
+	$effect(() => {
+		const ports = mergedConfig.data?.ports;
+		if (typeof ports === 'string') {
+			fetch(ports)
+				.then((res) => res.json())
+				.then((data) => {
+					processedPorts = data;
+					console.log('✅ Ports fetched:', data.length, 'ports');
+				})
+				.catch((err) => console.error('Failed to fetch ports:', err));
+		} else if (Array.isArray(ports)) {
+			processedPorts = ports;
+			console.log('✅ Ports set from array:', ports.length, 'ports');
+		} else {
+			processedPorts = [];
+			console.log('⚠️ No ports data provided');
+		}
+	});
+
 	// Get locations and ports from data config or direct props
 	const effectiveLocations = $derived(processedLocations);
 
 	// Current location and ports
 	const currentLocation = $derived(effectiveLocations[currentIndex] || null);
+
+	// Get ports for current location
+	const currentPorts = $derived(
+		currentLocation
+			? processedPorts.filter((port) => port.location === currentLocation.location)
+			: []
+	);
+
+	// Debug: Log when currentPorts changes
+	$effect(() => {
+		console.log('🔍 Current ports updated:', {
+			location: currentLocation?.location,
+			totalPorts: processedPorts.length,
+			matchingPorts: currentPorts.length,
+			ports: currentPorts
+		});
+	});
 
 	// ============================================================================
 	// Helper Functions
@@ -569,7 +613,71 @@
 				wasClickNavigation = false;
 			});
 		}, delay);
-	}); // Recreate globe when media query breakpoint changes
+	});
+
+	// Update labels when current location changes (following same timing pattern as markers)
+	$effect(() => {
+		const globe = globeInstance;
+		const ports = currentPorts;
+		const loc = currentLocation;
+		const prevLoc = previousLocation;
+
+		if (!globe || !loc) return;
+
+		// Use untrack to read config without creating dependency
+		const cfg = untrack(() => mergedConfig);
+		const labelsConfig = cfg.labels;
+		const arcDuration = cfg.arcs?.duration ?? 2000;
+		const ringDuration = cfg.rings?.duration ?? 700;
+
+		console.log('🏷️ Labels effect triggered:', {
+			location: loc?.location,
+			portsCount: ports.length,
+			hasLabelsConfig: !!labelsConfig,
+			isFirstLocation: !prevLoc
+		});
+
+		if (!labelsConfig) {
+			console.log('⚠️ No labels config provided');
+			return;
+		}
+
+		// Determine delay: no delay for first location (no arc), otherwise wait for arc to arrive
+		const isFirstLocation = !prevLoc;
+
+		// IMMEDIATELY clear all labels
+		globe.labelsData([]);
+		console.log('🏷️ Labels cleared');
+
+		// Add new labels with appropriate delay
+		// No delay for: first location (no arc), or clicked marker (immediate feedback)
+		// Otherwise: wait for arc + rings to complete, then add buffer for smooth transition
+		const baseDelay = isFirstLocation || wasClickNavigation ? 0 : arcDuration;
+		const ringBuffer = isFirstLocation || wasClickNavigation ? 0 : ringDuration + 1000; // Ring duration + 1200ms buffer
+		const labelDelay = baseDelay + ringBuffer;
+
+		console.log('🏷️ Label delay calculated:', labelDelay, 'ms');
+
+		if (ports.length > 0) {
+			setTimeout(() => {
+				// Create label data with proper structure
+				const labelData = ports.map((port) => ({
+					lat: parseFloat(String(port.lat)),
+					lng: parseFloat(String(port.lng)),
+					city: port.city,
+					port: port.port,
+					orientation: 'bottom' // default orientation
+				}));
+
+				console.log('🏷️ Setting labels:', labelData);
+
+				// Set labels data
+				globe.labelsData(labelData);
+			}, labelDelay);
+		}
+	});
+
+	// Recreate globe when media query breakpoint changes
 	$effect(() => {
 		if (!globeInstance) return;
 
@@ -830,8 +938,9 @@
 										<path class="fg fill-primary-600" d="M43.0833 57.0417a13.9584 13.9584 0 1 1 .0001-27.9168 13.9584 13.9584 0 0 1-.0001 27.9168Zm0-53.0417a39.0837 39.0837 0 0 0-27.6361 11.4472A39.0837 39.0837 0 0 0 4 43.0833c0 29.3125 39.0833 72.5837 39.0833 72.5837s39.0834-43.2712 39.0834-72.5837A39.0834 39.0834 0 0 0 43.0833 4Z"/>
 									</svg>
 							</i>
-							<h4 class="location-label absolute top-full translate-y-full mt-2 text-sm font-normal text-white m-0 px-2 py-1 bg-black/60 rounded whitespace-nowrap pointer-events-none ${isFirstLocation ? 'opacity-100' : 'opacity-0'} transition-all duration-300">
-								${d.location || 'Unknown Location'}
+							<h4 class="location-label font-semibold uppercase flex items-center justify-center gap-2 absolute top-full translate-y-full mt-2 text-sm font-normal text-white m-0 p-2 bg-black/60 rounded whitespace-nowrap pointer-events-none ${isFirstLocation ? 'opacity-100' : 'opacity-0'} transition-all duration-300">
+								<i class="text-xl icon-${d.flag}"></i>
+								<span>${d.location || 'Unknown Location'}</span>
 							</h4>
 						</div>
 					`;
@@ -876,11 +985,29 @@
 				.htmlLng((d: any) => d.lng)
 				.htmlAltitude(cfg.html?.altitude ?? 0.02);
 
+			// LABELS - Configure labels layer (hidden by default, shown per location)
+			const labelsConfig = cfg.labels;
+			console.log('🏷️ Configuring labels layer:', labelsConfig);
+			if (labelsConfig) {
+				globe
+					.labelsData([]) // Start with no labels
+					.labelLat((d: any) => d.lat)
+					.labelLng((d: any) => d.lng)
+					.labelText((d: any) => d.city || d.port || 'Unknown')
+					.labelSize((d: any) => labelsConfig.size ?? 0.5)
+					.labelDotRadius((d: any) => labelsConfig.dotRadius ?? 0.2)
+					.labelColor((d: any) => labelsConfig.textColor ?? '#ffffff')
+					.labelDotOrientation((d: any) => d.orientation || labelsConfig.orientation || 'bottom')
+					.labelAltitude(labelsConfig.altitude ?? 0.01)
+					.labelResolution(labelsConfig.resolution ?? 20);
+				console.log('✅ Labels layer configured');
+			} else {
+				console.log('⚠️ No labels config - skipping labels layer');
+			}
+
 			// Set globeInstance BEFORE onGlobeReady so location-centering effect can access it
 			globe.controls().enableZoom = false;
-			globeInstance = globe;
-
-			// FIRST LOAD - Triggered after globe is fully initialized
+			globeInstance = globe; // FIRST LOAD - Triggered after globe is fully initialized
 			globe.onGlobeReady(() => {
 				if (!globe) return;
 

@@ -826,3 +826,26 @@
 .icon-work {
 	@apply icon-[material-symbols--work];
 }
+
+/* Flags */
+.icon-us {
+	@apply icon-[flagpack--us];
+}
+.icon-mx {
+	@apply icon-[flagpack--mx];
+}
+.icon-co {
+	@apply icon-[flagpack--co];
+}
+.icon-gy {
+	@apply icon-[flagpack--gy];
+}
+.icon-nl {
+	@apply icon-[flagpack--nl];
+}
+.icon-kr {
+	@apply icon-[flagpack--kr];
+}
+.icon-in {
+	@apply icon-[flagpack--in];
+}

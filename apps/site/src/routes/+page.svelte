@@ -174,7 +174,8 @@
 			data={{
 				polygons: '/data/countries.geojson',
 				locations:
-					'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/locations'
+					'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/locations',
+				ports: 'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/ports'
 			}}
 			globe={{
 				// image: '/images/skins/earth-blue-marble.jpg',
@@ -230,6 +231,13 @@
 			}}
 			html={{
 				altitude: mq.md ? 0.009 : 0.005
+			}}
+			labels={{
+				size: mq.md ? 0.75 : 0.15,
+				dotRadius: mq.md ? 0.3 : 0.1,
+				textColor: '#ffffff',
+				dotColor: '#ffffff',
+				altitude: mq.md ? 0.008 : 0.002
 			}}
 			arcs={{
 				color: '#ffffff',
