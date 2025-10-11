@@ -11,6 +11,7 @@ import { mq } from "@layerd/ui";
 // ============================================================================
 
 export interface Location {
+	id?: string | number;
 	location: string;
 	lat: number | string;
 	lng: number | string;
@@ -158,6 +159,7 @@ export interface GlobeConfig {
 
 export interface GlobeProps {
 	locations?: Location[];
+	startLocationId?: string | number;
 	config?: GlobeConfig;
 	class?: string;
 

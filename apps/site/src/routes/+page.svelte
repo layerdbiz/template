@@ -170,6 +170,7 @@
 	<div class="fade-in bleed pointer-events-auto !absolute inset-0 overflow-clip">
 		<!-- <div class="fade-in bleed mask-b-from-90% mask-b-to-100% pointer-events-auto !absolute inset-0 overflow-clip"> -->
 		<Globe
+			startLocationId="4"
 			data={{
 				polygons: '/data/countries.geojson',
 				locations:
@@ -242,22 +243,22 @@
 				dashInitialGap: 1,
 				altitude: null,
 				altitudeAutoscale: mq.md ? 0.3 : 0.2,
-				startAltitude: mq.md ? 0 : 0.001,
-				endAltitude: mq.md ? 0 : 0.001
+				startAltitude: mq.md ? 0.005 : 0.001,
+				endAltitude: mq.md ? 0.005 : 0.001
 			}}
 			rings={{
 				color: '#ffffff',
 				rings: 4,
 				radius: mq.md ? 4 : 2,
 				speed: mq.md ? 4 : 2,
-				altitude: mq.md ? 0.006 : 0.0001,
+				altitude: mq.md ? 0.0001 : 0.0001,
 				duration: 700
 			}}
 			animation={{
 				duration: 1000
 			}}
 			autoplay={{
-				enabled: false,
+				enabled: true,
 				interval: 7000,
 				pauseOnInteraction: true,
 				resumeDelay: 60000

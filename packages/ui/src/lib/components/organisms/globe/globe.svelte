@@ -19,6 +19,7 @@
 
 	let {
 		locations = $bindable([]),
+		startLocationId,
 		class: className = '',
 		// All other props are collected into restProps to be merged into the config
 		...restProps
@@ -33,7 +34,7 @@
 
 	let globeContainer: HTMLDivElement | undefined = $state();
 	let globeInstance: GlobeInstance | null = $state(null);
-	let currentIndex = $state(0);
+	let currentIndex = $state(-1); // Start with -1 (no active location) until we find the starting location
 	let previousLocation: Location | null = $state(null);
 	let displayPreviousLocation: Location | null = $state(null); // Visual previous location for point transitions
 	let windowWidth = $state(1920);
@@ -97,6 +98,34 @@
 		} else {
 			processedPorts = [];
 			console.log('⚠️ No ports data provided');
+		}
+	});
+
+	// Set initial location index when locations are loaded
+	// This runs BEFORE the globe is rendered to avoid showing the first location as active
+	$effect(() => {
+		// Only run once when locations are first loaded and currentIndex is still -1
+		if (processedLocations.length > 0 && currentIndex === -1) {
+			if (startLocationId !== undefined) {
+				// Find location by id
+				const foundIndex = processedLocations.findIndex(
+					(loc) => String(loc.id) === String(startLocationId)
+				);
+				if (foundIndex !== -1) {
+					currentIndex = foundIndex;
+					console.log(
+						`🎯 Starting at location with id "${startLocationId}" (index ${foundIndex}):`,
+						processedLocations[foundIndex].location
+					);
+				} else {
+					console.warn(`⚠️ Location with id "${startLocationId}" not found, starting at index 0`);
+					currentIndex = 0;
+				}
+			} else {
+				// No startLocationId specified, default to first location
+				currentIndex = 0;
+				console.log('🎯 Starting at first location (index 0)');
+			}
 		}
 	});
 
@@ -1132,11 +1161,11 @@
 				// HTML - Location markers with click handlers
 				.htmlElementsData(effectiveLocations)
 				.htmlElement((d: any) => {
-					// Check if this is the first location (initially active)
-					const isFirstLocation =
-						effectiveLocations[0] &&
-						parseFloat(String(d.lat)) === parseFloat(String(effectiveLocations[0].lat)) &&
-						parseFloat(String(d.lng)) === parseFloat(String(effectiveLocations[0].lng));
+					// Check if this is the currently active location (based on currentIndex, not first in array)
+					const isActiveLocation =
+						currentLocation &&
+						parseFloat(String(d.lat)) === parseFloat(String(currentLocation.lat)) &&
+						parseFloat(String(d.lng)) === parseFloat(String(currentLocation.lng));
 
 					const wrapper = document.createElement('div');
 					wrapper.innerHTML = `
@@ -1145,13 +1174,13 @@
 							     data-lat="${d.lat}" 
 							     data-lng="${d.lng}">
 								
-									 <svg xmlns="http://www.w3.org/2000/svg" class="svg svg-marker translate-y-4 md:translate-y-0 w-6 h-6 md:w-9 md:h-9 origin-bottom cursor-pointer duration-300 ${isFirstLocation ? 'active' : ''}" fill="none" viewBox="0 0 87 122">
+									 <svg xmlns="http://www.w3.org/2000/svg" class="svg svg-marker translate-y-4 md:translate-y-0 w-6 h-6 md:w-9 md:h-9 origin-bottom cursor-pointer duration-300 ${isActiveLocation ? 'active' : ''}" fill="none" viewBox="0 0 87 122">
 										<path class="stroke" stroke-width="4" d="m43.0833 115.667-1.4842 1.34 1.4842 1.643 1.4842-1.643-1.4842-1.34Zm0 0c1.4842 1.34 1.4846 1.34 1.4851 1.339l.0018-.002.0062-.007.023-.025.0875-.098c.0764-.085.1886-.211.3343-.376.2914-.33.7167-.816 1.2567-1.442 1.0799-1.254 2.6193-3.074 4.4651-5.348 3.6898-4.546 8.6129-10.9197 13.5399-18.2222 4.9232-7.2969 9.8751-15.5579 13.6022-23.8774 3.7154-8.2933 6.2816-16.7923 6.2816-24.5251A41.0836 41.0836 0 0 0 14.033 14.033 41.0835 41.0835 0 0 0 2 43.0833c0 7.7328 2.5662 16.2318 6.2816 24.5251 3.7271 8.3195 8.679 16.5805 13.6021 23.8774 4.9271 7.3025 9.8501 13.6762 13.5399 18.2222 1.8458 2.274 3.3852 4.094 4.4652 5.348.54.626.9652 1.112 1.2566 1.442.1457.165.258.291.3344.376l.0874.098.023.025.0063.007.0017.002c.0006.001.0009.001 1.4851-1.339Z"/>
 										<path class="bg fill-white" d="M60 44c0 9.3888-7.6112 17-17 17s-17-7.6112-17-17 7.6112-17 17-17 17 7.6112 17 17Z"/>
 										<path class="fg fill-primary-600" d="M43.0833 57.0417a13.9584 13.9584 0 1 1 .0001-27.9168 13.9584 13.9584 0 0 1-.0001 27.9168Zm0-53.0417a39.0837 39.0837 0 0 0-27.6361 11.4472A39.0837 39.0837 0 0 0 4 43.0833c0 29.3125 39.0833 72.5837 39.0833 72.5837s39.0834-43.2712 39.0834-72.5837A39.0834 39.0834 0 0 0 43.0833 4Z"/>
 									</svg>
 							</i>
-							<h4 class="location-label font-semibold uppercase flex items-center justify-center gap-2 absolute top-full translate-y-full mt-2 text-xs md:text-sm font-normal text-white m-0 p-2 bg-black/60 rounded whitespace-nowrap pointer-events-none ${isFirstLocation ? 'opacity-100' : 'opacity-0'} transition-all duration-300">
+							<h4 class="location-label font-semibold uppercase flex items-center justify-center gap-2 absolute top-full translate-y-full mt-2 text-xs md:text-sm font-normal text-white m-0 p-2 bg-black/60 rounded whitespace-nowrap pointer-events-none ${isActiveLocation ? 'opacity-100' : 'opacity-0'} transition-all duration-300">
 								<i class="text-sm md:text-xl icon-${d.flag}"></i>
 								<span>${d.location || 'Unknown Location'}</span>
 							</h4>
@@ -1262,10 +1291,7 @@
 					}
 				});
 
-				// Set currentIndex to trigger location-centering effect
-				if (effectiveLocations.length > 0) {
-					currentIndex = 0;
-				}
+				console.log('🌍 Globe is ready! Current location:', currentLocation?.location);
 			});
 		} catch (error) {
 			console.error('Failed to initialize Globe.gl:', error);
