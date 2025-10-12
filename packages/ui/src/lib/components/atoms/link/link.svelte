@@ -38,6 +38,11 @@
 		/** Callback when toggle state changes (when button=true) */
 		onToggle?: (toggled: boolean) => void;
 
+		/** Navigation state props - passed from parent to prevent reactivity loss */
+		currentHash?: string;
+		activeSection?: string | null;
+		stickyActiveSection?: string | null;
+
 		/** Content children */
 		children?: any;
 	}
@@ -57,6 +62,9 @@
 		iconHover,
 		toggled,
 		onToggle,
+		currentHash = undefined,
+		activeSection = undefined,
+		stickyActiveSection = undefined,
 		children,
 		...props
 	}: LinkProps = $props();
@@ -81,16 +89,19 @@
 		}
 	});
 
+	// ✅ Calculate isActive using props passed from parent (prevents reactivity loss!)
+	// If props are provided, use them; otherwise fall back to reading from navigationState
 	const isActive = $derived.by(() => {
 		if (!isNavLink) return false;
 
-		// Force reactivity by accessing navigation state properties
-		const currentHash = navigationState.currentHash;
-		const activeSection = navigationState.activeSection;
-		const stickyActiveSection = navigationState.stickyActiveSection;
+		// Use props if available (prevents reactivity loss after await boundaries)
+		const hash = currentHash !== undefined ? currentHash : navigationState.currentHash;
+		const active = activeSection !== undefined ? activeSection : navigationState.activeSection;
+		const sticky =
+			stickyActiveSection !== undefined ? stickyActiveSection : navigationState.stickyActiveSection;
 
 		// Use sticky active section - this persists until a new section becomes visible or hash changes
-		const result = stickyActiveSection === sectionId;
+		const result = sticky === sectionId;
 		return result;
 	});
 </script>

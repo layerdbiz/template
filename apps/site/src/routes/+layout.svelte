@@ -16,10 +16,17 @@
 		Link,
 		Image,
 		scroll,
-		mq
+		mq,
+		navigationState
 	} from '@layerd/ui';
 	let { children } = $props();
 	let navOpen = $state(false);
+
+	// ✅ READ REACTIVE STATE BEFORE ANY AWAITS - This prevents reactivity loss!
+	// These values are read at the top of the component, before any async boundaries
+	let currentHash = $derived(navigationState.currentHash);
+	let activeSection = $derived(navigationState.activeSection);
+	let stickyActiveSection = $derived(navigationState.stickyActiveSection);
 
 	let headerElement = $state();
 
@@ -138,7 +145,12 @@
 			{/if}
 		{/each} -->
 		{#each links as link}
-			<Link href={link.href}>{link.label}</Link>
+			<Link
+				href={link.href}
+				{currentHash}
+				{activeSection}
+				{stickyActiveSection}>{link.label}</Link
+			>
 		{/each}
 
 		<Theme

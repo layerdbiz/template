@@ -15,7 +15,8 @@
 		Toggle,
 		Flex,
 		Input,
-		Slider
+		Slider,
+		navigationState
 	} from '@layerd/ui';
 	import { getTeamData } from '$lib/team/team.remote';
 	import { getFaqData } from '$lib/faq/faq.remote';
@@ -26,6 +27,27 @@
 	import { getSectionsData } from '$lib/sections/sections.remote';
 	import { submitContactData } from '$lib/contact/contact.remote';
 	import { validateField } from '$lib/contact/validation';
+
+	// ✅ READ REACTIVE STATE BEFORE ANY AWAITS - This prevents reactivity loss!
+	// These values are read at the top of the component, before any async boundaries
+	let currentHash = $derived(navigationState.currentHash);
+	let activeSection = $derived(navigationState.activeSection);
+	let stickyActiveSection = $derived(navigationState.stickyActiveSection);
+
+	// ✅ HOIST ALL DATA FETCHING TO TOP - Prevents component reactivity loss warnings
+	// By awaiting all data BEFORE any component rendering, we avoid reactivity loss in child components
+	const sectionsData = await getSectionsData();
+	const partnersData = await getPartnersData();
+	const servicesData = await getServicesData();
+	const teamData = await getTeamData();
+	const faqData = await getFaqData();
+	const testimonialsData = await getTestimonialsData();
+	const aboutData = await getAboutData();
+
+	// Helper function for cleaner section access (now synchronous since data is already loaded)
+	function getSection(name: string) {
+		return sectionsData.find((s) => s.section === name);
+	}
 
 	// Lazy load Globe component to avoid blocking initial page load
 	import { onMount } from 'svelte';
@@ -55,12 +77,6 @@
 		// Mark that we should attempt to load the globe
 		shouldLoadGlobe = true;
 	});
-
-	// Helper function for cleaner section access with await
-	async function getSection(name: string) {
-		const sections = await getSectionsData();
-		return sections.find((s) => s.section === name);
-	}
 
 	// Stats
 	const stats = [
@@ -162,10 +178,10 @@
 		<!-- title -->
 		<div class="text-base-50 flex flex-col gap-2 text-center">
 			<h1 class="order-2 text-balance text-xl font-bold leading-tight lg:text-6xl">
-				<span>{(await getSection('Home'))?.title ?? 'Hero Title'}</span>
+				<span>{getSection('Home')?.title ?? 'Hero Title'}</span>
 			</h1>
 			<h2 class="text-base-200 order-1 text-[x-small] uppercase tracking-widest lg:text-sm">
-				{(await getSection('Home'))?.subtitle ?? 'Hero Subtitle'}
+				{getSection('Home')?.subtitle ?? 'Hero Subtitle'}
 			</h2>
 
 			<!-- stats -->
@@ -211,108 +227,104 @@
 	</section>
 
 	<!-- globe -->
-
-	<div class="bleed pointer-events-auto !absolute inset-0 overflow-clip">
-		<!-- <div class="fade-in bleed mask-b-from-90% mask-b-to-100% pointer-events-auto !absolute inset-0 overflow-clip"> -->
-		{#if Globe && shouldLoadGlobe && loadGlobe}
-			<Globe
-				startLocationId="4"
-				data={{
-					polygons: '/data/countries.geojson',
-					locations:
-						'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/locations',
-					ports: 'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/ports'
-				}}
-				globe={{
-					// image: '/images/skins/earth-blue-marble.jpg',
-					width: typeof window !== 'undefined' ? window.innerWidth : 1920,
-					height: typeof window !== 'undefined' ? window.innerHeight : 1080,
-					left: 0,
-					top: mq.md
-						? typeof window !== 'undefined'
-							? window.innerHeight * 0.95
-							: 972
-						: typeof window !== 'undefined'
-							? window.innerHeight * 2.2
-							: 1856,
-					altitude: mq.md ? altitudes.small.globe : altitudes.large.globe,
-					latitude: mq.md ? 36 : 21
-				}}
-				atmosphere={{
-					show: mq.md ? true : false,
-					color: '#155dfc',
-					altitude: mq.md ? 0.2 : 0.08
-				}}
-				polygon={{
-					capColor: 'rgba(0,0,0,0)',
-					sideColor: 'rgba(0,0,255,0)',
-					strokeColor: 'rgba(0,0,0,0)',
-					altitude: mq.md ? 0 : 0
-				}}
-				points={{
-					layers: [
-						// blue dot (bg)
-						{
-							base: mq.md ? 0.0001 : 0.0005,
-							altitude: mq.md ? 0.01 : 0.0005,
-							color: '#155dfc',
-							radius: mq.md ? 1 : 0.3,
-							zOffset: 0
-						},
-						// white dot (fg)
-						{
-							base: mq.md ? 0.00014 : 0.0009,
-							altitude: mq.md ? 0.015 : 0.00025,
-							color: '#ffffff',
-							radius: mq.md ? 0.5 : 0.15,
-							zOffset: 0.001 // Slightly forward to ensure it's on top
-						}
-					]
-				}}
-				html={{
-					altitude: mq.md ? 0.05 : 0.005
-				}}
-				labels={{
-					size: mq.md ? 0.75 : 0.15,
-					dotRadius: mq.md ? 0.3 : 0.1,
-					textColor: '#ffffff',
-					dotColor: '#ffffff',
-					altitude: mq.md ? 0.008 : 0.002
-				}}
-				arcs={{
-					color: '#ffffff',
-					stroke: mq.md ? 0.2 : 0.04,
-					duration: 2000,
-					dashRelativeLength: 0.4,
-					dashLength: 0.6,
-					dashGap: 2,
-					dashInitialGap: 1,
-					altitude: null,
-					altitudeAutoscale: mq.md ? 0.3 : 0.2,
-					startAltitude: mq.md ? 0.005 : 0.001,
-					endAltitude: mq.md ? 0.005 : 0.001
-				}}
-				rings={{
-					color: '#ffffff',
-					rings: 4,
-					radius: mq.md ? 4 : 2,
-					speed: mq.md ? 4 : 2,
-					altitude: mq.md ? 0.0001 : 0.0001,
-					duration: 700
-				}}
-				animation={{
-					duration: 1000
-				}}
-				autoplay={{
-					enabled: true,
-					interval: 7000,
-					pauseOnInteraction: true,
-					startDelay: 5000,
-					resumeDelay: 60000
-				}}
-			/>
-		{/if}
-	</div>
+	{#if Globe && shouldLoadGlobe}
+		<Globe
+			startLocationId="4"
+			data={{
+				polygons: '/data/countries.geojson',
+				locations:
+					'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/locations',
+				ports: 'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/ports'
+			}}
+			globe={{
+				// image: '/images/skins/earth-blue-marble.jpg',
+				width: typeof window !== 'undefined' ? window.innerWidth : 1920,
+				height: typeof window !== 'undefined' ? window.innerHeight : 1080,
+				left: 0,
+				top: mq.md
+					? typeof window !== 'undefined'
+						? window.innerHeight * 0.95
+						: 972
+					: typeof window !== 'undefined'
+						? window.innerHeight * 2.2
+						: 1856,
+				altitude: mq.md ? altitudes.small.globe : altitudes.large.globe,
+				latitude: mq.md ? 36 : 21
+			}}
+			atmosphere={{
+				show: mq.md ? true : false,
+				color: '#155dfc',
+				altitude: mq.md ? 0.2 : 0.08
+			}}
+			polygon={{
+				capColor: 'rgba(0,0,0,0)',
+				sideColor: 'rgba(0,0,255,0)',
+				strokeColor: 'rgba(0,0,0,0)',
+				altitude: mq.md ? 0 : 0
+			}}
+			points={{
+				layers: [
+					// blue dot (bg)
+					{
+						base: mq.md ? 0.0001 : 0.0005,
+						altitude: mq.md ? 0.01 : 0.0005,
+						color: '#155dfc',
+						radius: mq.md ? 1 : 0.3,
+						zOffset: 0
+					},
+					// white dot (fg)
+					{
+						base: mq.md ? 0.00014 : 0.0009,
+						altitude: mq.md ? 0.015 : 0.00025,
+						color: '#ffffff',
+						radius: mq.md ? 0.5 : 0.15,
+						zOffset: 0.001 // Slightly forward to ensure it's on top
+					}
+				]
+			}}
+			html={{
+				altitude: mq.md ? 0.05 : 0.005
+			}}
+			labels={{
+				size: mq.md ? 0.75 : 0.15,
+				dotRadius: mq.md ? 0.3 : 0.1,
+				textColor: '#ffffff',
+				dotColor: '#ffffff',
+				altitude: mq.md ? 0.008 : 0.002
+			}}
+			arcs={{
+				color: '#ffffff',
+				stroke: mq.md ? 0.2 : 0.04,
+				duration: 2000,
+				dashRelativeLength: 0.4,
+				dashLength: 0.6,
+				dashGap: 2,
+				dashInitialGap: 1,
+				altitude: null,
+				altitudeAutoscale: mq.md ? 0.3 : 0.2,
+				startAltitude: mq.md ? 0.005 : 0.001,
+				endAltitude: mq.md ? 0.005 : 0.001
+			}}
+			rings={{
+				color: '#ffffff',
+				rings: 4,
+				radius: mq.md ? 4 : 2,
+				speed: mq.md ? 4 : 2,
+				altitude: mq.md ? 0.0001 : 0.0001,
+				duration: 700
+			}}
+			animation={{
+				duration: 1000
+			}}
+			autoplay={{
+				enabled: true,
+				interval: 7000,
+				pauseOnInteraction: true,
+				startDelay: 5000,
+				resumeDelay: 60000
+			}}
+		/>
+	{/if}
 
 	<!-- photo vignette 
 	------------------------------------------>
@@ -369,7 +381,7 @@
 >
 	<Text
 		class="text-base-300 text-center"
-		h4={(await getSection('Partners'))?.subtitle ?? 'Partners Subtitle'}
+		h4={getSection('Partners')?.subtitle ?? 'Partners Subtitle'}
 		icon={false}
 	/>
 
@@ -377,7 +389,7 @@
 	{#if !mq.lg}
 		<!-- Desktop: 8 cols x 2 rows grid -->
 		<div class="mask-x-lg lg:mask-[unset] flex items-center justify-center gap-8 pb-20 invert">
-			{#each await getPartnersData() as partner (partner.id)}
+			{#each partnersData as partner (partner.id)}
 				<img
 					src={partner.img}
 					alt={partner.name}
@@ -395,7 +407,7 @@
 			container="gap-4"
 			slide="flex-none"
 		>
-			{#each await getPartnersData() as partner (partner.id)}
+			{#each partnersData as partner (partner.id)}
 				<img
 					src={partner.img}
 					alt={partner.name}
@@ -413,7 +425,7 @@
 		loop={true}
 		duration={7000}
 	>
-		{#each await getTestimonialsData() as testimonial (testimonial.id)}
+		{#each testimonialsData as testimonial (testimonial.id)}
 			<Card
 				class="dark pl-7 transition-all duration-300 lg:pl-14"
 				variant="testimonial"
@@ -433,8 +445,8 @@
 >
 	<Title
 		id="About"
-		title={(await getSection('About'))?.title ?? 'About Title'}
-		subtitle={(await getSection('About'))?.subtitle ?? 'About Subtitle'}
+		title={getSection('About')?.title ?? 'About Title'}
+		subtitle={getSection('About')?.subtitle ?? 'About Subtitle'}
 	/>
 
 	<!-- team 
@@ -447,7 +459,7 @@
 		duration={4000}
 		disabled="lg"
 	>
-		{#each await getTeamData() as member (member.id)}
+		{#each teamData as member (member.id)}
 			<Card
 				variant="profile"
 				title={member.title}
@@ -460,7 +472,7 @@
 	<!-- about 
 	------------------------------------------>
 
-	{#each await getAboutData() as section (section.id)}
+	{#each aboutData as section (section.id)}
 		<Container
 			class="flex flex-col items-center justify-between gap-20 lg:flex-row even:lg:flex-row-reverse"
 		>
@@ -503,11 +515,11 @@
 >
 	<Title
 		id="Services"
-		title={(await getSection('Services'))?.title ?? 'Services Title'}
-		subtitle={(await getSection('Services'))?.subtitle ?? 'Services Subtitle'}
+		title={getSection('Services')?.title ?? 'Services Title'}
+		subtitle={getSection('Services')?.subtitle ?? 'Services Subtitle'}
 	/>
 	<div class="services-container grid gap-6">
-		{#each await getServicesData() as service (service.id)}
+		{#each servicesData as service (service.id)}
 			<Card
 				glass
 				class="overflow-clip"
@@ -535,8 +547,8 @@
 >
 	<Title
 		id="Contact"
-		title={(await getSection('Contact'))?.title ?? 'Contact Title'}
-		subtitle={(await getSection('Contact'))?.subtitle ?? 'Contact Subtitle'}
+		title={getSection('Contact')?.title ?? 'Contact Title'}
+		subtitle={getSection('Contact')?.subtitle ?? 'Contact Subtitle'}
 	/>
 
 	<Container
@@ -773,11 +785,11 @@
 >
 	<Title
 		id="FAQ"
-		title={(await getSection('FAQ'))?.title ?? 'FAQ Title'}
-		subtitle={(await getSection('FAQ'))?.subtitle ?? 'FAQ Subtitle'}
+		title={getSection('FAQ')?.title ?? 'FAQ Title'}
+		subtitle={getSection('FAQ')?.subtitle ?? 'FAQ Subtitle'}
 	/>
 	<Content class="flex flex-col">
-		{#each await getFaqData() as faq (faq.id)}
+		{#each faqData as faq (faq.id)}
 			<Toggle
 				variant="panel"
 				label={faq.label}
@@ -807,11 +819,11 @@
 >
 	<Text
 		class="text-balance text-4xl md:text-pretty md:text-6xl"
-		h1={(await getSection('CTA'))?.title ?? 'CTA Title'}
+		h1={getSection('CTA')?.title ?? 'CTA Title'}
 	/>
 	<Text
 		class="text-pretty md:max-w-xl md:text-balance"
-		p={(await getSection('CTA'))?.subtitle ?? 'CTA Subtitle'}
+		p={getSection('CTA')?.subtitle ?? 'CTA Subtitle'}
 	/>
 	<Button
 		size="xl"
@@ -854,7 +866,7 @@
 		}
 
 		/* Content fade-in animation */
-		:global(.fade-in) {
+		.fade-in {
 			opacity: 0;
 			transform: translateY(10px);
 			animation: fadeInUp 0.8s ease-in-out forwards;

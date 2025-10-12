@@ -1,0 +1,99 @@
+[vite] connecting...
+client:827 [vite] connected.
+[Violation] Forced reflow while executing JavaScript took 193ms
++page.svelte:64 ✅ Globe component loaded
+globe.svelte:69 🔍 STATE CHANGE - polygonData: NULL
+globe.svelte:73 🔍 STATE CHANGE - globeInitialized: false
+globe.svelte:77 🔍 STATE CHANGE - isGlobeReady: false
+globe.svelte:98 🚀 DATA FETCH EFFECT: Starting data fetch...
+globe.svelte:106 🚀 DATA FETCH EFFECT: Config extracted {hasLocations: true, hasPolygonUrl: true, hasPorts: true}
+globe.svelte:196 🔍 Globe loading state: {globeInitialized: false, polygonDataLoaded: false, isGlobeReady: false}
+globe.svelte:249 🔍 Current ports updated: {location: undefined, totalPorts: 0, matchingPorts: 0, ports: Array(0)}
+globe.svelte:1141 🔍 INIT EFFECT: Checking initialization conditions... {hasContainer: true, locationsCount: 0, hasPolygonData: false, hasGlobeInstance: false, initStarted: false}
+globe.svelte:1157 ⏸️ INIT EFFECT: Conditions not met, waiting...
+globe.svelte:114 ⏱️ MICROTASK: Data fetch microtask started
+globe.svelte:121 📍 FETCH: Starting locations fetch from URL: https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/locations
+globe.svelte:141 🌍 FETCH: Starting polygon data fetch from URL: /data/countries.geojson
+globe.svelte:163 🚢 FETCH: Starting ports fetch from URL: https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/ports
+globe.svelte:185 ⏳ WAITING: Waiting for 3 fetch operations...
+globe.svelte:147 ✅ FETCH COMPLETE: Polygon data loaded successfully
+globe.svelte:69 🔍 STATE CHANGE - polygonData: LOADED
+globe.svelte:196 🔍 Globe loading state: {globeInitialized: false, polygonDataLoaded: true, isGlobeReady: false}
+globe.svelte:1141 🔍 INIT EFFECT: Checking initialization conditions... {hasContainer: true, locationsCount: 0, hasPolygonData: true, hasGlobeInstance: false, initStarted: false}
+globe.svelte:1157 ⏸️ INIT EFFECT: Conditions not met, waiting...
+globe.svelte:127 ✅ FETCH COMPLETE: Locations fetched: 11 locations
+globe.svelte:215 🎯 Starting at location with id "4" (index 3): Houston, Texas
+globe.svelte:249 🔍 Current ports updated: {location: 'Houston, Texas', totalPorts: 0, matchingPorts: 0, ports: Array(0)}
+globe.svelte:1141 🔍 INIT EFFECT: Checking initialization conditions... {hasContainer: true, locationsCount: 11, hasPolygonData: true, hasGlobeInstance: false, initStarted: false}
+globe.svelte:1164 🚀 INIT EFFECT: All conditions met! Starting initialization...
+globe.svelte:1165 🚀 INIT EFFECT: Deferring globe initialization...
+globe.svelte:1170 ⏱️ SCHEDULE: Using requestIdleCallback
+globe.svelte:1141 🔍 INIT EFFECT: Checking initialization conditions... {hasContainer: true, locationsCount: 11, hasPolygonData: true, hasGlobeInstance: false, initStarted: true}
+globe.svelte:1157 ⏸️ INIT EFFECT: Conditions not met, waiting...
+globe.svelte:1179 🎬 CALLBACK: Globe initialization callback started
+globe.svelte:1180 🚀 CALLBACK: Starting globe initialization...
+globe.svelte:1197 🌐 GLOBE: Creating new Globe instance...
+globe.svelte:1206 ✅ GLOBE: Globe instance created successfully
+globe.svelte:1211 💡 GLOBE: Ambient light configured
+globe.svelte:1230 🌍 GLOBE: Applying polygon data to globe...
+globe.svelte:1246 🔷 GLOBE: Hexagon layer configured
+globe.svelte:1262 ✨ GLOBE: Polygon glow layer configured
+globe.svelte:1265 ✅ GLOBE: All polygon layers applied
+globe.svelte:1431 🏷️ Configuring labels layer: {size: 0.15, dotRadius: 0.1, textColor: '#ffffff', dotColor: '#ffffff', altitude: 0.002}
+globe.svelte:1470 ✅ Labels layer configured with opacity control
+globe.svelte:1478 ✅ GLOBE: Globe instance stored and zoom disabled
+globe.svelte:1176 [Violation] 'requestIdleCallback' handler took 74ms
+globe.svelte:830 🏷️ Initializing all labels: 0 labels
+globe.svelte:836 ✅ All labels initialized (invisible)
+globe.svelte:854 🏷️ Label visibility update triggered: {location: 'Houston, Texas', portsCount: 0, hasLabelsConfig: true, isFirstLocation: false}
+globe.svelte:910 🏷️ All labels fading out smoothly
+globe.svelte:917 🏷️ Label fade-in delay calculated: 3700 ms
+globe.svelte:985 📍 Updating points for active location: {currentLocation: 'Houston, Texas', displayPreviousLocation: 'Houston, Texas', activeLocation: Array(1), delay: 2000, isFirstLocation: false, …}
+globe.svelte:1019 📍 Locations to show: {showingBothPoints: true, locations: Array(2)}
+globe.svelte:1038 ✅ Points updated: 4 layers
+globe.svelte:1141 🔍 INIT EFFECT: Checking initialization conditions... {hasContainer: true, locationsCount: 11, hasPolygonData: true, hasGlobeInstance: true, initStarted: true}
+globe.svelte:1157 ⏸️ INIT EFFECT: Conditions not met, waiting...
+globe.svelte:1482 🎉 GLOBE READY CALLBACK: onGlobeReady fired!
+globe.svelte:1497 🌍 GLOBE READY: Globe initialized with all data!
+globe.svelte:1500 ⏰ GLOBE READY: Waiting for next frame to ensure stable render...
+globe__gl.js?t=1760302626391&v=0f17928b:675 [Violation] 'setTimeout' handler took 3400ms
+globe.svelte:1503 ⏰ GLOBE READY: Setting globeInitialized = true NOW
+globe.svelte:1505 ✨ GLOBE READY: Globe ready to display! globeInitialized = true
+globe.svelte:73 🔍 STATE CHANGE - globeInitialized: true
+globe.svelte:77 🔍 STATE CHANGE - isGlobeReady: true
+globe.svelte:196 🔍 Globe loading state: {globeInitialized: true, polygonDataLoaded: true, isGlobeReady: true}
+globe__gl.js?t=1760302626391&v=0f17928b:675 [Violation] 'setTimeout' handler took 4384ms
+globe.svelte:985 📍 Updating points for active location: {currentLocation: 'Houston, Texas', displayPreviousLocation: 'Houston, Texas', activeLocation: Array(1), delay: 2000, isFirstLocation: false, …}
+globe.svelte:1019 📍 Locations to show: {showingBothPoints: true, locations: Array(2)}
+globe.svelte:1038 ✅ Points updated: 4 layers
+globe.svelte:592 🎬 Starting autoplay after globe is visible to user
+globe__gl.js?t=1760302626391&v=0f17928b:847 [Violation] 'requestAnimationFrame' handler took 68ms
+globe.svelte:169 ✅ FETCH COMPLETE: Ports fetched: 69 ports
+globe.svelte:249 🔍 Current ports updated: {location: 'Houston, Texas', totalPorts: 69, matchingPorts: 7, ports: Array(7)}
+globe.svelte:854 🏷️ Label visibility update triggered: {location: 'Houston, Texas', portsCount: 7, hasLabelsConfig: true, isFirstLocation: false}
+globe.svelte:910 🏷️ All labels fading out smoothly
+globe.svelte:917 🏷️ Label fade-in delay calculated: 3700 ms
+globe.svelte:187 ✅ ALL FETCHES COMPLETE: All data loaded successfully
+globe.svelte:962 🏷️ Labels fading in smoothly for current location
+globe.svelte:249 🔍 Current ports updated: {location: 'Fort Myers, Florida', totalPorts: 69, matchingPorts: 8, ports: Array(8)}
+globe.svelte:854 🏷️ Label visibility update triggered: {location: 'Fort Myers, Florida', portsCount: 8, hasLabelsConfig: true, isFirstLocation: false}
+globe.svelte:910 🏷️ All labels fading out smoothly
+globe.svelte:917 🏷️ Label fade-in delay calculated: 3700 ms
+globe.svelte:985 📍 Updating points for active location: {currentLocation: 'Fort Myers, Florida', displayPreviousLocation: 'Houston, Texas', activeLocation: Array(1), delay: 2000, isFirstLocation: false, …}
+globe.svelte:1019 📍 Locations to show: {showingBothPoints: true, locations: Array(2)}
+globe.svelte:1038 ✅ Points updated: 4 layers
+globe.svelte:985 📍 Updating points for active location: {currentLocation: 'Fort Myers, Florida', displayPreviousLocation: 'Fort Myers, Florida', activeLocation: Array(1), delay: 2000, isFirstLocation: false, …}
+globe.svelte:1019 📍 Locations to show: {showingBothPoints: true, locations: Array(2)}
+globe.svelte:1038 ✅ Points updated: 4 layers
+globe.svelte:962 🏷️ Labels fading in smoothly for current location
+globe.svelte:249 🔍 Current ports updated: {location: 'Cartagena, Colombia', totalPorts: 69, matchingPorts: 11, ports: Array(11)}
+globe.svelte:854 🏷️ Label visibility update triggered: {location: 'Cartagena, Colombia', portsCount: 11, hasLabelsConfig: true, isFirstLocation: false}
+globe.svelte:910 🏷️ All labels fading out smoothly
+globe.svelte:917 🏷️ Label fade-in delay calculated: 3700 ms
+globe.svelte:985 📍 Updating points for active location: {currentLocation: 'Cartagena, Colombia', displayPreviousLocation: 'Fort Myers, Florida', activeLocation: Array(1), delay: 2000, isFirstLocation: false, …}
+globe.svelte:1019 📍 Locations to show: {showingBothPoints: true, locations: Array(2)}
+globe.svelte:1038 ✅ Points updated: 4 layers
+globe.svelte:985 📍 Updating points for active location: {currentLocation: 'Cartagena, Colombia', displayPreviousLocation: 'Cartagena, Colombia', activeLocation: Array(1), delay: 2000, isFirstLocation: false, …}
+globe.svelte:1019 📍 Locations to show: {showingBothPoints: true, locations: Array(2)}
+globe.svelte:1038 ✅ Points updated: 4 layers
+globe.svelte:962 🏷️ Labels fading in smoothly for current location

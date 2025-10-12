@@ -34,7 +34,6 @@
 
 	let globeContainer: HTMLDivElement | undefined = $state();
 	let globeInstance: GlobeInstance | null = $state(null);
-	let currentIndex = $state(-1); // Start with -1 (no active location) until we find the starting location
 	let previousLocation: Location | null = $state(null);
 	let displayPreviousLocation: Location | null = $state(null); // Visual previous location for point transitions
 	let windowWidth = $state(1920);
@@ -73,144 +72,32 @@
 		)
 	);
 
-	// Track if data has been fetched to prevent re-fetching
-	let dataFetchInitiated = $state(false);
-
-	// Fetch remote data if URIs are provided - USE UNTRACK to prevent reactive loops
-	$effect(() => {
-		// Only run once
-		if (dataFetchInitiated) return;
-		dataFetchInitiated = true;
-
-		// Use untrack to read config without creating dependency
-		const cfg = untrack(() => mergedConfig);
-		const locs = cfg.data?.locations ?? locations;
-		const polygonUrl = cfg.data?.polygons;
-		const ports = cfg.data?.ports;
-
-		// Defer all fetch operations to next microtask to avoid blocking
-		queueMicrotask(async () => {
-			try {
-				// Fetch all data in parallel
-				const fetchPromises = [];
-
-				// Locations
-				if (typeof locs === 'string') {
-					fetchPromises.push(
-						fetch(locs)
-							.then((res) => res.json())
-							.then((data) => {
-								processedLocations = data;
-								console.log('✅ Locations fetched:', data.length, 'locations');
-							})
-							.catch((err) => {
-								console.error('Failed to fetch locations:', err);
-								processedLocations = [];
-							})
-					);
-				} else {
-					processedLocations = locs;
-					console.log('✅ Locations set from array:', locs.length, 'locations');
-				}
-
-				// Polygons
-				if (polygonUrl) {
-					console.log('🌍 Pre-loading polygon data...');
-					fetchPromises.push(
-						fetch(polygonUrl)
-							.then((res) => res.json())
-							.then((data) => {
-								polygonData = data;
-								console.log('✅ Polygon data pre-loaded successfully');
-							})
-							.catch((err) => {
-								console.error('Failed to pre-load polygon data:', err);
-								// Set to empty object to allow globe to proceed without polygons
-								polygonData = { features: [] };
-							})
-					);
-				} else {
-					// No polygons configured - proceed immediately
-					console.log('⚠️ No polygon data configured');
-					polygonData = { features: [] };
-				}
-
-				// Ports
-				if (typeof ports === 'string') {
-					fetchPromises.push(
-						fetch(ports)
-							.then((res) => res.json())
-							.then((data) => {
-								processedPorts = data;
-								console.log('✅ Ports fetched:', data.length, 'ports');
-							})
-							.catch((err) => {
-								console.error('Failed to fetch ports:', err);
-								processedPorts = [];
-							})
-					);
-				} else if (Array.isArray(ports)) {
-					processedPorts = ports;
-					console.log('✅ Ports set from array:', ports.length, 'ports');
-				} else {
-					processedPorts = [];
-					console.log('⚠️ No ports data provided');
-				}
-
-				// Wait for all fetches to complete
-				await Promise.all(fetchPromises);
-				console.log('✅ All data loaded successfully');
-			} catch (error) {
-				console.error('Error loading globe data:', error);
-			}
-		});
-	});
-
-	// Debug effect to track loading state changes
-	$effect(() => {
-		console.log('🔍 Globe loading state:', {
-			globeInitialized,
-			polygonDataLoaded: !!polygonData,
-			isGlobeReady
-		});
-	});
-
-	// Set initial location index when locations are loaded
-	// This runs BEFORE the globe is rendered to avoid showing the first location as active
-	$effect(() => {
-		// Only run once when locations are first loaded and currentIndex is still -1
-		if (processedLocations.length > 0 && currentIndex === -1) {
-			if (startLocationId !== undefined) {
-				// Find location by id
-				const foundIndex = processedLocations.findIndex(
-					(loc) => String(loc.id) === String(startLocationId)
-				);
-				if (foundIndex !== -1) {
-					currentIndex = foundIndex;
-					console.log(
-						`🎯 Starting at location with id "${startLocationId}" (index ${foundIndex}):`,
-						processedLocations[foundIndex].location
-					);
-				} else {
-					console.warn(`⚠️ Location with id "${startLocationId}" not found, starting at index 0`);
-					currentIndex = 0;
-				}
-			} else {
-				// No startLocationId specified, default to first location
-				currentIndex = 0;
-				console.log('🎯 Starting at first location (index 0)');
-			}
-		}
-	});
+	// ============================================================================
+	// Data Loading
+	// ============================================================================
 
 	// Get locations and ports from data config or direct props
 	const effectiveLocations = $derived(processedLocations);
 
+	// Derive current index based on processedLocations and startLocationId
+	// This automatically updates when locations are loaded
+	let currentIndex = $state(-1);
+
+	$effect(() => {
+		if (processedLocations.length > 0 && currentIndex === -1) {
+			if (startLocationId !== undefined) {
+				const foundIndex = processedLocations.findIndex(
+					(loc) => String(loc.id) === String(startLocationId)
+				);
+				currentIndex = foundIndex !== -1 ? foundIndex : 0;
+			} else {
+				currentIndex = 0;
+			}
+		}
+	});
+
 	// Current location and ports
 	const currentLocation = $derived(effectiveLocations[currentIndex] || null);
-
-	// Active location as array for points rendering
-	const activeLocationArray = $derived(currentLocation ? [currentLocation] : []);
 
 	// Get ports for current location
 	const currentPorts = $derived(
@@ -219,14 +106,20 @@
 			: []
 	);
 
-	// Debug: Log when currentPorts changes
-	$effect(() => {
-		console.log('🔍 Current ports updated:', {
-			location: currentLocation?.location,
-			totalPorts: processedPorts.length,
-			matchingPorts: currentPorts.length,
-			ports: currentPorts
-		});
+	// Derive which locations to show on the globe (for smooth arc animations)
+	const locationsToShow = $derived.by(() => {
+		const prevLoc = displayPreviousLocation;
+		const loc = currentLocation;
+		const isFirstLocation = !prevLoc;
+		const cfg = mergedConfig;
+		const arcDuration = cfg.arcs?.duration ?? 2000;
+		const delay = isFirstLocation ? 0 : arcDuration;
+
+		// Show both points during arc animation for visual continuity
+		if (!isFirstLocation && prevLoc && delay > 0) {
+			return [prevLoc, loc];
+		}
+		return loc ? [loc] : [];
 	});
 
 	// ============================================================================
@@ -548,8 +441,8 @@
 	// Initialize autoplay - ONLY after globe is visible to user
 	// This ensures every user sees the starting location for the full startDelay duration
 	$effect(() => {
-		// Wait for globe to be fully visible before starting autoplay
-		if (!globeInitialized) return;
+		// Wait for globe instance to exist before starting autoplay
+		if (!globeInstance) return;
 
 		const autoplayConfig = mergedConfig.autoplay;
 		const hasLocations = effectiveLocations.length > 0;
@@ -558,14 +451,14 @@
 			const interval = autoplayConfig.interval ?? 3000;
 			const startDelay = autoplayConfig.startDelay ?? 0;
 
-			// Wait for fade-in animation to complete (700ms) before starting autoplay timer
-			const fadeInDuration = 700;
+			// Wait for fade-in animation to complete (800ms) before starting autoplay timer
+			const fadeInDuration = 800;
 
 			setTimeout(() => {
 				// Use untrack to prevent reading isAutoPlaying from creating a dependency
 				if (!untrack(() => isAutoPlaying)) {
-					console.log('🎬 Starting autoplay after globe is visible to user');
 					untrack(() => startAutoPlay(interval, startDelay));
+					globeInitialized = true;
 				}
 			}, fadeInDuration);
 		} else {
@@ -765,7 +658,6 @@
 		const labelsConfig = cfg.labels;
 
 		if (!labelsConfig) {
-			console.log('⚠️ No labels config provided');
 			return;
 		}
 
@@ -802,13 +694,9 @@
 		});
 		labelOpacityMap = initialOpacityMap;
 
-		console.log('🏷️ Initializing all labels:', allLabelData.length, 'labels');
-
 		// Set all labels at once (they'll be invisible initially)
 		globe.labelsData(allLabelData);
 		labelsInitialized = true;
-
-		console.log('✅ All labels initialized (invisible)');
 	});
 
 	// Update label visibility when current location changes
@@ -825,13 +713,6 @@
 		const labelsConfig = cfg.labels;
 		const arcDuration = cfg.arcs?.duration ?? 2000;
 		const ringDuration = cfg.rings?.duration ?? 700;
-
-		console.log('🏷️ Label visibility update triggered:', {
-			location: loc?.location,
-			portsCount: ports.length,
-			hasLabelsConfig: !!labelsConfig,
-			isFirstLocation: !prevLoc
-		});
 
 		if (!labelsConfig) {
 			return;
@@ -882,14 +763,10 @@
 			}
 		});
 
-		console.log('🏷️ All labels fading out smoothly');
-
 		// Calculate delay for fading in labels at current location
 		const baseDelay = isFirstLocation || wasClickNavigation ? 0 : arcDuration;
 		const ringBuffer = isFirstLocation || wasClickNavigation ? 0 : ringDuration + 1000;
 		const labelDelay = baseDelay + ringBuffer;
-
-		console.log('🏷️ Label fade-in delay calculated:', labelDelay, 'ms');
 
 		if (ports.length > 0) {
 			setTimeout(() => {
@@ -933,8 +810,6 @@
 						}
 					}
 				});
-
-				console.log('🏷️ Labels fading in smoothly for current location');
 			}, labelDelay);
 		}
 	});
@@ -942,30 +817,10 @@
 	// Update points when active location changes
 	$effect(() => {
 		const globe = globeInstance;
-		const activeLocation = activeLocationArray;
-		const prevLoc = displayPreviousLocation; // Use displayPreviousLocation for visual transitions
-		const loc = currentLocation;
-
 		if (!globe) return;
 
 		// Use untrack to read config without creating dependency
 		const cfg = untrack(() => mergedConfig);
-		const arcDuration = cfg.arcs?.duration ?? 2000;
-
-		// Determine delay: no delay ONLY for first location (no previous location = no arc)
-		// For all subsequent navigations (keyboard OR click), ALWAYS wait for arc to complete
-		const isFirstLocation = !prevLoc;
-		const delay = isFirstLocation ? 0 : arcDuration;
-
-		console.log('📍 Updating points for active location:', {
-			currentLocation: loc?.location,
-			displayPreviousLocation: prevLoc?.location,
-			activeLocation,
-			delay,
-			isFirstLocation,
-			hasPreviousLocation: !!prevLoc,
-			willShowBothPoints: !isFirstLocation && prevLoc && delay > 0
-		});
 
 		// POINTS LAYER RENDERING
 		// Support both single layer (backward compatible) and multiple layers
@@ -986,19 +841,7 @@
 				return baseAlt > 0;
 			}) || pointLayers.length > 1;
 
-		// ALWAYS show both points during arc animation (previous + current)
-		// This ensures the arc visually emerges from the previous point and lands on the new point
-		const locationsToShow =
-			!isFirstLocation && prevLoc && delay > 0 ? [prevLoc, loc] : activeLocation;
-
-		console.log('📍 Locations to show:', {
-			showingBothPoints: locationsToShow.length > 1,
-			locations: locationsToShow.map((l: Location) => l.location)
-		});
-
-		// Update points immediately based on displayPreviousLocation state
-		// When displayPreviousLocation updates (after arc completes), this effect will re-run automatically
-		// and locationsToShow will be recalculated to show only the active location
+		// Use the derived locationsToShow value
 		if (needsCustomObjects) {
 			// Use 3D Objects Layer for elevated points or multi-layer points
 			const layeredLocations = locationsToShow.flatMap((location: Location) =>
@@ -1010,11 +853,9 @@
 			);
 
 			globe.objectsData(layeredLocations);
-			console.log('✅ Points updated:', layeredLocations.length, 'layers');
 		} else {
 			// Use standard Points Layer
 			globe.pointsData(locationsToShow);
-			console.log('✅ Points updated:', locationsToShow.length, 'points');
 		}
 	});
 
@@ -1080,7 +921,6 @@
 
 				// Reset initialization flag to allow re-initialization
 				initializationStarted = false;
-				dataFetchInitiated = false;
 
 				// Initialization effect will automatically recreate with new props
 			});
@@ -1120,13 +960,12 @@
 			!polygonData ||
 			globeInstance ||
 			initializationStarted
-		)
+		) {
 			return;
+		}
 
 		// Mark initialization as started to prevent re-runs
 		initializationStarted = true;
-
-		console.log('🚀 All data loaded - deferring globe initialization...');
 
 		// Use requestIdleCallback to defer heavy work, fallback to setTimeout
 		const scheduleInit = (callback: () => void) => {
@@ -1138,8 +977,6 @@
 		};
 
 		scheduleInit(() => {
-			console.log('🚀 Starting globe initialization...');
-
 			// Double-check container exists
 			if (!globeContainer) {
 				console.error('Globe container is undefined');
@@ -1166,7 +1003,6 @@
 				// Set a single, moderately bright ambient light to make rings/labels visible
 				const ambientLight = new THREE.AmbientLight(0xffffff, 2);
 				globe.lights([ambientLight]);
-				console.log('💡 Set a moderate ambient light for effects.');
 
 				// Disable bloom/glow post-processing effect
 				const composer = globe.postProcessingComposer();
@@ -1176,7 +1012,6 @@
 					);
 					if (bloomPass) {
 						bloomPass.enabled = false;
-						console.log('✅ Disabled bloom pass.');
 					}
 				}
 
@@ -1185,8 +1020,6 @@
 				const data = untrack(() => polygonData);
 
 				if (data && (data.features || data.length > 0)) {
-					console.log('🌍 Applying pre-loaded polygon data to globe...');
-
 					// HEXAGONS: Base solid countries (low altitude)
 					if (cfg.hexPolygon) {
 						globe
@@ -1201,7 +1034,6 @@
 									: () => cfg.hexPolygon?.color ?? '#181e2b'
 							)
 							.hexPolygonsTransitionDuration(cfg.hexPolygon?.transitionDuration ?? 0);
-						console.log('🔷 Hexagon base countries configured');
 					}
 
 					// POLYGONS: Blue glow effect (higher altitude, transparent cap, glowing sides)
@@ -1216,13 +1048,7 @@
 							.polygonStrokeColor(() => 'rgba(0,0,0,0)') // No stroke
 							.polygonAltitude(cfg.polygon.altitude ?? 0.01)
 							.polygonsTransitionDuration(cfg.polygon.transitionDuration ?? 0);
-
-						console.log('✨ Polygon glow effect configured');
 					}
-
-					console.log('✅ Polygon data applied to globe');
-				} else {
-					console.log('⚠️ No polygon data to apply');
 				}
 
 				// POINTS LAYER RENDERING
@@ -1247,7 +1073,7 @@
 				if (needsCustomObjects) {
 					// Use 3D Objects Layer for elevated points or multi-layer points
 					// Create a separate object for each layer at each location
-					const layeredLocations = activeLocationArray.flatMap((loc: Location) =>
+					const layeredLocations = locationsToShow.flatMap((loc: Location) =>
 						pointLayers.map((layer, layerIndex) => ({
 							...loc,
 							__layerIndex: layerIndex,
@@ -1308,7 +1134,7 @@
 					// Use standard Points Layer when no base and single layer
 					const singleLayer = pointLayers[0];
 					globe
-						.pointsData(activeLocationArray)
+						.pointsData(locationsToShow)
 						.pointAltitude(() => singleLayer.altitude ?? 0.003)
 						.pointColor(() => singleLayer.color ?? '#0066ff')
 						.pointRadius(singleLayer.radius ?? 0.25);
@@ -1386,7 +1212,6 @@
 
 				// LABELS - Configure labels layer with opacity-based visibility
 				const labelsConfig = cfg.labels;
-				console.log('🏷️ Configuring labels layer:', labelsConfig);
 				if (labelsConfig) {
 					globe
 						.labelsData([]) // Start with no labels (will be populated by effect)
@@ -1425,9 +1250,6 @@
 						.labelDotOrientation((d: any) => d.orientation || labelsConfig.orientation || 'bottom')
 						.labelAltitude(labelsConfig.altitude ?? 0.01)
 						.labelResolution(labelsConfig.resolution ?? 20);
-					console.log('✅ Labels layer configured with opacity control');
-				} else {
-					console.log('⚠️ No labels config - skipping labels layer');
 				}
 
 				// Set globeInstance BEFORE onGlobeReady so location-centering effect can access it
@@ -1446,22 +1268,11 @@
 							object.material = new THREE.MeshBasicMaterial({
 								color: 0x000000 // Solid black
 							});
-							console.log('✅ Converted globe sphere to solid black MeshBasicMaterial.');
 						}
-					});
-
-					console.log('🌍 Globe initialized with all data!');
-
-					// Give THREE.js one more frame to paint everything, then reveal
-					requestAnimationFrame(() => {
-						requestAnimationFrame(() => {
-							globeInitialized = true;
-							console.log('✨ Globe ready to display!');
-						});
 					});
 				});
 			} catch (error) {
-				console.error('Failed to initialize Globe.gl:', error);
+				console.error('❌ GLOBE ERROR: Failed to initialize Globe.gl:', error);
 				// Display user-friendly error message
 				if (globeContainer) {
 					globeContainer.innerHTML = `
@@ -1478,6 +1289,53 @@
 
 	// Keyboard navigation and cleanup
 	onMount(() => {
+		// Fetch remote data if URIs are provided
+		const cfg = mergedConfig;
+		const locs = cfg.data?.locations ?? locations;
+		const polygonUrl = cfg.data?.polygons;
+		const ports = cfg.data?.ports;
+
+		// Fetch all data in parallel
+		Promise.all([
+			// Locations
+			typeof locs === 'string'
+				? fetch(locs)
+						.then((res) => res.json())
+						.catch((err) => {
+							console.error('Failed to fetch locations:', err);
+							return [];
+						})
+				: Promise.resolve(locs),
+
+			// Polygons
+			polygonUrl
+				? fetch(polygonUrl)
+						.then((res) => res.json())
+						.catch((err) => {
+							console.error('Failed to load polygon data:', err);
+							return { features: [] };
+						})
+				: Promise.resolve({ features: [] }),
+
+			// Ports
+			typeof ports === 'string'
+				? fetch(ports)
+						.then((res) => res.json())
+						.catch((err) => {
+							console.error('Failed to fetch ports:', err);
+							return [];
+						})
+				: Promise.resolve(Array.isArray(ports) ? ports : [])
+		])
+			.then(([fetchedLocations, fetchedPolygons, fetchedPorts]) => {
+				processedLocations = fetchedLocations;
+				polygonData = fetchedPolygons;
+				processedPorts = fetchedPorts;
+			})
+			.catch((error) => {
+				console.error('Error loading globe data:', error);
+			});
+
 		window.addEventListener('keydown', handleKeyboard);
 
 		return () => {
@@ -1509,24 +1367,44 @@
 />
 
 <div
+	class="bleed"
 	style="display: contents;"
-	class="globe-wrapper {isGlobeReady
-		? 'fade-in pointer-events-auto visible opacity-100'
-		: 'pointer-events-none invisible opacity-0'}"
 >
-	<Image
-		bg
-		class="globe-atmosphere -z-1 pointer-events-none h-svh w-svw overflow-clip transition-opacity duration-700"
-		overlay="bg-radial from-primary to-transparent from-30% to-60% translate-y-1/2 scale-x-125 absolute bottom-0 origin-bottom opacity-60 hidden md:block"
-	/>
 	<div
-		class="globe-container w-svh relative h-svh transition-opacity duration-700 {className}"
-		{@attach attachGlobeContainer}
-	></div>
+		class="globe-wrapper absolute inset-0 h-full w-full {className}"
+		class:fade-in={isGlobeReady}
+		class:opacity-0={!isGlobeReady}
+	>
+		<Image
+			bg
+			class="globe-atmosphere -z-1 pointer-events-none h-svh w-svw overflow-clip"
+			overlay="bg-radial from-primary to-transparent from-30% to-60% translate-y-1/2 scale-x-125 absolute bottom-0 origin-bottom opacity-60 hidden md:block"
+		/>
+		<div
+			class="globe-container absolute inset-0 h-full w-full"
+			class:pointer-events-auto={isGlobeReady}
+			class:pointer-events-none={!isGlobeReady}
+			{@attach attachGlobeContainer}
+		></div>
+	</div>
 </div>
 
 <style lang="postcss">
 	@reference "@layerd/ui/ui.css";
+
+	/* Content fade-in animation */
+	.fade-in {
+		opacity: 0;
+		transform: translateY(10px);
+		animation: fadeInUp 0.8s ease-in-out forwards;
+	}
+
+	@keyframes fadeInUp {
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
 
 	/* SVG Marker (active) */
 	:global {
