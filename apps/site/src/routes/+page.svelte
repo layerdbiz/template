@@ -15,8 +15,7 @@
 		Toggle,
 		Flex,
 		Input,
-		Slider,
-		Globe
+		Slider
 	} from '@layerd/ui';
 	import { getTeamData } from '$lib/team/team.remote';
 	import { getFaqData } from '$lib/faq/faq.remote';
@@ -27,6 +26,35 @@
 	import { getSectionsData } from '$lib/sections/sections.remote';
 	import { submitContactData } from '$lib/contact/contact.remote';
 	import { validateField } from '$lib/contact/validation';
+
+	// Lazy load Globe component to avoid blocking initial page load
+	import { onMount } from 'svelte';
+	let Globe: any = $state(null);
+	let shouldLoadGlobe = $state(false);
+
+	onMount(() => {
+		// Defer globe loading until after initial page render
+		// Use requestIdleCallback for better performance
+		const loadGlobe = () => {
+			import('@layerd/ui')
+				.then((module) => {
+					Globe = module.Globe;
+					console.log('✅ Globe component loaded');
+				})
+				.catch((err) => {
+					console.error('Failed to load Globe component:', err);
+				});
+		};
+
+		if ('requestIdleCallback' in window) {
+			requestIdleCallback(loadGlobe, { timeout: 2000 });
+		} else {
+			setTimeout(loadGlobe, 1000);
+		}
+
+		// Mark that we should attempt to load the globe
+		shouldLoadGlobe = true;
+	});
 
 	// Helper function for cleaner section access with await
 	async function getSection(name: string) {
@@ -101,6 +129,20 @@
 			messageError = '';
 		}
 	});
+
+	// Altitude configurations
+	let altitudes = $state({
+		small: {
+			globe: 0.8,
+			atmosphere: 0.2,
+			polygon: 0
+		},
+		large: {
+			globe: 0.14,
+			atmosphere: 0.08,
+			polygon: 0
+		}
+	});
 </script>
 
 <!-- HERO 
@@ -167,16 +209,18 @@
 	</section>
 
 	<!-- globe -->
-	<div class="fade-in bleed pointer-events-auto !absolute inset-0 overflow-clip">
+
+	<div class="bleed pointer-events-auto !absolute inset-0 overflow-clip">
 		<!-- <div class="fade-in bleed mask-b-from-90% mask-b-to-100% pointer-events-auto !absolute inset-0 overflow-clip"> -->
-		<Globe
-			startLocationId="4"
-			data={{
-				polygons: '/data/countries.geojson',
-				locations:
-					'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/locations',
-				ports: 'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/ports'
-			}}
+		{#if Globe && shouldLoadGlobe}
+			<Globe
+				startLocationId="4"
+				data={{
+					polygons: '/data/countries.geojson',
+					locations:
+						'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/locations',
+					ports: 'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/ports'
+				}}
 			globe={{
 				// image: '/images/skins/earth-blue-marble.jpg',
 				width: typeof window !== 'undefined' ? window.innerWidth : 1920,
@@ -189,7 +233,7 @@
 					: typeof window !== 'undefined'
 						? window.innerHeight * 2.2
 						: 1856,
-				altitude: mq.md ? 0.8 : 0.14,
+				altitude: mq.md ? altitudes.small.globe : altitudes.large.globe,
 				latitude: mq.md ? 36 : 21
 			}}
 			atmosphere={{
@@ -261,9 +305,16 @@
 				enabled: true,
 				interval: 7000,
 				pauseOnInteraction: true,
+				startDelay: 5000,
 				resumeDelay: 60000
 			}}
-		/>
+			/>
+		{:else}
+			<!-- Loading placeholder to prevent layout shift -->
+			<div class="flex items-center justify-center h-full text-white/50 text-sm">
+				Loading globe...
+			</div>
+		{/if}
 	</div>
 
 	<!-- photo vignette 
@@ -806,7 +857,7 @@
 		}
 
 		/* Content fade-in animation */
-		.fade-in {
+		:global(.fade-in) {
 			opacity: 0;
 			transform: translateY(10px);
 			animation: fadeInUp 0.8s ease-in-out forwards;

@@ -105,6 +105,7 @@ export interface GlobeAutoplayConfig {
 	interval?: number;
 	pauseOnInteraction?: boolean;
 	resumeDelay?: number;
+	startDelay?: number; // Delay before first location switch (ms)
 }
 
 export interface GlobeArcsConfig {

@@ -1,6 +1,6 @@
 ---
 mode: 'agent'
-tools: ['changes', 'codebase', 'editFiles', 'extensions', 'fetch', 'githubRepo', 'problems', 'search', 'searchResults', 'terminalLastCommand', 'terminalSelection', 'usages']
+tools: ['changes', 'codebase', 'editFiles', 'extensions', 'fetch', 'findTestFiles', 'githubRepo', 'new', 'problems', 'runInTerminal', 'runNotebooks', 'runTasks', 'runTests', 'search', 'searchResults', 'terminalLastCommand', 'terminalSelection', 'testFailure', 'usages', 'vscodeAPI']
 description: 'SvelteKit Remote Functions Generator'
 
 ---
