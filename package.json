@@ -20,14 +20,14 @@
   },
   "devDependencies": {
     "@csstools/postcss-light-dark-function": "^2.0.11",
-    "@iconify-json/carbon": "^1.2.13",
-    "@iconify-json/devicon": "^1.2.44",
+    "@iconify-json/carbon": "^1.2.14",
+    "@iconify-json/devicon": "^1.2.45",
     "@iconify-json/mdi": "^1.2.3",
     "@iconify-json/svg-spinners": "^1.2.4",
-    "@tailwindcss/postcss": "4.1.13",
+    "@tailwindcss/postcss": "4.1.14",
     "postcss": "^8.5.6",
-    "turbo": "2.5.6",
-    "unplugin-icons": "^22.3.0"
+    "turbo": "2.5.8",
+    "unplugin-icons": "^22.4.2"
   },
   "packageManager": "pnpm@9.15.4",
   "pnpm": {

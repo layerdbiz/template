@@ -143,6 +143,8 @@
 			polygon: 0
 		}
 	});
+
+	let loadGlobe = $state(false);
 </script>
 
 <!-- HERO 
@@ -212,7 +214,7 @@
 
 	<div class="bleed pointer-events-auto !absolute inset-0 overflow-clip">
 		<!-- <div class="fade-in bleed mask-b-from-90% mask-b-to-100% pointer-events-auto !absolute inset-0 overflow-clip"> -->
-		{#if Globe && shouldLoadGlobe}
+		{#if Globe && shouldLoadGlobe && loadGlobe}
 			<Globe
 				startLocationId="4"
 				data={{
@@ -221,99 +223,94 @@
 						'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/locations',
 					ports: 'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/ports'
 				}}
-			globe={{
-				// image: '/images/skins/earth-blue-marble.jpg',
-				width: typeof window !== 'undefined' ? window.innerWidth : 1920,
-				height: typeof window !== 'undefined' ? window.innerHeight : 1080,
-				left: 0,
-				top: mq.md
-					? typeof window !== 'undefined'
-						? window.innerHeight * 0.95
-						: 972
-					: typeof window !== 'undefined'
-						? window.innerHeight * 2.2
-						: 1856,
-				altitude: mq.md ? altitudes.small.globe : altitudes.large.globe,
-				latitude: mq.md ? 36 : 21
-			}}
-			atmosphere={{
-				show: mq.md ? true : false,
-				color: '#155dfc',
-				altitude: mq.md ? 0.2 : 0.08
-			}}
-			polygon={{
-				capColor: 'rgba(0,0,0,0)',
-				sideColor: 'rgba(0,0,255,0)',
-				strokeColor: 'rgba(0,0,0,0)',
-				altitude: mq.md ? 0 : 0
-			}}
-			points={{
-				layers: [
-					// blue dot (bg)
-					{
-						base: mq.md ? 0.0001 : 0.0005,
-						altitude: mq.md ? 0.01 : 0.0005,
-						color: '#155dfc',
-						radius: mq.md ? 1 : 0.3,
-						zOffset: 0
-					},
-					// white dot (fg)
-					{
-						base: mq.md ? 0.00014 : 0.0009,
-						altitude: mq.md ? 0.015 : 0.00025,
-						color: '#ffffff',
-						radius: mq.md ? 0.5 : 0.15,
-						zOffset: 0.001 // Slightly forward to ensure it's on top
-					}
-				]
-			}}
-			html={{
-				altitude: mq.md ? 0.05 : 0.005
-			}}
-			labels={{
-				size: mq.md ? 0.75 : 0.15,
-				dotRadius: mq.md ? 0.3 : 0.1,
-				textColor: '#ffffff',
-				dotColor: '#ffffff',
-				altitude: mq.md ? 0.008 : 0.002
-			}}
-			arcs={{
-				color: '#ffffff',
-				stroke: mq.md ? 0.2 : 0.04,
-				duration: 2000,
-				dashRelativeLength: 0.4,
-				dashLength: 0.6,
-				dashGap: 2,
-				dashInitialGap: 1,
-				altitude: null,
-				altitudeAutoscale: mq.md ? 0.3 : 0.2,
-				startAltitude: mq.md ? 0.005 : 0.001,
-				endAltitude: mq.md ? 0.005 : 0.001
-			}}
-			rings={{
-				color: '#ffffff',
-				rings: 4,
-				radius: mq.md ? 4 : 2,
-				speed: mq.md ? 4 : 2,
-				altitude: mq.md ? 0.0001 : 0.0001,
-				duration: 700
-			}}
-			animation={{
-				duration: 1000
-			}}
-			autoplay={{
-				enabled: true,
-				interval: 7000,
-				pauseOnInteraction: true,
-				startDelay: 5000,
-				resumeDelay: 60000
-			}}
+				globe={{
+					// image: '/images/skins/earth-blue-marble.jpg',
+					width: typeof window !== 'undefined' ? window.innerWidth : 1920,
+					height: typeof window !== 'undefined' ? window.innerHeight : 1080,
+					left: 0,
+					top: mq.md
+						? typeof window !== 'undefined'
+							? window.innerHeight * 0.95
+							: 972
+						: typeof window !== 'undefined'
+							? window.innerHeight * 2.2
+							: 1856,
+					altitude: mq.md ? altitudes.small.globe : altitudes.large.globe,
+					latitude: mq.md ? 36 : 21
+				}}
+				atmosphere={{
+					show: mq.md ? true : false,
+					color: '#155dfc',
+					altitude: mq.md ? 0.2 : 0.08
+				}}
+				polygon={{
+					capColor: 'rgba(0,0,0,0)',
+					sideColor: 'rgba(0,0,255,0)',
+					strokeColor: 'rgba(0,0,0,0)',
+					altitude: mq.md ? 0 : 0
+				}}
+				points={{
+					layers: [
+						// blue dot (bg)
+						{
+							base: mq.md ? 0.0001 : 0.0005,
+							altitude: mq.md ? 0.01 : 0.0005,
+							color: '#155dfc',
+							radius: mq.md ? 1 : 0.3,
+							zOffset: 0
+						},
+						// white dot (fg)
+						{
+							base: mq.md ? 0.00014 : 0.0009,
+							altitude: mq.md ? 0.015 : 0.00025,
+							color: '#ffffff',
+							radius: mq.md ? 0.5 : 0.15,
+							zOffset: 0.001 // Slightly forward to ensure it's on top
+						}
+					]
+				}}
+				html={{
+					altitude: mq.md ? 0.05 : 0.005
+				}}
+				labels={{
+					size: mq.md ? 0.75 : 0.15,
+					dotRadius: mq.md ? 0.3 : 0.1,
+					textColor: '#ffffff',
+					dotColor: '#ffffff',
+					altitude: mq.md ? 0.008 : 0.002
+				}}
+				arcs={{
+					color: '#ffffff',
+					stroke: mq.md ? 0.2 : 0.04,
+					duration: 2000,
+					dashRelativeLength: 0.4,
+					dashLength: 0.6,
+					dashGap: 2,
+					dashInitialGap: 1,
+					altitude: null,
+					altitudeAutoscale: mq.md ? 0.3 : 0.2,
+					startAltitude: mq.md ? 0.005 : 0.001,
+					endAltitude: mq.md ? 0.005 : 0.001
+				}}
+				rings={{
+					color: '#ffffff',
+					rings: 4,
+					radius: mq.md ? 4 : 2,
+					speed: mq.md ? 4 : 2,
+					altitude: mq.md ? 0.0001 : 0.0001,
+					duration: 700
+				}}
+				animation={{
+					duration: 1000
+				}}
+				autoplay={{
+					enabled: true,
+					interval: 7000,
+					pauseOnInteraction: true,
+					startDelay: 5000,
+					resumeDelay: 60000
+				}}
 			/>
-		{:else}
-			<!-- Loading placeholder to prevent layout shift -->
-			<div class="flex items-center justify-center h-full text-white/50 text-sm">
-				Loading globe...
-			</div>
 		{/if}
 	</div>
 
