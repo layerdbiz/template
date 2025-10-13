@@ -211,7 +211,8 @@
 			// ports: globePorts
 		}}
 		globe={{
-			image: '/map.svg',
+			image: '/images/skins/earth-dark.jpg',
+			// image: '/map.svg',
 			width: typeof window !== 'undefined' ? window.innerWidth : 1920,
 			height: typeof window !== 'undefined' ? window.innerHeight : 1080,
 			left: 0,
