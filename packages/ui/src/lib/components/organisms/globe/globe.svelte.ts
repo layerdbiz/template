@@ -49,6 +49,13 @@ export interface GlobeAppearanceConfig {
 	top?: number;
 	altitude?: number;
 	latitude?: number;
+	// SVG-specific texture options (only used when image ends with .svg)
+	svg?: {
+		color?: number; // Hex color tint for SVG texture (e.g., 0x1a1a2e)
+		opacity?: number; // Opacity (0-1)
+		emissive?: number; // Emissive color for glow effect
+		emissiveIntensity?: number; // Intensity of emissive glow (0-1)
+	};
 }
 
 export interface GlobeAtmosphereConfig {
@@ -58,6 +65,7 @@ export interface GlobeAtmosphereConfig {
 }
 
 export interface GlobeHexPolygonConfig {
+	enabled?: boolean; // Set to false to completely disable hexagon rendering (performance boost)
 	resolution?: number;
 	margin?: number;
 	color?: string | ((properties: any) => string);
@@ -67,6 +75,7 @@ export interface GlobeHexPolygonConfig {
 }
 
 export interface GlobePolygonConfig {
+	enabled?: boolean; // Set to false to completely disable polygon glow rendering (performance boost)
 	capColor?: string | ((properties: any) => string);
 	sideColor?: string | ((properties: any) => string);
 	strokeColor?: string | ((properties: any) => string);

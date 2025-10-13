@@ -23,7 +23,6 @@
 	let navOpen = $state(false);
 
 	// ✅ READ REACTIVE STATE BEFORE ANY AWAITS - This prevents reactivity loss!
-	// These values are read at the top of the component, before any async boundaries
 	let currentHash = $derived(navigationState.currentHash);
 	let activeSection = $derived(navigationState.activeSection);
 	let stickyActiveSection = $derived(navigationState.stickyActiveSection);
@@ -107,13 +106,13 @@
 	fixed
 	appearance={navOpen ? 'glass' : scroll.top ? 'ghost' : 'glass'}
 	invert
-	class="rounded-4xl relative grid grid-cols-[auto_minmax(0,1fr)] grid-rows-1 gap-4 p-2 lg:grid-cols-[auto_minmax(0,1fr)] lg:grid-rows-1 {navOpen
+	class="rounded-4xl relative grid grid-cols-[auto_minmax(0,1fr)] grid-rows-1 gap-4 p-0 lg:grid-cols-[auto_minmax(0,1fr)] lg:grid-rows-1 lg:p-2 {navOpen
 		? 'grid-rows-[auto_auto]'
 		: ''}"
 >
 	<Logo
 		name="Trident Cubed"
-		class="size-11 shrink-0 items-start lg:col-start-1 lg:row-start-1"
+		class="size-9 shrink-0 items-start text-sm lg:col-start-1 lg:row-start-1 lg:size-11"
 	/>
 	<Nav bind:navOpen>
 		<!--     

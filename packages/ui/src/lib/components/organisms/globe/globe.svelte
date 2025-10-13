@@ -1,6 +1,48 @@
 <!--
 @component Globe
 @tags organism, 3d, visualization, interactive, map, globe
+
+Interactive 3D globe visualization component with support for locations, arcs, rings, labels, and more.
+
+**Features:**
+- Automatic SVG-to-canvas conversion for crisp globe textures
+- Custom layer rendering for SVG files (2048x1024 resolution)
+- Standard texture support for PNG/JPG via built-in globe.gl
+- Configurable colors, emissive glow, and opacity for SVG textures
+- Location markers with click handlers and auto-play
+- Animated arcs between locations with customizable dash patterns
+- Ripple ring effects at arc endpoints
+- Labels with fade in/out animations
+- Responsive media query support with auto-recreation
+
+@example
+```svelte
+<Globe
+  data={{ locations: myLocations }}
+  globe={{
+    image: '/map.svg',  // Auto-detected as SVG, converted to canvas texture
+    svg: {
+      color: 0x1a1a2e,           // Tint color for SVG
+      opacity: 1,
+      emissive: 0x155dfc,        // Glow color
+      emissiveIntensity: 0.4     // Glow strength
+    },
+    altitude: 2.5,
+    latitude: 21
+  }}
+/>
+```
+
+@example Raster image (PNG/JPG)
+```svelte
+<Globe
+  data={{ locations: myLocations }}
+  globe={{
+    image: '/earth-texture.jpg',  // Standard texture via globe.gl
+    altitude: 2.5
+  }}
+/>
+```
 -->
 
 <script lang="ts">
@@ -124,6 +166,75 @@
 	// ============================================================================
 	// Helper Functions
 	// ============================================================================
+
+	/**
+	 * Load SVG and convert it to a canvas texture for WebGL
+	 * This properly wraps the SVG around the sphere surface as an overlay
+	 */
+	async function loadSVGAsCanvasTexture(url: string): Promise<THREE.Texture> {
+		return new Promise((resolve, reject) => {
+			// Create an HTMLImageElement (native browser Image, not Svelte component)
+			const img = document.createElement('img');
+
+			img.onload = () => {
+				console.log('🎨 SVG loaded, creating ULTRA high-res canvas texture...');
+
+				// Create a MAXIMUM RESOLUTION canvas for ultimate SVG crispness
+				// Use 16K resolution (16384x8192) for professional-grade quality
+				const canvas = document.createElement('canvas');
+				canvas.width = 16384; // 16K width for maximum detail
+				canvas.height = 8192; // 16K height - exact 2:1 equirectangular ratio
+
+				const ctx = canvas.getContext('2d', {
+					alpha: true,
+					willReadFrequently: false,
+					desynchronized: true // Better performance for large canvases
+				});
+				if (!ctx) {
+					reject(new Error('Failed to get canvas context'));
+					return;
+				}
+
+				// DISABLE smoothing for pixel-perfect crisp SVG lines
+				ctx.imageSmoothingEnabled = false;
+
+				// Clear to transparent (in case SVG doesn't have background)
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+				// Draw the SVG onto the canvas at maximum resolution
+				ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+				console.log(`✅ Canvas created at 16K: ${canvas.width}x${canvas.height}`);
+
+				// Create THREE.js texture from canvas
+				const texture = new THREE.CanvasTexture(canvas);
+				texture.needsUpdate = true;
+
+				// Set texture wrapping for seamless globe coverage
+				texture.wrapS = THREE.RepeatWrapping; // Horizontal wrapping (longitude)
+				texture.wrapT = THREE.ClampToEdgeWrapping; // Vertical clamping (latitude - no wrap at poles)
+
+				// CRITICAL: Use nearest-neighbor filtering for pixel-perfect sharpness
+				texture.minFilter = THREE.NearestFilter; // Sharp pixels when zoomed out
+				texture.magFilter = THREE.NearestFilter; // Sharp pixels when zoomed in
+				texture.anisotropy = 16; // Maximum anisotropic filtering
+				texture.generateMipmaps = false; // No mipmaps to avoid blur
+
+				console.log('✅ Texture configured for maximum sharpness (16K + nearest-neighbor)');
+
+				resolve(texture);
+			};
+
+			img.onerror = (error) => {
+				console.error('❌ Failed to load SVG image from:', url, error);
+				reject(new Error(`Failed to load SVG image: ${url}`));
+			};
+
+			// Load the SVG
+			console.log('📥 Loading SVG from:', url);
+			img.src = url;
+		});
+	}
 
 	// Attachment function for globe container
 	function attachGlobeContainer(element: HTMLElement) {
@@ -999,15 +1110,97 @@
 			const cfg = untrack(() => mergedConfig);
 			const altitude = cfg.globe?.altitude ?? 0.5;
 
+			console.log('🌍 Initializing globe with config:', cfg);
+
 			try {
+				const imageUrl = cfg.globe?.image ?? '';
+				const isSVG = imageUrl.toLowerCase().endsWith('.svg');
+
+				console.log('🖼️ Image URL:', imageUrl, 'isSVG:', isSVG);
+
 				globe = new Globe(globeContainer)
 					.backgroundColor('rgba(0,0,0,0)')
-					.globeImageUrl(cfg.globe?.image ?? '')
 					.globeOffset([cfg.globe?.left ?? 0, cfg.globe?.top ?? 0])
 					.pointOfView({ lat: 0, lng: 0, altitude })
+					.showGlobe(true) // Explicitly show the globe
 					.showAtmosphere(cfg.atmosphere?.show ?? true)
 					.atmosphereColor(cfg.atmosphere?.color ?? 'lightskyblue')
-					.atmosphereAltitude(cfg.atmosphere?.altitude ?? 0.15); // Set a single, moderately bright ambient light to make rings/labels visible
+					.atmosphereAltitude(cfg.atmosphere?.altitude ?? 0.15);
+
+				console.log('✅ Globe instance created:', globe);
+
+				// For SVG, convert to high-res PNG data URL for Globe.gl
+				if (imageUrl && isSVG) {
+					console.log('🌍 Loading SVG texture:', imageUrl);
+
+					// Load SVG and convert to ultra-high quality canvas texture (16K resolution!)
+					loadSVGAsCanvasTexture(imageUrl)
+						.then((canvasTexture) => {
+							if (!globe) {
+								console.error('❌ Globe instance not available');
+								return;
+							}
+
+							console.log('📦 16K Canvas texture loaded, converting to PNG data URL...');
+
+							// Convert the canvas to a data URL that Globe.gl can use
+							const canvas = canvasTexture.image as HTMLCanvasElement;
+							const dataUrl = canvas.toDataURL('image/png', 1.0); // Maximum quality, no compression
+
+							console.log(
+								'🖼️ 16K PNG data URL created (nearest-neighbor filtering for crispness), length:',
+								dataUrl.length
+							);
+
+							// Apply using Globe.gl's standard texture loading system
+							globe.globeImageUrl(dataUrl);
+
+							console.log(
+								'✅ 16K texture applied via globeImageUrl() - should be ultra crisp now!'
+							);
+
+							// Wait a moment for Globe.gl to apply the texture, then customize material
+							setTimeout(() => {
+								if (!globe) return;
+
+								// Get SVG-specific options from config
+								const svgConfig = cfg.globe?.svg ?? {};
+								const color = svgConfig.color ?? 0xffffff;
+								const emissive = svgConfig.emissive ?? 0x000000;
+								const emissiveIntensity = svgConfig.emissiveIntensity ?? 0;
+
+								// Access and customize the material after Globe.gl sets it up
+								const globeMaterial = globe.globeMaterial() as THREE.MeshPhongMaterial;
+								console.log('🎨 Customizing globe material:', globeMaterial);
+
+								// Apply custom material properties for SVG styling
+								if (color !== 0xffffff) {
+									globeMaterial.color = new THREE.Color(color);
+									console.log('🎨 Applied color:', color);
+								}
+								if (emissive !== 0x000000) {
+									globeMaterial.emissive = new THREE.Color(emissive);
+									globeMaterial.emissiveIntensity = emissiveIntensity;
+									console.log('✨ Applied emissive:', emissive, 'intensity:', emissiveIntensity);
+								}
+
+								globeMaterial.needsUpdate = true;
+								console.log('✅ Material customization complete');
+							}, 200);
+						})
+						.catch((error) => {
+							console.error('❌ Failed to load SVG texture:', error);
+							// Fallback to direct URL loading
+							if (globe) {
+								console.log('🔄 Falling back to direct URL loading...');
+								globe.globeImageUrl(imageUrl);
+							}
+						});
+				} else if (imageUrl) {
+					// For non-SVG images, use standard texture approach
+					console.log('🖼️ Loading standard image texture:', imageUrl);
+					globe.globeImageUrl(imageUrl);
+				} // Set a single, moderately bright ambient light to make rings/labels visible
 				const ambientLight = new THREE.AmbientLight(0xffffff, 2);
 				globe.lights([ambientLight]);
 
@@ -1028,7 +1221,9 @@
 
 				if (data && (data.features || data.length > 0)) {
 					// HEXAGONS: Base solid countries (low altitude)
-					if (cfg.hexPolygon) {
+					// Check if hexPolygon is enabled (default to true if not specified)
+					if (cfg.hexPolygon && cfg.hexPolygon.enabled !== false) {
+						console.log('✅ Rendering hexagon layer');
 						globe
 							.hexPolygonsData(data.features || data)
 							.hexPolygonGeoJsonGeometry('geometry')
@@ -1041,10 +1236,15 @@
 									: () => cfg.hexPolygon?.color ?? '#181e2b'
 							)
 							.hexPolygonsTransitionDuration(cfg.hexPolygon?.transitionDuration ?? 0);
+					} else if (cfg.hexPolygon && cfg.hexPolygon.enabled === false) {
+						console.log('⚠️ Hexagon layer disabled for performance');
+						globe.hexPolygonsData([]); // Clear any existing hexagons
 					}
 
 					// POLYGONS: Blue glow effect (higher altitude, transparent cap, glowing sides)
-					if (cfg.polygon) {
+					// Check if polygon is enabled (default to true if not specified)
+					if (cfg.polygon && cfg.polygon.enabled !== false) {
+						console.log('✅ Rendering polygon glow layer');
 						const sideColor = cfg.polygon.sideColor ?? 'rgba(21, 93, 252, 0.6)'; // Blue with 60% opacity
 						const capColor = cfg.polygon.capColor ?? 'rgba(0, 0, 0, 0)'; // Fully transparent
 
@@ -1055,6 +1255,9 @@
 							.polygonStrokeColor(() => 'rgba(0,0,0,0)') // No stroke
 							.polygonAltitude(cfg.polygon.altitude ?? 0.01)
 							.polygonsTransitionDuration(cfg.polygon.transitionDuration ?? 0);
+					} else if (cfg.polygon && cfg.polygon.enabled === false) {
+						console.log('⚠️ Polygon glow layer disabled for performance');
+						globe.polygonsData([]); // Clear any existing polygons
 					}
 				}
 
@@ -1159,7 +1362,7 @@
 
 						const wrapper = document.createElement('div');
 						wrapper.innerHTML = `
-						<div class="globe-marker relative flex flex-col items-center justify-center pointer-events-none">
+						<div class="globe-marker relative flex flex-col items-center justify-center pointer-events-none ${isActiveLocation ? 'active' : ''}">
 							<i class="globe-marker-icon pointer-events-auto cursor-pointer block" 
 							     data-lat="${d.lat}" 
 							     data-lng="${d.lng}">
@@ -1263,21 +1466,17 @@
 				globe.controls().enableZoom = false;
 				globeInstance = globe;
 
-				// FIRST LOAD - Triggered after globe is fully initialized with all data
-				// globe.onGlobeReady(() => {
-				// 	if (!globe) return;
+				console.log('✅ Globe fully initialized and controls configured');
+				console.log('📊 Globe renderer:', globe.renderer());
+				console.log('🎬 Globe scene:', globe.scene());
 
-				// 	const scene = globe!.scene();
-
-				// 	// Make ONLY the globe sphere a solid, unlit black
-				// 	scene.traverse((object: any) => {
-				// 		if (object.type === 'Mesh' && object.geometry?.type === 'SphereGeometry') {
-				// 			object.material = new THREE.MeshBasicMaterial({
-				// 				color: 0x000000 // Solid black
-				// 			});
-				// 		}
-				// 	});
-				// });
+				// Force a render to make sure the globe is visible
+				setTimeout(() => {
+					if (globe) {
+						console.log('🔄 Forcing globe render...');
+						globe.renderer().render(globe.scene(), globe.camera());
+					}
+				}, 100);
 			} catch (error) {
 				console.error('❌ GLOBE ERROR: Failed to initialize Globe.gl:', error);
 				// Display user-friendly error message
@@ -1426,7 +1625,7 @@
 		<Image
 			bg
 			class="globe-atmosphere -z-1 pointer-events-none h-svh w-svw overflow-clip"
-			overlay="bg-radial from-primary to-transparent from-30% to-60% translate-y-1/2 scale-x-125 absolute bottom-0 origin-bottom opacity-60 hidden md:block"
+			overlay="bg-radial from-primary to-transparent from-30% to-60% translate-y-1/2 scale-x-250 scale-y-95 md:scale-y-100 md:scale-x-125 absolute bottom-0 origin-bottom opacity-60 block"
 		/>
 		<div
 			class="globe-container absolute inset-0 h-full w-full"
@@ -1456,6 +1655,12 @@
 
 	/* SVG Marker (active) */
 	:global {
+		.globe-marker {
+			@apply relative;
+		}
+		.globe-marker.active {
+			@apply !isolate !z-10;
+		}
 		.svg-marker.active {
 			@apply md:scale-250 scale-200 inline-block translate-y-2 md:-translate-y-2;
 			animation: float 6s ease-in-out infinite;

@@ -120,7 +120,7 @@
 		<Text
 			disabled
 			h1={name}
-			class="text-xl font-black uppercase tracking-tight"
+			class="text-lg font-black uppercase tracking-tight lg:text-xl"
 		/>
 	{/if}
 

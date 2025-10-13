@@ -126,15 +126,55 @@
 
 	// Altitude configurations
 	let altitudes = $state({
+		// Small screens (mobile)
 		small: {
 			globe: 0.8,
 			atmosphere: 0.2,
-			polygon: 0
+			hexPolygon: 0.0001,
+			polygon: 0.002,
+			points: {
+				blueDot: {
+					base: 0.0001,
+					altitude: 0.01
+				},
+				whiteDot: {
+					base: 0.00014,
+					altitude: 0.015
+				}
+			},
+			html: 0.05,
+			labels: 0.008,
+			arcs: {
+				start: 0.005,
+				end: 0.005,
+				autoscale: 0.3
+			},
+			rings: 0.0001
 		},
+		// Large screens (desktop)
 		large: {
 			globe: 0.14,
 			atmosphere: 0.08,
-			polygon: 0
+			hexPolygon: 0.0001,
+			polygon: 0.002,
+			points: {
+				blueDot: {
+					base: 0.0005,
+					altitude: 0.0005
+				},
+				whiteDot: {
+					base: 0.0009,
+					altitude: 0.00025
+				}
+			},
+			html: 0.005,
+			labels: 0.002,
+			arcs: {
+				start: 0.001,
+				end: 0.001,
+				autoscale: 0.2
+			},
+			rings: 0.0001
 		}
 	});
 </script>
@@ -149,7 +189,7 @@
 	<!-- hero content
 	------------------------------------------>
 	<section
-		class="fade-in z-1 pointer-events-none relative flex select-none flex-col items-center justify-start gap-4 pt-10"
+		class="fade-in z-1 pointer-events-none relative flex select-none flex-col items-center justify-start gap-4 pt-8 lg:pt-10"
 	>
 		<!-- title -->
 		<div class="text-base-50 flex flex-col gap-2 text-center">
@@ -166,13 +206,13 @@
 				class="order-3 flex items-center justify-center gap-6 py-4 text-center lg:gap-8"
 			>
 				{#each stats as stat}
-					<section class="flex flex-col gap-2">
+					<section class="flex flex-col gap-1 md:gap-2">
 						<Number
-							class="text-base-50 font-mono text-4xl font-bold md:text-4xl"
+							class="text-base-50 font-mono text-2xl font-bold md:text-4xl"
 							data-target={stat.value}>{stat.value}</Number
 						>
 						<Text
-							class="text-base-200 text-[x-small] uppercase lg:text-xs"
+							class="text-base-200 text-[xx-small] uppercase lg:text-xs"
 							h4={stat.label}
 						/>
 					</section>
@@ -206,13 +246,11 @@
 	<Globe
 		startLocationId="4"
 		data={{
-			locations: globeLocations
-			// polygons: globePolygons
+			locations: globeLocations,
+			polygons: globePolygons
 			// ports: globePorts
 		}}
 		globe={{
-			image: '/images/skins/earth-dark.jpg',
-			// image: '/map.svg',
 			width: typeof window !== 'undefined' ? window.innerWidth : 1920,
 			height: typeof window !== 'undefined' ? window.innerHeight : 1080,
 			left: 0,
@@ -227,30 +265,44 @@
 			latitude: mq.md ? 36 : 21
 		}}
 		atmosphere={{
-			show: mq.md ? true : false,
+			show: false,
 			color: '#155dfc',
-			altitude: mq.md ? 0.2 : 0.08
+			altitude: mq.md ? altitudes.small.atmosphere : altitudes.large.atmosphere
+		}}
+		hexPolygon={{
+			enabled: true,
+			resolution: mq.md ? 3 : 4, // 0-15, lower = bigger hexagons, higher = smaller/more detailed
+			margin: 0.15, // 0-1, gap between hexagons (0.15 = 15% gap)
+			altitude: mq.md ? altitudes.small.hexPolygon : altitudes.large.hexPolygon, // Height of hexagon base layer in globe radius units
+			color: '#1a1a2e', // Dark blue-gray base color for countries
+			transitionDuration: 0 // Animation duration in ms (0 = instant)
 		}}
 		polygon={{
-			capColor: 'rgba(0,0,0,0)',
-			sideColor: 'rgba(0,0,255,0)',
-			strokeColor: 'rgba(0,0,0,0)',
-			altitude: mq.md ? 0 : 0
+			enabled: false,
+			capColor: 'rgba(26,26,46,1)', // Top surface color (transparent)
+			sideColor: 'rgba(21, 93, 252, 0.6)', // Side glow color (blue with 60% opacity)
+			strokeColor: 'rgba(0,0,0,0)', // Border color (transparent)
+			altitude: mq.md ? altitudes.small.polygon : altitudes.large.polygon, // Height of polygon glow layer (higher than hexagons)
+			transitionDuration: 0 // Animation duration in ms (0 = instant)
 		}}
 		points={{
 			layers: [
 				// blue dot (bg)
 				{
-					base: mq.md ? 0.0001 : 0.0005,
-					altitude: mq.md ? 0.01 : 0.0005,
+					base: mq.md ? altitudes.small.points.blueDot.base : altitudes.large.points.blueDot.base,
+					altitude: mq.md
+						? altitudes.small.points.blueDot.altitude
+						: altitudes.large.points.blueDot.altitude,
 					color: '#155dfc',
 					radius: mq.md ? 1 : 0.3,
 					zOffset: 0
 				},
 				// white dot (fg)
 				{
-					base: mq.md ? 0.00014 : 0.0009,
-					altitude: mq.md ? 0.015 : 0.00025,
+					base: mq.md ? altitudes.small.points.whiteDot.base : altitudes.large.points.whiteDot.base,
+					altitude: mq.md
+						? altitudes.small.points.whiteDot.altitude
+						: altitudes.large.points.whiteDot.altitude,
 					color: '#ffffff',
 					radius: mq.md ? 0.5 : 0.15,
 					zOffset: 0.001 // Slightly forward to ensure it's on top
@@ -258,14 +310,14 @@
 			]
 		}}
 		html={{
-			altitude: mq.md ? 0.05 : 0.005
+			altitude: mq.md ? altitudes.small.html : altitudes.large.html
 		}}
 		labels={{
 			size: mq.md ? 0.75 : 0.15,
 			dotRadius: mq.md ? 0.3 : 0.1,
 			textColor: '#ffffff',
 			dotColor: '#ffffff',
-			altitude: mq.md ? 0.008 : 0.002
+			altitude: mq.md ? altitudes.small.labels : altitudes.large.labels
 		}}
 		arcs={{
 			color: '#ffffff',
@@ -276,16 +328,16 @@
 			dashGap: 2,
 			dashInitialGap: 1,
 			altitude: null,
-			altitudeAutoscale: mq.md ? 0.3 : 0.2,
-			startAltitude: mq.md ? 0.005 : 0.001,
-			endAltitude: mq.md ? 0.005 : 0.001
+			altitudeAutoscale: mq.md ? altitudes.small.arcs.autoscale : altitudes.large.arcs.autoscale,
+			startAltitude: mq.md ? altitudes.small.arcs.start : altitudes.large.arcs.start,
+			endAltitude: mq.md ? altitudes.small.arcs.end : altitudes.large.arcs.end
 		}}
 		rings={{
 			color: '#ffffff',
 			rings: 4,
 			radius: mq.md ? 4 : 2,
 			speed: mq.md ? 4 : 2,
-			altitude: mq.md ? 0.0001 : 0.0001,
+			altitude: mq.md ? altitudes.small.rings : altitudes.large.rings,
 			duration: 700
 		}}
 		animation={{
