@@ -18,7 +18,6 @@
 	} from '@layerd/ui';
 
 	let {
-		locations = $bindable([]),
 		startLocationId,
 		class: className = '',
 		// All other props are collected into restProps to be merged into the config
@@ -951,13 +950,22 @@
 	// Track if initialization has been started to prevent re-initialization
 	let initializationStarted = $state(false);
 
-	// Initialize globe once when container, locations, AND polygon data are ready
+	// Initialize globe once when container and locations are ready
+	// Polygons are optional - globe will render without them
 	$effect(() => {
-		// Wait for ALL data to be loaded before creating globe
+		// Get data from config to check what's expected
+		const cfg = untrack(() => mergedConfig);
+		const polygonUrl = cfg.data?.polygons;
+
+		// Determine if we're waiting for polygon data to load
+		// Only wait if polygons were requested as a URL (string) and haven't loaded yet
+		const waitingForPolygons = polygonUrl && typeof polygonUrl === 'string' && !polygonData;
+
+		// Wait for required data before creating globe
 		if (
 			!globeContainer ||
 			effectiveLocations.length === 0 ||
-			!polygonData ||
+			waitingForPolygons ||
 			globeInstance ||
 			initializationStarted
 		) {
@@ -994,13 +1002,12 @@
 			try {
 				globe = new Globe(globeContainer)
 					.backgroundColor('rgba(0,0,0,0)')
+					.globeImageUrl(cfg.globe?.image ?? '')
 					.globeOffset([cfg.globe?.left ?? 0, cfg.globe?.top ?? 0])
 					.pointOfView({ lat: 0, lng: 0, altitude })
 					.showAtmosphere(cfg.atmosphere?.show ?? true)
 					.atmosphereColor(cfg.atmosphere?.color ?? 'lightskyblue')
-					.atmosphereAltitude(cfg.atmosphere?.altitude ?? 0.15);
-
-				// Set a single, moderately bright ambient light to make rings/labels visible
+					.atmosphereAltitude(cfg.atmosphere?.altitude ?? 0.15); // Set a single, moderately bright ambient light to make rings/labels visible
 				const ambientLight = new THREE.AmbientLight(0xffffff, 2);
 				globe.lights([ambientLight]);
 
@@ -1257,20 +1264,20 @@
 				globeInstance = globe;
 
 				// FIRST LOAD - Triggered after globe is fully initialized with all data
-				globe.onGlobeReady(() => {
-					if (!globe) return;
+				// globe.onGlobeReady(() => {
+				// 	if (!globe) return;
 
-					const scene = globe!.scene();
+				// 	const scene = globe!.scene();
 
-					// Make ONLY the globe sphere a solid, unlit black
-					scene.traverse((object: any) => {
-						if (object.type === 'Mesh' && object.geometry?.type === 'SphereGeometry') {
-							object.material = new THREE.MeshBasicMaterial({
-								color: 0x000000 // Solid black
-							});
-						}
-					});
-				});
+				// 	// Make ONLY the globe sphere a solid, unlit black
+				// 	scene.traverse((object: any) => {
+				// 		if (object.type === 'Mesh' && object.geometry?.type === 'SphereGeometry') {
+				// 			object.material = new THREE.MeshBasicMaterial({
+				// 				color: 0x000000 // Solid black
+				// 			});
+				// 		}
+				// 	});
+				// });
 			} catch (error) {
 				console.error('❌ GLOBE ERROR: Failed to initialize Globe.gl:', error);
 				// Display user-friendly error message
@@ -1289,52 +1296,93 @@
 
 	// Keyboard navigation and cleanup
 	onMount(() => {
-		// Fetch remote data if URIs are provided
+		// Get data from config
 		const cfg = mergedConfig;
-		const locs = cfg.data?.locations ?? locations;
+		const locs = cfg.data?.locations;
 		const polygonUrl = cfg.data?.polygons;
 		const ports = cfg.data?.ports;
 
-		// Fetch all data in parallel
-		Promise.all([
-			// Locations
-			typeof locs === 'string'
-				? fetch(locs)
-						.then((res) => res.json())
-						.catch((err) => {
-							console.error('Failed to fetch locations:', err);
-							return [];
-						})
-				: Promise.resolve(locs),
+		// Smart conditional loading - only fetch what's provided and not already loaded
+		const shouldFetchLocations = locs && typeof locs === 'string';
+		const shouldFetchPolygons = polygonUrl && typeof polygonUrl === 'string';
+		const shouldFetchPorts = ports && typeof ports === 'string';
 
-			// Polygons
-			polygonUrl
-				? fetch(polygonUrl)
-						.then((res) => res.json())
-						.catch((err) => {
-							console.error('Failed to load polygon data:', err);
-							return { features: [] };
-						})
-				: Promise.resolve({ features: [] }),
+		// Check if data is already provided as objects (pre-loaded)
+		const locationsAlreadyLoaded = Array.isArray(locs) && locs.length > 0;
+		const polygonsAlreadyLoaded = polygonUrl && typeof polygonUrl === 'object';
+		const portsAlreadyLoaded = Array.isArray(ports) && ports.length > 0;
 
-			// Ports
-			typeof ports === 'string'
-				? fetch(ports)
-						.then((res) => res.json())
-						.catch((err) => {
-							console.error('Failed to fetch ports:', err);
-							return [];
-						})
-				: Promise.resolve(Array.isArray(ports) ? ports : [])
-		])
-			.then(([fetchedLocations, fetchedPolygons, fetchedPorts]) => {
-				processedLocations = fetchedLocations;
-				polygonData = fetchedPolygons;
-				processedPorts = fetchedPorts;
-			})
-			.catch((error) => {
+		// Set pre-loaded data immediately
+		if (locationsAlreadyLoaded) {
+			console.log('✅ Locations pre-loaded');
+			processedLocations = locs;
+		}
+		if (polygonsAlreadyLoaded) {
+			console.log('✅ Polygons pre-loaded');
+			polygonData = polygonUrl;
+		}
+		if (portsAlreadyLoaded) {
+			console.log('✅ Ports pre-loaded');
+			processedPorts = ports;
+		}
+
+		// Only fetch data that needs fetching
+		const fetchPromises: Promise<any>[] = [];
+
+		if (shouldFetchLocations) {
+			console.log('📡 Fetching locations...');
+			fetchPromises.push(
+				fetch(locs as string)
+					.then((res) => res.json())
+					.then((data) => {
+						processedLocations = data;
+						console.log('✅ Locations fetched');
+					})
+					.catch((err) => {
+						console.error('Failed to fetch locations:', err);
+						processedLocations = [];
+					})
+			);
+		}
+
+		if (shouldFetchPolygons) {
+			console.log('📡 Fetching polygons...');
+			fetchPromises.push(
+				fetch(polygonUrl as string)
+					.then((res) => res.json())
+					.then((data) => {
+						polygonData = data;
+						console.log('✅ Polygons fetched');
+					})
+					.catch((err) => {
+						console.error('Failed to load polygon data:', err);
+						polygonData = { features: [] };
+					})
+			);
+		}
+
+		if (shouldFetchPorts) {
+			console.log('📡 Fetching ports...');
+			fetchPromises.push(
+				fetch(ports as string)
+					.then((res) => res.json())
+					.then((data) => {
+						processedPorts = data;
+						console.log('✅ Ports fetched');
+					})
+					.catch((err) => {
+						console.error('Failed to fetch ports:', err);
+						processedPorts = [];
+					})
+			);
+		}
+
+		// Wait for all fetches to complete (only if there are any)
+		if (fetchPromises.length > 0) {
+			Promise.all(fetchPromises).catch((error) => {
 				console.error('Error loading globe data:', error);
 			});
+		}
 
 		window.addEventListener('keydown', handleKeyboard);
 

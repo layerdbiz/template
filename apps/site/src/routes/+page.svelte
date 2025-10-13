@@ -16,7 +16,8 @@
 		Flex,
 		Input,
 		Slider,
-		navigationState
+		navigationState,
+		Globe
 	} from '@layerd/ui';
 	import { getTeamData } from '$lib/team/team.remote';
 	import { getFaqData } from '$lib/faq/faq.remote';
@@ -27,6 +28,7 @@
 	import { getSectionsData } from '$lib/sections/sections.remote';
 	import { submitContactData } from '$lib/contact/contact.remote';
 	import { validateField } from '$lib/contact/validation';
+	import { getGlobeLocations, getGlobePolygons, getGlobePorts } from '$lib/globe/globe.remote';
 
 	// ✅ READ REACTIVE STATE BEFORE ANY AWAITS - This prevents reactivity loss!
 	// These values are read at the top of the component, before any async boundaries
@@ -44,39 +46,15 @@
 	const testimonialsData = await getTestimonialsData();
 	const aboutData = await getAboutData();
 
+	// ✅ Fetch globe data at page load (server-side) for instant rendering
+	const globeLocations = await getGlobeLocations();
+	const globePolygons = await getGlobePolygons();
+	const globePorts = await getGlobePorts();
+
 	// Helper function for cleaner section access (now synchronous since data is already loaded)
 	function getSection(name: string) {
 		return sectionsData.find((s) => s.section === name);
 	}
-
-	// Lazy load Globe component to avoid blocking initial page load
-	import { onMount } from 'svelte';
-	let Globe: any = $state(null);
-	let shouldLoadGlobe = $state(false);
-
-	onMount(() => {
-		// Defer globe loading until after initial page render
-		// Use requestIdleCallback for better performance
-		const loadGlobe = () => {
-			import('@layerd/ui')
-				.then((module) => {
-					Globe = module.Globe;
-					console.log('✅ Globe component loaded');
-				})
-				.catch((err) => {
-					console.error('Failed to load Globe component:', err);
-				});
-		};
-
-		if ('requestIdleCallback' in window) {
-			requestIdleCallback(loadGlobe, { timeout: 2000 });
-		} else {
-			setTimeout(loadGlobe, 1000);
-		}
-
-		// Mark that we should attempt to load the globe
-		shouldLoadGlobe = true;
-	});
 
 	// Stats
 	const stats = [
@@ -159,8 +137,6 @@
 			polygon: 0
 		}
 	});
-
-	let loadGlobe = $state(false);
 </script>
 
 <!-- HERO 
@@ -227,104 +203,101 @@
 	</section>
 
 	<!-- globe -->
-	{#if Globe && shouldLoadGlobe}
-		<Globe
-			startLocationId="4"
-			data={{
-				polygons: '/data/countries.geojson',
-				locations:
-					'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/locations',
-				ports: 'https://sheetari.deno.dev/1_BNtsJr9TaSYRPFAKcAd9pa_TUQyYBfqEZiDvDvkPTw/ports'
-			}}
-			globe={{
-				// image: '/images/skins/earth-blue-marble.jpg',
-				width: typeof window !== 'undefined' ? window.innerWidth : 1920,
-				height: typeof window !== 'undefined' ? window.innerHeight : 1080,
-				left: 0,
-				top: mq.md
-					? typeof window !== 'undefined'
-						? window.innerHeight * 0.95
-						: 972
-					: typeof window !== 'undefined'
-						? window.innerHeight * 2.2
-						: 1856,
-				altitude: mq.md ? altitudes.small.globe : altitudes.large.globe,
-				latitude: mq.md ? 36 : 21
-			}}
-			atmosphere={{
-				show: mq.md ? true : false,
-				color: '#155dfc',
-				altitude: mq.md ? 0.2 : 0.08
-			}}
-			polygon={{
-				capColor: 'rgba(0,0,0,0)',
-				sideColor: 'rgba(0,0,255,0)',
-				strokeColor: 'rgba(0,0,0,0)',
-				altitude: mq.md ? 0 : 0
-			}}
-			points={{
-				layers: [
-					// blue dot (bg)
-					{
-						base: mq.md ? 0.0001 : 0.0005,
-						altitude: mq.md ? 0.01 : 0.0005,
-						color: '#155dfc',
-						radius: mq.md ? 1 : 0.3,
-						zOffset: 0
-					},
-					// white dot (fg)
-					{
-						base: mq.md ? 0.00014 : 0.0009,
-						altitude: mq.md ? 0.015 : 0.00025,
-						color: '#ffffff',
-						radius: mq.md ? 0.5 : 0.15,
-						zOffset: 0.001 // Slightly forward to ensure it's on top
-					}
-				]
-			}}
-			html={{
-				altitude: mq.md ? 0.05 : 0.005
-			}}
-			labels={{
-				size: mq.md ? 0.75 : 0.15,
-				dotRadius: mq.md ? 0.3 : 0.1,
-				textColor: '#ffffff',
-				dotColor: '#ffffff',
-				altitude: mq.md ? 0.008 : 0.002
-			}}
-			arcs={{
-				color: '#ffffff',
-				stroke: mq.md ? 0.2 : 0.04,
-				duration: 2000,
-				dashRelativeLength: 0.4,
-				dashLength: 0.6,
-				dashGap: 2,
-				dashInitialGap: 1,
-				altitude: null,
-				altitudeAutoscale: mq.md ? 0.3 : 0.2,
-				startAltitude: mq.md ? 0.005 : 0.001,
-				endAltitude: mq.md ? 0.005 : 0.001
-			}}
-			rings={{
-				color: '#ffffff',
-				rings: 4,
-				radius: mq.md ? 4 : 2,
-				speed: mq.md ? 4 : 2,
-				altitude: mq.md ? 0.0001 : 0.0001,
-				duration: 700
-			}}
-			animation={{
-				duration: 1000
-			}}
-			autoplay={{
-				enabled: true,
-				interval: 7000,
-				pauseOnInteraction: true,
-				startDelay: 5000,
-				resumeDelay: 60000
-			}}
-		/>
-	{/if}
+	<Globe
+		startLocationId="4"
+		data={{
+			locations: globeLocations
+			// polygons: globePolygons
+			// ports: globePorts
+		}}
+		globe={{
+			image: '/map.svg',
+			width: typeof window !== 'undefined' ? window.innerWidth : 1920,
+			height: typeof window !== 'undefined' ? window.innerHeight : 1080,
+			left: 0,
+			top: mq.md
+				? typeof window !== 'undefined'
+					? window.innerHeight * 0.95
+					: 972
+				: typeof window !== 'undefined'
+					? window.innerHeight * 2.2
+					: 1856,
+			altitude: mq.md ? altitudes.small.globe : altitudes.large.globe,
+			latitude: mq.md ? 36 : 21
+		}}
+		atmosphere={{
+			show: mq.md ? true : false,
+			color: '#155dfc',
+			altitude: mq.md ? 0.2 : 0.08
+		}}
+		polygon={{
+			capColor: 'rgba(0,0,0,0)',
+			sideColor: 'rgba(0,0,255,0)',
+			strokeColor: 'rgba(0,0,0,0)',
+			altitude: mq.md ? 0 : 0
+		}}
+		points={{
+			layers: [
+				// blue dot (bg)
+				{
+					base: mq.md ? 0.0001 : 0.0005,
+					altitude: mq.md ? 0.01 : 0.0005,
+					color: '#155dfc',
+					radius: mq.md ? 1 : 0.3,
+					zOffset: 0
+				},
+				// white dot (fg)
+				{
+					base: mq.md ? 0.00014 : 0.0009,
+					altitude: mq.md ? 0.015 : 0.00025,
+					color: '#ffffff',
+					radius: mq.md ? 0.5 : 0.15,
+					zOffset: 0.001 // Slightly forward to ensure it's on top
+				}
+			]
+		}}
+		html={{
+			altitude: mq.md ? 0.05 : 0.005
+		}}
+		labels={{
+			size: mq.md ? 0.75 : 0.15,
+			dotRadius: mq.md ? 0.3 : 0.1,
+			textColor: '#ffffff',
+			dotColor: '#ffffff',
+			altitude: mq.md ? 0.008 : 0.002
+		}}
+		arcs={{
+			color: '#ffffff',
+			stroke: mq.md ? 0.2 : 0.04,
+			duration: 2000,
+			dashRelativeLength: 0.4,
+			dashLength: 0.6,
+			dashGap: 2,
+			dashInitialGap: 1,
+			altitude: null,
+			altitudeAutoscale: mq.md ? 0.3 : 0.2,
+			startAltitude: mq.md ? 0.005 : 0.001,
+			endAltitude: mq.md ? 0.005 : 0.001
+		}}
+		rings={{
+			color: '#ffffff',
+			rings: 4,
+			radius: mq.md ? 4 : 2,
+			speed: mq.md ? 4 : 2,
+			altitude: mq.md ? 0.0001 : 0.0001,
+			duration: 700
+		}}
+		animation={{
+			duration: 1000
+		}}
+		autoplay={{
+			enabled: true,
+			interval: 7000,
+			pauseOnInteraction: true,
+			startDelay: 5000,
+			resumeDelay: 60000
+		}}
+	/>
 
 	<!-- photo vignette 
 	------------------------------------------>

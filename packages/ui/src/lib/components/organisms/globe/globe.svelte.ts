@@ -37,8 +37,8 @@ export interface Port {
 export interface GlobeDataConfig {
 	locations?: Location[] | string;
 	ports?: Port[] | string;
-	hexPolygons?: string;
-	polygons?: string;
+	hexPolygons?: string | any;
+	polygons?: string | any;
 }
 
 export interface GlobeAppearanceConfig {
@@ -159,7 +159,6 @@ export interface GlobeConfig {
 }
 
 export interface GlobeProps {
-	locations?: Location[];
 	startLocationId?: string | number;
 	config?: GlobeConfig;
 	class?: string;
@@ -212,7 +211,7 @@ export function createDefaultConfig(
 
 	return {
 		globe: {
-			image: "/images/skins/earth-blue-marble.jpg",
+			// image: "/images/skins/earth-blue-marble.jpg",
 			width: globeWidth,
 			height: globeHeight,
 			left: globeLeft,
