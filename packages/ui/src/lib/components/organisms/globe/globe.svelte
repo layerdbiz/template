@@ -1618,7 +1618,7 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	style="display: contents;"
 >
 	<div
-		class="globe-wrapper absolute inset-0 h-full w-full {className}"
+		class="globe-wrapper absolute inset-0 h-svh w-svw overflow-clip {className}"
 		class:fade-in={isGlobeReady}
 		class:opacity-0={!isGlobeReady}
 	>
