@@ -362,7 +362,7 @@
 	.typewriter-text {
 		/* Prevent layout shift when empty by maintaining minimum height */
 		display: inline-block;
-		min-height: 1em;
+		min-height: 1ch;
 
 		/* Add a blinking cursor effect only when there's content */
 		&:not(:empty)::after {

@@ -194,11 +194,11 @@
 		<!-- title -->
 		<div class="text-base-50 flex flex-col gap-2 text-center">
 			<Text
-				class="bleed order-2 text-balance text-xl font-black uppercase leading-tight text-white lg:text-6xl"
+				class="bleed order-2 text-balance text-2xl font-black uppercase leading-tight tracking-tight text-white lg:text-[5vw]"
 				h1={getSection('Home')?.title ?? 'Hero Title'}
 				typewriter={{
-					messages: ['', '', ''],
-					delay: 3000,
+					messages: ['We Are Port Captains', 'We Are Surveyors', 'We Are Transport Engineers'],
+					delay: 8000,
 					loop: true,
 					autoplay: true,
 					speed: 20,
@@ -208,6 +208,7 @@
 			<h2 class="text-base-200 order-1 text-[x-small] uppercase tracking-widest lg:text-sm">
 				{getSection('Home')?.subtitle ?? 'Hero Subtitle'}
 			</h2>
+
 			<!-- stats -->
 			<div
 				id="stats"
