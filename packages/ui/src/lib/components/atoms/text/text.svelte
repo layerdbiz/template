@@ -208,21 +208,35 @@
 		if (running || !typewriter?.messages?.length) return;
 		running = true;
 
+		// Determine if we have a start text to delete first
+		const hasStartText = display.length > 0;
+
 		// Delete start text first if it exists
-		if (typewriter.start && display.length > 0 && !cancel) {
+		if (hasStartText && !cancel) {
 			// Add a delay before starting to delete the start text
 			await sleep(typewriter?.delay ?? 3000);
 			await deleteText();
 		}
 
+		// First cycle: skip the first message (already displayed), start from second
+		// Subsequent cycles: include all messages
+		let isFirstCycle = hasStartText && typewriter.start === undefined;
+
 		// Then cycle through messages
 		do {
-			for (const msg of typewriter.messages) {
+			// On first cycle, skip the first message (it was already shown)
+			// On subsequent cycles, include all messages
+			const startIndex = isFirstCycle ? 1 : 0;
+
+			for (let i = startIndex; i < typewriter.messages.length; i++) {
 				if (cancel) break;
-				await typeText(msg);
+				await typeText(typewriter.messages[i]);
 				await sleep(typewriter?.delay ?? 3000);
 				await deleteText();
 			}
+
+			// After first cycle, include all messages
+			isFirstCycle = false;
 		} while ((typewriter?.loop ?? true) && !cancel);
 		running = false;
 	};
@@ -245,7 +259,10 @@
 		cancel = false;
 		initialized = true;
 
-		const startText = typewriter.start ?? '';
+		// Use the first message as start text if start is not provided
+		const startText =
+			typewriter.start !== undefined ? typewriter.start : (typewriter.messages[0] ?? '');
+
 		display = startText;
 		typewriterEl.textContent = startText;
 

@@ -197,8 +197,7 @@
 				class="bleed order-2 text-balance text-xl font-black uppercase leading-tight text-white lg:text-6xl"
 				h1={getSection('Home')?.title ?? 'Hero Title'}
 				typewriter={{
-					start: 'We Are Port Captains',
-					messages: ['We Are Surveyors', 'We Are Transport Engineers', 'We Are Port Captains'],
+					messages: ['', '', ''],
 					delay: 3000,
 					loop: true,
 					autoplay: true,
@@ -206,11 +205,9 @@
 					delete: false
 				}}
 			/>
-
 			<h2 class="text-base-200 order-1 text-[x-small] uppercase tracking-widest lg:text-sm">
 				{getSection('Home')?.subtitle ?? 'Hero Subtitle'}
 			</h2>
-
 			<!-- stats -->
 			<div
 				id="stats"
