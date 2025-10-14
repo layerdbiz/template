@@ -25,6 +25,17 @@
 			| 'codeblock';
 		text?: string;
 
+		// Typewriter effect
+		typewriter?: {
+			start?: string;
+			messages: string[];
+			autoplay?: boolean;
+			loop?: boolean;
+			speed?: number;
+			delay?: number;
+			delete?: boolean;
+		};
+
 		// Prose control
 		prose?: boolean;
 		noprose?: boolean;
@@ -64,6 +75,7 @@
 	let {
 		type = 'p',
 		text = 'Sample Text',
+		typewriter,
 		prose = true,
 		disabled = false,
 		noprose = false,
@@ -153,6 +165,97 @@
 
 		return classes;
 	});
+
+	// Typewriter effect logic
+	let typewriterEl = $state<HTMLElement | null>(null);
+	let display = $state('');
+	let running = $state(false);
+	let cancel = false;
+	let initialized = false;
+
+	const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+	const typeText = async (msg: string) => {
+		display = '';
+		if (typewriterEl) typewriterEl.textContent = '';
+		for (const ch of msg) {
+			if (cancel) return;
+			display += ch;
+			if (typewriterEl) typewriterEl.textContent = display;
+			await sleep(typewriter?.speed ?? 50);
+		}
+	};
+
+	const deleteText = async () => {
+		// Check if delete animation is enabled (defaults to true)
+		const shouldAnimate = typewriter?.delete ?? true;
+
+		if (shouldAnimate) {
+			// Animated deletion: character by character
+			while (display.length > 0 && !cancel) {
+				display = display.slice(0, -1);
+				if (typewriterEl) typewriterEl.textContent = display;
+				await sleep(typewriter?.speed ?? 50);
+			}
+		} else {
+			// Instant deletion: remove all at once
+			display = '';
+			if (typewriterEl) typewriterEl.textContent = '';
+		}
+	};
+
+	const cycleMessages = async () => {
+		if (running || !typewriter?.messages?.length) return;
+		running = true;
+
+		// Delete start text first if it exists
+		if (typewriter.start && display.length > 0 && !cancel) {
+			// Add a delay before starting to delete the start text
+			await sleep(typewriter?.delay ?? 3000);
+			await deleteText();
+		}
+
+		// Then cycle through messages
+		do {
+			for (const msg of typewriter.messages) {
+				if (cancel) break;
+				await typeText(msg);
+				await sleep(typewriter?.delay ?? 3000);
+				await deleteText();
+			}
+		} while ((typewriter?.loop ?? true) && !cancel);
+		running = false;
+	};
+
+	$effect(() => {
+		if (!typewriter) {
+			cancel = true;
+			display = '';
+			if (typewriterEl) typewriterEl.textContent = '';
+			initialized = false;
+			return;
+		}
+
+		// Only initialize once
+		if (initialized) return;
+
+		// Wait for element to be bound before initializing
+		if (!typewriterEl) return;
+
+		cancel = false;
+		initialized = true;
+
+		const startText = typewriter.start ?? '';
+		display = startText;
+		typewriterEl.textContent = startText;
+
+		if (typewriter.autoplay ?? true) cycleMessages();
+
+		return () => {
+			cancel = true;
+			initialized = false;
+		};
+	});
 </script>
 
 <Component
@@ -160,6 +263,19 @@
 	class="text {proseClasses} {props.class}"
 	{children}
 >
+	{#snippet typewriterContent()}
+		<span
+			class="sr-only !absolute !m-0 !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0"
+			>{finalContent}</span
+		>
+		<span
+			bind:this={typewriterEl}
+			class="typewriter-text"
+			aria-live="polite"
+			aria-atomic="true"
+		></span>
+	{/snippet}
+
 	{#snippet component({
 		props: componentProps,
 		content
@@ -167,7 +283,23 @@
 		props: ComponentReturn;
 		content: import('svelte').Snippet<[string?]>;
 	})}
-		{#if finalType === 'h1'}
+		{#if typewriter}
+			{#if finalType === 'h1'}
+				<h1 {...componentProps}>{@render typewriterContent()}</h1>
+			{:else if finalType === 'h2'}
+				<h2 {...componentProps}>{@render typewriterContent()}</h2>
+			{:else if finalType === 'h3'}
+				<h3 {...componentProps}>{@render typewriterContent()}</h3>
+			{:else if finalType === 'h4'}
+				<h4 {...componentProps}>{@render typewriterContent()}</h4>
+			{:else if finalType === 'h5'}
+				<h5 {...componentProps}>{@render typewriterContent()}</h5>
+			{:else if finalType === 'h6'}
+				<h6 {...componentProps}>{@render typewriterContent()}</h6>
+			{:else}
+				<p {...componentProps}>{@render typewriterContent()}</p>
+			{/if}
+		{:else if finalType === 'h1'}
 			<h1 {...componentProps}>{@render content(finalContent)}</h1>
 		{:else if finalType === 'h2'}
 			<h2 {...componentProps}>{@render content(finalContent)}</h2>
@@ -208,5 +340,27 @@
 
 	.text {
 		@apply block;
+	}
+
+	.typewriter-text {
+		/* Prevent layout shift when empty by maintaining minimum height */
+		display: inline-block;
+		min-height: 1em;
+
+		/* Add a blinking cursor effect only when there's content */
+		&:not(:empty)::after {
+			content: '|';
+			opacity: 0;
+		}
+	}
+
+	@keyframes blink {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0;
+		}
 	}
 </style>

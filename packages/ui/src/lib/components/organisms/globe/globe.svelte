@@ -709,6 +709,7 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 			const marker = markerEl.querySelector('.svg-marker');
 			const markerWrapper = markerEl.closest('.globe-marker');
 			const label = markerWrapper?.querySelector('.location-label') as HTMLElement;
+			const windBlast = markerWrapper?.querySelector('.wind-blast') as HTMLElement;
 			if (!marker) return;
 
 			const [lat, lng] = key.split(',').map(Number);
@@ -721,6 +722,9 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 					label.classList.remove('opacity-100');
 					label.classList.add('opacity-0');
 				}
+				if (windBlast) {
+					windBlast.classList.remove('active');
+				}
 			}
 		});
 
@@ -732,6 +736,7 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 				const marker = markerEl.querySelector('.svg-marker');
 				const markerWrapper = markerEl.closest('.globe-marker');
 				const label = markerWrapper?.querySelector('.location-label') as HTMLElement;
+				const windBlast = markerWrapper?.querySelector('.wind-blast') as HTMLElement;
 				if (!marker) return;
 
 				const [lat, lng] = key.split(',').map(Number);
@@ -743,6 +748,9 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 					if (label) {
 						label.classList.remove('opacity-0');
 						label.classList.add('opacity-100');
+					}
+					if (windBlast) {
+						windBlast.classList.add('active');
 					}
 				}
 			});
@@ -1361,16 +1369,27 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 							parseFloat(String(d.lng)) === parseFloat(String(currentLocation.lng));
 
 						const wrapper = document.createElement('div');
+
+						// <img
+						// 	src="/video/wind-blast.webp" alt="Wind Blast"
+						// 	class="absolute none inset-0 w-full h-full object-cover pointer-events-none"
+						// >
+
 						wrapper.innerHTML = `
 						<div class="globe-marker relative flex flex-col items-center justify-center pointer-events-none ${isActiveLocation ? 'active' : ''}">
+
+							<div class="wind-blast ${isActiveLocation ? 'active' : ''}">
+								<i class="absolute block bg-blue-400 inset-0 w-full h-full object-cover pointer-events-none"></i>
+							</div>
+
 							<i class="globe-marker-icon pointer-events-auto cursor-pointer block" 
 							     data-lat="${d.lat}" 
 							     data-lng="${d.lng}">
 								
-									 <svg xmlns="http://www.w3.org/2000/svg" class="svg svg-marker translate-y-4 md:translate-y-0 w-6 h-6 md:w-9 md:h-9 origin-bottom cursor-pointer duration-300 ${isActiveLocation ? 'active' : ''}" fill="none" viewBox="0 0 87 122">
+									 <svg xmlns="http://www.w3.org/2000/svg" class="${isActiveLocation ? 'active' : ''} svg svg-marker translate-y-3 md:translate-y-0 w-6 h-6 md:w-9 md:h-9 origin-bottom cursor-pointer duration-300" fill="none" viewBox="0 0 87 122">
 										<path class="stroke" stroke-width="4" d="m43.0833 115.667-1.4842 1.34 1.4842 1.643 1.4842-1.643-1.4842-1.34Zm0 0c1.4842 1.34 1.4846 1.34 1.4851 1.339l.0018-.002.0062-.007.023-.025.0875-.098c.0764-.085.1886-.211.3343-.376.2914-.33.7167-.816 1.2567-1.442 1.0799-1.254 2.6193-3.074 4.4651-5.348 3.6898-4.546 8.6129-10.9197 13.5399-18.2222 4.9232-7.2969 9.8751-15.5579 13.6022-23.8774 3.7154-8.2933 6.2816-16.7923 6.2816-24.5251A41.0836 41.0836 0 0 0 14.033 14.033 41.0835 41.0835 0 0 0 2 43.0833c0 7.7328 2.5662 16.2318 6.2816 24.5251 3.7271 8.3195 8.679 16.5805 13.6021 23.8774 4.9271 7.3025 9.8501 13.6762 13.5399 18.2222 1.8458 2.274 3.3852 4.094 4.4652 5.348.54.626.9652 1.112 1.2566 1.442.1457.165.258.291.3344.376l.0874.098.023.025.0063.007.0017.002c.0006.001.0009.001 1.4851-1.339Z"/>
 										<path class="bg fill-white" d="M60 44c0 9.3888-7.6112 17-17 17s-17-7.6112-17-17 7.6112-17 17-17 17 7.6112 17 17Z"/>
-										<path class="fg fill-primary-600" d="M43.0833 57.0417a13.9584 13.9584 0 1 1 .0001-27.9168 13.9584 13.9584 0 0 1-.0001 27.9168Zm0-53.0417a39.0837 39.0837 0 0 0-27.6361 11.4472A39.0837 39.0837 0 0 0 4 43.0833c0 29.3125 39.0833 72.5837 39.0833 72.5837s39.0834-43.2712 39.0834-72.5837A39.0834 39.0834 0 0 0 43.0833 4Z"/>
+										<path class="fg fill-blue-600" d="M43.0833 57.0417a13.9584 13.9584 0 1 1 .0001-27.9168 13.9584 13.9584 0 0 1-.0001 27.9168Zm0-53.0417a39.0837 39.0837 0 0 0-27.6361 11.4472A39.0837 39.0837 0 0 0 4 43.0833c0 29.3125 39.0833 72.5837 39.0833 72.5837s39.0834-43.2712 39.0834-72.5837A39.0834 39.0834 0 0 0 43.0833 4Z"/>
 									</svg>
 							</i>
 							<h4 class="location-label font-semibold uppercase flex items-center justify-center gap-2 absolute top-full translate-y-full mt-2 text-xs md:text-sm font-normal text-white m-0 p-2 bg-black/60 rounded whitespace-nowrap pointer-events-none ${isActiveLocation ? 'opacity-100' : 'opacity-0'} transition-all duration-300">
@@ -1655,6 +1674,15 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 
 	/* SVG Marker (active) */
 	:global {
+		.wind-blast {
+			@apply mask-y aspect-2/3 -z-1 scale-x-175 absolute w-8 origin-bottom translate-y-4 scale-y-0 overflow-clip opacity-0 transition-all duration-300 lg:w-14 lg:translate-y-0;
+		}
+		.wind-blast.active {
+			@apply scale-y-200 lg:scale-y-200 opacity-70;
+		}
+		.wind-blast.active img {
+			@apply hue-rotate-110;
+		}
 		.globe-marker {
 			@apply relative;
 		}
@@ -1673,10 +1701,10 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 		.svg-marker.active .bg {
 			@apply fill-white;
 		}
-		/* 		
+
 		.svg-marker.active .fg {
-			@apply fill-primary-500;
-		} */
+			@apply fill-blue-600;
+		}
 
 		.svg-marker:not(.active):hover {
 			@apply scale-105;

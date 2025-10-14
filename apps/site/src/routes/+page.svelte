@@ -193,9 +193,20 @@
 	>
 		<!-- title -->
 		<div class="text-base-50 flex flex-col gap-2 text-center">
-			<h1 class="order-2 text-balance text-xl font-bold leading-tight lg:text-6xl">
-				<span>{getSection('Home')?.title ?? 'Hero Title'}</span>
-			</h1>
+			<Text
+				class="bleed order-2 text-balance text-xl font-black uppercase leading-tight text-white lg:text-6xl"
+				h1={getSection('Home')?.title ?? 'Hero Title'}
+				typewriter={{
+					start: 'We Are Port Captains',
+					messages: ['We Are Surveyors', 'We Are Transport Engineers', 'We Are Port Captains'],
+					delay: 3000,
+					loop: true,
+					autoplay: true,
+					speed: 20,
+					delete: false
+				}}
+			/>
+
 			<h2 class="text-base-200 order-1 text-[x-small] uppercase tracking-widest lg:text-sm">
 				{getSection('Home')?.subtitle ?? 'Hero Subtitle'}
 			</h2>

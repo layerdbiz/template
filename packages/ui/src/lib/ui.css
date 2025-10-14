@@ -104,6 +104,7 @@
 	@apply before:bg-primary before:absolute before:-left-4 before:bottom-2 before:top-2 before:w-2;
 }
 
+/* mask: left to right */
 @utility mask-lr {
 	@apply mask-alpha mask-r-from-black mask-r-to-transparent mask-l-from-black mask-l-to-transparent;
 }
@@ -126,6 +127,15 @@
 
 @utility mask-x-xl {
 	@apply mask-lr mask-r-from-60% mask-l-from-60%;
+}
+
+/* mask: top to bottom */
+@utility mask-tb {
+	@apply mask-alpha mask-b-from-black mask-b-to-transparent mask-t-from-black mask-t-to-transparent;
+}
+
+@utility mask-y {
+	@apply mask-tb mask-t-from-20% mask-b-from-80%;
 }
 
 @utility text-trim {
