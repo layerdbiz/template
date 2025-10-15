@@ -134,12 +134,12 @@
 			polygon: 0.002,
 			points: {
 				blueDot: {
-					base: 0.0001,
-					altitude: 0.01
+					base: 0.00012,
+					altitude: 0.008
 				},
 				whiteDot: {
 					base: 0.00014,
-					altitude: 0.015
+					altitude: 0.014
 				}
 			},
 			html: 0.05,
@@ -149,7 +149,7 @@
 				end: 0.005,
 				autoscale: 0.3
 			},
-			rings: 0.0001
+			rings: 0.0002
 		},
 		// Large screens (desktop)
 		large: {
@@ -172,9 +172,9 @@
 			arcs: {
 				start: 0.001,
 				end: 0.001,
-				autoscale: 0.2
+				autoscale: 0.15
 			},
-			rings: 0.0001
+			rings: 0.0002
 		}
 	});
 </script>
@@ -189,7 +189,7 @@
 	<!-- hero content
 	------------------------------------------>
 	<section
-		class="fade-in z-1 pointer-events-none relative flex select-none flex-col items-center justify-start gap-4 pt-8 lg:pt-10"
+		class="fade-in z-1 pointer-events-none relative flex select-none flex-col items-center justify-start gap-4 pt-16 lg:pt-10"
 	>
 		<!-- title -->
 		<div class="text-base-50 flex flex-col gap-2 text-center">
@@ -197,8 +197,9 @@
 				class="bleed order-2 text-balance text-2xl font-black uppercase leading-tight tracking-tight text-white lg:text-[5vw]"
 				h1={getSection('Home')?.title ?? 'Hero Title'}
 				typewriter={{
+					type: 'reveal',
 					messages: ['We Are Port Captains', 'We Are Surveyors', 'We Are Transport Engineers'],
-					delay: 8000,
+					delay: 5000,
 					loop: true,
 					autoplay: true,
 					speed: 20,
@@ -212,7 +213,7 @@
 			<!-- stats -->
 			<div
 				id="stats"
-				class="order-3 flex items-center justify-center gap-6 py-4 text-center lg:gap-8"
+				class="order-3 flex items-center justify-center gap-6 py-2 text-center lg:gap-8 lg:py-4"
 			>
 				{#each stats as stat}
 					<section class="flex flex-col gap-1 md:gap-2">
@@ -303,7 +304,7 @@
 						? altitudes.small.points.blueDot.altitude
 						: altitudes.large.points.blueDot.altitude,
 					color: '#155dfc',
-					radius: mq.md ? 1 : 0.3,
+					radius: mq.md ? 1.2 : 0.3,
 					zOffset: 0
 				},
 				// white dot (fg)
@@ -344,7 +345,7 @@
 		rings={{
 			color: '#ffffff',
 			rings: 4,
-			radius: mq.md ? 4 : 2,
+			radius: mq.md ? 5 : 2,
 			speed: mq.md ? 4 : 2,
 			altitude: mq.md ? altitudes.small.rings : altitudes.large.rings,
 			duration: 700
@@ -354,9 +355,9 @@
 		}}
 		autoplay={{
 			enabled: true,
-			interval: 7000,
+			interval: 5000,
 			pauseOnInteraction: true,
-			startDelay: 5000,
+			startDelay: 3000,
 			resumeDelay: 60000
 		}}
 	/>

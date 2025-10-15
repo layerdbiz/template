@@ -29,14 +29,13 @@
 		typewriter?: {
 			start?: string;
 			messages: string[];
+			type?: 'typewriter' | 'reveal';
 			autoplay?: boolean;
 			loop?: boolean;
 			speed?: number;
 			delay?: number;
 			delete?: boolean;
-		};
-
-		// Prose control
+		}; // Prose control
 		prose?: boolean;
 		noprose?: boolean;
 		disabled?: boolean;
@@ -170,37 +169,78 @@
 	let typewriterEl = $state<HTMLElement | null>(null);
 	let display = $state('');
 	let running = $state(false);
+	let isRevealed = $state(false);
+	let shouldApplyRevealClasses = $state(false);
 	let cancel = false;
 	let initialized = false;
 
 	const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 	const typeText = async (msg: string) => {
-		display = '';
-		if (typewriterEl) typewriterEl.textContent = '';
-		for (const ch of msg) {
-			if (cancel) return;
-			display += ch;
-			if (typewriterEl) typewriterEl.textContent = display;
-			await sleep(typewriter?.speed ?? 50);
+		const mode = typewriter?.type ?? 'typewriter';
+
+		if (mode === 'reveal') {
+			// Reveal mode: set text first, then trigger reveal animation after a delay
+			shouldApplyRevealClasses = true;
+			isRevealed = false; // Start hidden
+			display = msg;
+			if (typewriterEl) typewriterEl.textContent = msg;
+			// Delay to ensure DOM updates and reveal classes are applied before triggering transition
+			await sleep(50);
+			isRevealed = true; // Trigger reveal transition
+		} else {
+			// Typewriter mode: character-by-character animation
+			display = '';
+			if (typewriterEl) typewriterEl.textContent = '';
+			for (const ch of msg) {
+				if (cancel) return;
+				display += ch;
+				if (typewriterEl) typewriterEl.textContent = display;
+				await sleep(typewriter?.speed ?? 50);
+			}
 		}
 	};
 
 	const deleteText = async () => {
+		const mode = typewriter?.type ?? 'typewriter';
 		// Check if delete animation is enabled (defaults to true)
 		const shouldAnimate = typewriter?.delete ?? true;
 
-		if (shouldAnimate) {
-			// Animated deletion: character by character
-			while (display.length > 0 && !cancel) {
-				display = display.slice(0, -1);
-				if (typewriterEl) typewriterEl.textContent = display;
-				await sleep(typewriter?.speed ?? 50);
+		if (mode === 'reveal') {
+			// Reveal mode: handle delete animation or instant clear
+			if (shouldAnimate) {
+				// With animation: remove reveal-active to trigger reverse transition
+				isRevealed = false;
+				// Wait for CSS transition to complete (duration-50 = 100ms)
+				await sleep(100);
+				// Then clear text and reset classes
+				display = '';
+				if (typewriterEl) typewriterEl.textContent = '';
+				shouldApplyRevealClasses = false;
+			} else {
+				// Without animation: instantly clear everything in one step
+				// Reset all states simultaneously to avoid any transition
+				display = '';
+				if (typewriterEl) typewriterEl.textContent = '';
+				shouldApplyRevealClasses = false;
+				isRevealed = false;
+				// Small delay to let DOM settle before next message
+				await sleep(50);
 			}
 		} else {
-			// Instant deletion: remove all at once
-			display = '';
-			if (typewriterEl) typewriterEl.textContent = '';
+			// Typewriter mode: character-by-character deletion
+			if (shouldAnimate) {
+				// Animated deletion: character by character
+				while (display.length > 0 && !cancel) {
+					display = display.slice(0, -1);
+					if (typewriterEl) typewriterEl.textContent = display;
+					await sleep(typewriter?.speed ?? 50);
+				}
+			} else {
+				// Instant deletion: remove all at once
+				display = '';
+				if (typewriterEl) typewriterEl.textContent = '';
+			}
 		}
 	};
 
@@ -246,6 +286,8 @@
 			cancel = true;
 			display = '';
 			if (typewriterEl) typewriterEl.textContent = '';
+			isRevealed = false;
+			shouldApplyRevealClasses = false;
 			initialized = false;
 			return;
 		}
@@ -265,6 +307,10 @@
 
 		display = startText;
 		typewriterEl.textContent = startText;
+		// For reveal mode, the first message should be visible (not in hidden state)
+		// and should not have reveal classes applied until cycling starts
+		isRevealed = false;
+		shouldApplyRevealClasses = false;
 
 		if (typewriter.autoplay ?? true) cycleMessages();
 
@@ -287,7 +333,9 @@
 		>
 		<span
 			bind:this={typewriterEl}
-			class="typewriter-text"
+			class="typewriter-text {shouldApplyRevealClasses ? 'reveal reveal-r' : ''} {isRevealed
+				? 'reveal-active'
+				: ''}"
 			aria-live="polite"
 			aria-atomic="true"
 		></span>

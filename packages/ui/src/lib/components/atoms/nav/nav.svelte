@@ -68,9 +68,15 @@
 	);
 </script>
 
-<Component {...props} class={props.class}>
+<Component
+	{...props}
+	class={props.class}
+>
 	{#snippet component({ props })}
-		<nav {...props} class="nav {props.class}">
+		<nav
+			{...props}
+			class="nav {props.class}"
+		>
 			{#if children}
 				<!-- This works -->
 				<div
@@ -79,6 +85,7 @@
 				>
 					<Button
 						ghost
+						size="lg"
 						invert
 						icon="menu"
 						iconToggle="close"
