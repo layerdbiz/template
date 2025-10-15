@@ -231,8 +231,6 @@
 
 		<!-- buttons -->
 		<div class="pointer-events-auto flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:gap-6">
-			<h1 class="reveal reveal-r text-white">hi mom</h1>
-			<h1 class="reveal-active reveal-r text-white">hi mom</h1>
 			<Button
 				size={mq.lg ? 'lg' : 'xl'}
 				primary
