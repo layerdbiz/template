@@ -163,6 +163,35 @@
 	--prose-scale: var(--prose-scale-xl);
 }
 
+/* reflect */
 @utility reflect {
 	-webkit-box-reflect: below 3px linear-gradient(to bottom, transparent 90%, rgba(0, 0, 0, 0.25));
+}
+
+/* reveal */
+@layer utilities {
+	@property --reveal {
+		syntax: '<percentage>';
+		inherits: false;
+		initial-value: 0%;
+	}
+}
+
+@utility reveal {
+	@apply transition-[--reveal] duration-700 ease-out [--reveal:0%];
+}
+@utility reveal-active {
+	@apply transition-[--reveal] duration-700 ease-out [--reveal:100%];
+}
+@utility reveal-t {
+	@apply mask-t-from-(--reveal) mask-t-to-(--reveal);
+}
+@utility reveal-r {
+	@apply mask-r-from-(--reveal) mask-r-to-(--reveal);
+}
+@utility reveal-b {
+	@apply mask-b-from-(--reveal) mask-b-to-(--reveal);
+}
+@utility reveal-l {
+	@apply mask-l-from-(--reveal) mask-l-to-(--reveal);
 }
