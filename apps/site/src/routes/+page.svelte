@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {
 		Button,
+		Link,
 		mq,
 		Icon,
 		Divider,
@@ -601,13 +602,22 @@
 					h3="Phone"
 					class="bar-outside relative font-bold uppercase tracking-wider"
 				/>
-				<Text
-					class="text-base-600-300 text-md"
-					p="+1 (570) 575-1179"
+				<Button
+					appearance="ghost"
+					variant="icon text"
+					class="text-base-600-300 text-md !rounded-none !p-0"
+					icon="icon-[flagpack--us]"
+					label="+1 (409) 543-2725"
+					href="tel:+14095432725"
 				/>
-				<Text
-					class="text-base-600-300 text-md"
-					p="+1 (832) 477-6974"
+				<br />
+				<Button
+					appearance="ghost"
+					variant="icon text"
+					class="text-base-600-300 text-md !rounded-none !p-0"
+					icon="icon-[flagpack--mx]"
+					label="+1 (832) 477-6974"
+					href="tel:+18324776974"
 				/>
 			</div>
 
