@@ -513,7 +513,7 @@
 
 	{#each aboutData as section (section.id)}
 		<Container
-			class="flex flex-col items-center justify-between gap-20 lg:flex-row even:lg:flex-row-reverse"
+			class="flex flex-col items-center justify-between gap-20 lg:flex-row lg:items-start even:lg:flex-row-reverse"
 		>
 			<Content
 				type="text"
