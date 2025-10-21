@@ -85,7 +85,7 @@
 	/>
 	<meta
 		property="og:image"
-		content="{page.url.origin}/og.png"
+		content="{page.url.origin}/og.webp"
 	/>
 	<meta
 		property="og:image:width"
