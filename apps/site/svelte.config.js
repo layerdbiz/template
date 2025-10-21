@@ -31,6 +31,9 @@ const config = {
 		experimental: {
 			remoteFunctions: true,
 		},
+		prerender: {
+			handleMissingId: "ignore",
+		},
 	},
 	compilerOptions: {
 		experimental: {
