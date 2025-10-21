@@ -366,7 +366,7 @@
 	<!-- photo vignette 
 	------------------------------------------>
 	<Image
-		src="/photos/houston-night.jpg"
+		src="/photos/houston-night.webp"
 		bg="fixed"
 		class="-z-3 pointer-events-none"
 		overlay="bg-radial -from-black to-black to-85%"

@@ -34,7 +34,7 @@ export const getServicesData = prerender(async () => {
 				id: String(item.id), // Ensure string type
 				title: item.title, // Map API fields to component props
 				description: item.description || "Service description",
-				image: item.image || "/photos/houston-night.jpg", // Fallback image
+				image: item.image || "/photos/houston-night.webp", // Fallback image
 				label: item.label || "Service", // Fallback label
 			}));
 

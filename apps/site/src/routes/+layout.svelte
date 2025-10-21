@@ -181,7 +181,7 @@
 				<!-- photo vignette 
 				------------------------------------------>
 				<Image
-					src="/photos/houston-night.jpg"
+					src="/photos/houston-night.webp"
 					bg="fixed"
 					overlay="bg-radial -from-black to-black to-85%"
 				/>
