@@ -22,6 +22,11 @@
 	let { children } = $props();
 	let navOpen = $state(false);
 
+	// Use page.url for dynamic URLs (works in browser)
+	// During prerender, these will be placeholders but that's expected
+	const canonicalUrl = page.url.href;
+	const siteOrigin = page.url.origin;
+
 	// ✅ READ REACTIVE STATE BEFORE ANY AWAITS - This prevents reactivity loss!
 	let currentHash = $derived(navigationState.currentHash);
 	let activeSection = $derived(navigationState.activeSection);
@@ -81,11 +86,11 @@
 	/>
 	<meta
 		property="og:url"
-		content={page.url.href}
+		content={canonicalUrl}
 	/>
 	<meta
 		property="og:image"
-		content="{page.url.origin}/og.webp"
+		content="{siteOrigin}/og.webp"
 	/>
 	<meta
 		property="og:image:width"

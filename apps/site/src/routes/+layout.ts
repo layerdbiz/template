@@ -1,2 +1,3 @@
 export const ssr = true;
-export const prerender = true;
+// Disable prerendering to get dynamic URLs in meta tags
+// export const prerender = true;
