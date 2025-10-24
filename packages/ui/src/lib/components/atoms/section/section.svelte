@@ -103,7 +103,7 @@
 </script>
 
 <Component
-	observe
+	observe={{ sectionId }}
 	{...props}
 	class="section z-1 relative w-full {bleed ? 'bleed' : ''} {props.class}"
 >

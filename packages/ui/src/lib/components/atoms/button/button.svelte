@@ -6,6 +6,7 @@
 	 */
 	import { Icon, Component } from '@layerd/ui';
 	import type { ComponentProps, ComponentReturn } from '@layerd/ui';
+	import type { Snippet } from 'svelte';
 
 	export interface ButtonProps extends ComponentProps {
 		href?: string;
@@ -19,6 +20,7 @@
 		 * Icon configuration - supports multiple formats:
 		 * - String: "person" or "icon-[mdi--person]" or "mdi--person"
 		 * - Object: { name: "person", theme: "mdi", class: "custom" }
+		 * - Snippet: Custom SVG or HTML content
 		 */
 		icon?:
 			| string
@@ -26,7 +28,8 @@
 					name?: string;
 					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
 					class?: string;
-			  };
+			  }
+			| Snippet;
 		label?: string;
 		type?: 'button' | 'submit' | 'reset' | 'radio' | 'checkbox';
 		/** For radio/checkbox types: the name attribute for grouping */
@@ -44,7 +47,8 @@
 					name?: string;
 					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
 					class?: string;
-			  };
+			  }
+			| Snippet;
 		/** Icon to show on hover */
 		iconHover?:
 			| string
@@ -52,7 +56,8 @@
 					name?: string;
 					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
 					class?: string;
-			  };
+			  }
+			| Snippet;
 		/** Whether the button is currently in toggled state (controlled) */
 		toggled?: boolean;
 		/** Callback when toggle state changes */
@@ -73,21 +78,24 @@
 					name?: string;
 					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
 					class?: string;
-			  };
+			  }
+			| Snippet;
 		iconEndHover?:
 			| string
 			| {
 					name?: string;
 					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
 					class?: string;
-			  };
+			  }
+			| Snippet;
 		iconEndToggle?:
 			| string
 			| {
 					name?: string;
 					theme?: 'mdi' | 'heroicons' | 'carbon' | 'solar' | string;
 					class?: string;
-			  };
+			  }
+			| Snippet;
 	}
 
 	let {
@@ -134,6 +142,18 @@
 
 	// Use external toggled prop or internal state
 	const isToggled = $derived(toggled !== undefined ? toggled : internalToggled);
+
+	// Helper function to check if a value is a snippet
+	// Snippets are functions, icon configs are objects with {name, theme, class}
+	function isSnippet(value: any): value is Snippet {
+		// Snippets are functions
+		if (typeof value === 'function') {
+			return true;
+		}
+
+		// Everything else (strings, objects) are icon configs
+		return false;
+	}
 
 	// Determine which icons to show based on state (primary icon)
 	const currentIcon = $derived(
@@ -240,10 +260,16 @@
 	{/snippet}
 
 	{#if showIcon && currentIcon}
-		<Icon
-			class={!unstyled ? 'btn-icon' : ''}
-			icon={currentIcon}
-		/>
+		{#if isSnippet(currentIcon)}
+			<span class={!unstyled ? 'btn-icon' : ''}>
+				{@render currentIcon()}
+			</span>
+		{:else}
+			<Icon
+				class={!unstyled ? 'btn-icon' : ''}
+				icon={currentIcon}
+			/>
+		{/if}
 	{/if}
 	{#if showText}
 		<span class={!unstyled ? 'btn-label' : ''}>
@@ -266,20 +292,32 @@
 <!-- Icon Only -->
 {#snippet iconOnly()}
 	{#if currentIcon}
-		<Icon
-			class={!unstyled ? 'btn-icon' : ''}
-			icon={currentIcon}
-		/>
+		{#if isSnippet(currentIcon)}
+			<span class={!unstyled ? 'btn-icon' : ''}>
+				{@render currentIcon()}
+			</span>
+		{:else}
+			<Icon
+				class={!unstyled ? 'btn-icon' : ''}
+				icon={currentIcon}
+			/>
+		{/if}
 	{/if}
 {/snippet}
 
 <!-- Icon + Text -->
 {#snippet iconText()}
 	{#if currentIcon}
-		<Icon
-			class={!unstyled ? 'btn-icon' : ''}
-			icon={currentIcon}
-		/>
+		{#if isSnippet(currentIcon)}
+			<span class={!unstyled ? 'btn-icon' : ''}>
+				{@render currentIcon()}
+			</span>
+		{:else}
+			<Icon
+				class={!unstyled ? 'btn-icon' : ''}
+				icon={currentIcon}
+			/>
+		{/if}
 	{/if}
 	{#if children}
 		<span class={!unstyled ? 'btn-label' : ''}>
@@ -300,20 +338,32 @@
 		<span class={!unstyled ? 'btn-label' : ''}>{label}</span>
 	{/if}
 	{#if currentIcon}
-		<Icon
-			class={!unstyled ? 'btn-icon' : ''}
-			icon={currentIcon}
-		/>
+		{#if isSnippet(currentIcon)}
+			<span class={!unstyled ? 'btn-icon' : ''}>
+				{@render currentIcon()}
+			</span>
+		{:else}
+			<Icon
+				class={!unstyled ? 'btn-icon' : ''}
+				icon={currentIcon}
+			/>
+		{/if}
 	{/if}
 {/snippet}
 
 <!-- Icon + Text + Icon -->
 {#snippet iconTextIcon()}
 	{#if currentIcon}
-		<Icon
-			class={!unstyled ? 'btn-icon' : ''}
-			icon={currentIcon}
-		/>
+		{#if isSnippet(currentIcon)}
+			<span class={!unstyled ? 'btn-icon' : ''}>
+				{@render currentIcon()}
+			</span>
+		{:else}
+			<Icon
+				class={!unstyled ? 'btn-icon' : ''}
+				icon={currentIcon}
+			/>
+		{/if}
 	{/if}
 	{#if children}
 		<span class={!unstyled ? 'btn-label' : ''}>
@@ -323,10 +373,16 @@
 		<span class={!unstyled ? 'btn-label' : ''}>{label}</span>
 	{/if}
 	{#if currentIconEnd}
-		<Icon
-			class={!unstyled ? 'btn-icon btn-icon-end' : ''}
-			icon={currentIconEnd}
-		/>
+		{#if isSnippet(currentIconEnd)}
+			<span class={!unstyled ? 'btn-icon btn-icon-end' : ''}>
+				{@render currentIconEnd()}
+			</span>
+		{:else}
+			<Icon
+				class={!unstyled ? 'btn-icon btn-icon-end' : ''}
+				icon={currentIconEnd}
+			/>
+		{/if}
 	{/if}
 {/snippet}
 
@@ -638,11 +694,21 @@
 	/* bigger icon, still cap-aligned so centering stays true */
 	:global(.btn .btn-icon) {
 		@apply block size-[var(--btn-icon)] shrink-0 leading-none;
+
+		/* Ensure SVG children inherit the size */
+		& > :global(svg) {
+			@apply size-full;
+		}
 	}
 
 	/* Special styling for end icons in dual-icon variants */
 	:global(.btn .btn-icon-end) {
 		@apply block size-[var(--btn-icon)] shrink-0 leading-none;
+
+		/* Ensure SVG children inherit the size */
+		& > :global(svg) {
+			@apply size-full;
+		}
 	}
 
 	/* label-only: match the icon’s visual box using a zero-width spacer */

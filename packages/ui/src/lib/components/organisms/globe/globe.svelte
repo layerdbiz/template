@@ -22,6 +22,7 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	let {
 		startLocationId,
 		class: className = '',
+		autoplay, // Extract autoplay separately to ensure reactivity
 		// All other props are collected into restProps to be merged into the config
 		...restProps
 	}: GlobeProps = $props();
@@ -425,6 +426,7 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	let autoPlayInterval: ReturnType<typeof setInterval> | null = $state(null);
 	let isAutoPlaying = $state(false);
 	let resumeTimeout: ReturnType<typeof setTimeout> | null = $state(null);
+	let autoplayInitTimeout: ReturnType<typeof setTimeout> | null = $state(null);
 	let isFirstAutoplayCycle = $state(true); // Track if this is the first cycle
 
 	/**
@@ -508,36 +510,56 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 		}
 	}
 
-	// Initialize autoplay - ONLY after globe is visible to user
-	// This ensures every user sees the starting location for the full startDelay duration
+	// Initialize globe visibility after fade-in animation
 	$effect(() => {
-		// Wait for globe instance to exist before starting autoplay
+		// Wait for globe instance to exist
 		if (!globeInstance) return;
 
-		const autoplayConfig = mergedConfig.autoplay;
+		// Check if already initialized (use untrack to not create dependency)
+		if (untrack(() => globeInitialized)) return;
+
+		// Wait for fade-in animation to complete (800ms) before marking as initialized
+		const fadeInDuration = 800;
+
+		autoplayInitTimeout = setTimeout(() => {
+			globeInitialized = true;
+			autoplayInitTimeout = null;
+		}, fadeInDuration);
+
+		return () => {
+			if (autoplayInitTimeout) {
+				clearTimeout(autoplayInitTimeout);
+				autoplayInitTimeout = null;
+			}
+		};
+	});
+
+	// Track autoplay enabled state separately to ensure reactivity
+	const autoplayEnabled = $derived(autoplay?.enabled ?? false);
+
+	// Handle autoplay state changes (separate effect to avoid conflicts)
+	$effect(() => {
+		// Wait for globe to be initialized before handling autoplay
+		if (!globeInstance || !globeInitialized) return;
+
 		const hasLocations = effectiveLocations.length > 0;
 
-		if (autoplayConfig?.enabled && hasLocations) {
-			const interval = autoplayConfig.interval ?? 3000;
-			const startDelay = autoplayConfig.startDelay ?? 0;
+		if (autoplayEnabled && hasLocations && autoplay) {
+			const interval = autoplay.interval ?? 3000;
+			const startDelay = autoplay.startDelay ?? 0;
 
-			// Wait for fade-in animation to complete (800ms) before starting autoplay timer
-			const fadeInDuration = 800;
-
-			setTimeout(() => {
-				// Use untrack to prevent reading isAutoPlaying from creating a dependency
-				if (!untrack(() => isAutoPlaying)) {
-					untrack(() => startAutoPlay(interval, startDelay));
-					globeInitialized = true;
-				}
-			}, fadeInDuration);
+			// Only start if not already playing
+			if (!untrack(() => isAutoPlaying)) {
+				// On first start, use startDelay; on subsequent starts (after scrolling back), start immediately
+				const delay = untrack(() => isFirstAutoplayCycle) ? startDelay : 0;
+				untrack(() => startAutoPlay(interval, delay));
+			}
 		} else {
-			// Stop if disabled or no locations
+			// Stop autoplay when disabled or no locations
 			untrack(() => stopAutoPlay());
 		}
 
 		return () => {
-			// Cleanup on effect re-run or unmount
 			untrack(() => stopAutoPlay());
 		};
 	});

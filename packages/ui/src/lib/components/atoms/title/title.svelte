@@ -11,6 +11,7 @@
 		subheading = null,
 		tagline = null,
 		children = null,
+		id = undefined,
 		...props
 	} = $props();
 
@@ -21,6 +22,7 @@
 
 <div
 	{...props}
+	{id}
 	class="title flex flex-col items-center {classes} {!subheader || !subheading
 		? ''
 		: ''} {props.class}"
