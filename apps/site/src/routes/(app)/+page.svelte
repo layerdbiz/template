@@ -365,14 +365,14 @@
 			duration: 700
 		}}
 		animation={{
-			duration: 1000
+			duration: 1000 
 		}}
 		autoplay={{
-			enabled: activeSection === 'Home',
-			interval: 5000,
-			pauseOnInteraction: true,
-			startDelay: 3000,
-			resumeDelay: 60000
+			enabled: activeSection === 'Home', // Only autoplay when Home section is active
+			interval: 5000, // 5 seconds between rotations
+			pauseOnInteraction: true, // Pause when user interacts
+			startDelay: 3000, // Initial delay before starting autoplay
+			resumeDelay: 30000 // Resume autoplay after 30 seconds of inactivity
 		}}
 	/>
 

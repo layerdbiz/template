@@ -129,6 +129,7 @@
 	let emblaApi: any = $state(null);
 	let containerRef: HTMLDivElement | null = $state(null);
 	let isInitialized = $state(false);
+	let currentIntersectionState: boolean | null = null; // Not reactive, just for tracking
 
 	function onInit(event: any) {
 		emblaApi = event.detail;
@@ -144,7 +145,11 @@
 	}
 
 	// Control autoplay/autoscroll based on intersection (passed from Component observe)
-	function controlPlayback(isIntersecting: boolean) {
+	function handleIntersectionChange(isIntersecting: boolean) {
+		// Only act if state actually changed
+		if (currentIntersectionState === isIntersecting) return;
+		currentIntersectionState = isIntersecting;
+
 		if (!emblaApi || !isInitialized) return;
 
 		// Get the appropriate plugin
@@ -233,7 +238,6 @@
 			});
 
 			if (hasRealContent) {
-				updateSlideClasses();
 				// Delay initial wrapping to ensure Embla is ready
 				setTimeout(() => {
 					wrapChildrenInSlides();
@@ -245,13 +249,12 @@
 	});
 
 	// Handle window resize to update slide classes
+	let windowWidth = $state(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
 	$effect(() => {
 		if (typeof window !== 'undefined') {
-			// Initial calculation
-			updateSlideClasses();
-
 			const handleResize = () => {
-				updateSlideClasses();
+				windowWidth = window.innerWidth;
 				if (containerRef && emblaApi) {
 					emblaApi.reInit();
 				}
@@ -262,19 +265,35 @@
 		}
 	});
 
-	// State for responsive slide classes
-	let slideClasses = $state('');
+	// Calculate slide classes reactively based on screen size and show count
+	// Cache the result to prevent unnecessary recalculations
+	let cachedSlideClasses = '';
+	const slideClasses = $derived.by(() => {
+		const result = (() => {
+			if (show === 1) {
+				// Single slide mode
+				return 'w-full max-w-sm mx-auto flex-none';
+			} else if (windowWidth < 768) {
+				// Mobile: Different behavior based on autoscroll
+				if (isAutoscroll) {
+					// For autoscroll sliders (like partners), respect the show count
+					const mobileWidthClass =
+						{
+							2: 'w-1/2',
+							3: 'w-1/3',
+							4: 'w-1/4',
+							5: 'w-1/5',
+							6: 'w-1/6'
+						}[show] || `w-1/${show}`;
 
-	// Calculate slide classes based on screen size and show count
-	function updateSlideClasses() {
-		if (show === 1) {
-			// Single slide mode
-			slideClasses = 'w-full max-w-sm mx-auto flex-none';
-		} else if (typeof window !== 'undefined' && window.innerWidth < 768) {
-			// Mobile: Different behavior based on autoscroll
-			if (isAutoscroll) {
-				// For autoscroll sliders (like partners), respect the show count
-				const mobileWidthClass =
+					return `flex-none ${mobileWidthClass} min-w-0`;
+				} else {
+					// For regular sliders (testimonials, profiles), use peek effect
+					return 'flex-none w-[75%] min-w-0';
+				}
+			} else {
+				// Desktop: use predefined widths based on show count
+				const widthClass =
 					{
 						2: 'w-1/2',
 						3: 'w-1/3',
@@ -283,25 +302,17 @@
 						6: 'w-1/6'
 					}[show] || `w-1/${show}`;
 
-				slideClasses = `flex-none ${mobileWidthClass} min-w-0`;
-			} else {
-				// For regular sliders (testimonials, profiles), use peek effect
-				slideClasses = 'flex-none w-[75%] min-w-0';
+				return `flex-none ${widthClass} min-w-0`;
 			}
-		} else {
-			// Desktop: use predefined widths based on show count
-			const widthClass =
-				{
-					2: 'w-1/2',
-					3: 'w-1/3',
-					4: 'w-1/4',
-					5: 'w-1/5',
-					6: 'w-1/6'
-				}[show] || `w-1/${show}`;
+		})();
 
-			slideClasses = `flex-none ${widthClass} min-w-0`;
+		// Cache to prevent unnecessary recalculations
+		if (result !== cachedSlideClasses) {
+			cachedSlideClasses = result;
 		}
-	}
+
+		return result;
+	});
 
 	function wrapChildrenInSlides() {
 		if (!containerRef || !isInitialized) return;
@@ -370,9 +381,7 @@
 		observe?: import('@layerd/ui').ObserveClass;
 	})}
 		{@const isIntersecting = observeInstance?.isIntersecting ?? true}
-		{#if observeInstance}
-			{@render intersectionEffect(isIntersecting)}
-		{/if}
+		{@const _ = handleIntersectionChange(isIntersecting)}
 		<div
 			{...componentProps}
 			use:emblaCarouselSvelte={emblaConfig}
@@ -389,16 +398,6 @@
 		</div>
 	{/snippet}
 </Component>
-
-{#snippet intersectionEffect(isIntersecting: boolean)}
-	{(() => {
-		// Use $effect to control playback when intersection changes
-		$effect(() => {
-			controlPlayback(isIntersecting);
-		});
-		return '';
-	})()}
-{/snippet}
 
 <style lang="postcss">
 	@reference "@layerd/ui/ui.css";

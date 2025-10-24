@@ -3,7 +3,7 @@
 	 * @tags text, typography, heading, paragraph
 	 */
 	import { Component, type ComponentProps, type ComponentReturn } from '@layerd/ui';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, untrack } from 'svelte';
 
 	export interface TextProps extends ComponentProps {
 		// Core text properties
@@ -313,44 +313,39 @@
 		return true;
 	};
 
-	// Track previous enabled state to detect changes
-	let previousEnabled = $state<boolean | undefined>(undefined);
+	// Track current visibility state (NOT $state, just regular variable updated from template)
+	let currentIntersectionState = true;
+	let currentEnabledProp: boolean | undefined = undefined;
+	let isTypewriterActive = false;
 
-	// Initialize on mount, cleanup on destroy
-	onMount(() => {
-		// Note: observeInstance won't be available here, so we use the prop value
-		const isEnabled = typewriter?.enabled ?? true;
-		previousEnabled = isEnabled;
-
-		if (typewriter && isEnabled) {
+	// Function to update typewriter state (called from template)
+	function updateTypewriterState(isIntersecting: boolean, enabledProp: boolean | undefined) {
+		currentIntersectionState = isIntersecting;
+		currentEnabledProp = enabledProp;
+		
+		const enabled = enabledProp !== undefined ? enabledProp : isIntersecting;
+		const shouldRun = enabled && typewriter !== undefined;
+		
+		if (shouldRun && !isTypewriterActive && typewriter) {
 			initTypewriter();
+			isTypewriterActive = true;
+		} else if (!shouldRun && isTypewriterActive) {
+			cleanupTypewriter();
+			isTypewriterActive = false;
 		}
+	}
 
-		// Watch for enabled prop changes (for explicit enabled prop only)
-		const interval = setInterval(() => {
-			const currentEnabled = typewriter?.enabled ?? true;
-			if (currentEnabled !== previousEnabled) {
-				previousEnabled = currentEnabled;
-
-				if (currentEnabled && typewriter) {
-					initTypewriter();
-				} else {
-					cleanupTypewriter();
-				}
-			}
-		}, 100);
-
-		return () => {
-			clearInterval(interval);
-		};
+	onMount(() => {
+		// Initial setup
+		if (typewriter?.enabled !== false) {
+			initTypewriter();
+			isTypewriterActive = true;
+		}
 	});
 
 	onDestroy(() => {
 		cleanupTypewriter();
 	});
-
-	// Determine if typewriter should be active (will be reactive to observeInstance in template)
-	const isTypewriterEnabled = $derived((typewriter?.enabled ?? true) && typewriter !== undefined);
 </script>
 
 <Component
@@ -384,12 +379,14 @@
 		content: import('svelte').Snippet<[string?]>;
 		observe?: import('@layerd/ui').ObserveClass;
 	})}
-		{@const enabled =
-			typewriter?.enabled !== undefined
-				? typewriter.enabled
-				: (observeInstance?.isIntersecting ?? true)}
-		{@const shouldShowTypewriter = typewriter && enabled}
-		{#if shouldShowTypewriter}
+		{@const isIntersecting = observeInstance?.isIntersecting ?? true}
+		{@const enabledProp = typewriter?.enabled}
+		{@const enabled = enabledProp !== undefined ? enabledProp : isIntersecting}
+		{@const hasTypewriter = typewriter !== undefined}
+		{@const shouldShowTypewriter = hasTypewriter && enabled}
+		{@const _ = updateTypewriterState(isIntersecting, enabledProp)}
+		{#if hasTypewriter}
+			<!-- Always use typewriter rendering when typewriter is defined (even if not enabled yet) -->
 			{#if finalType === 'h1'}
 				<h1 {...componentProps}>{@render typewriterContent()}</h1>
 			{:else if finalType === 'h2'}

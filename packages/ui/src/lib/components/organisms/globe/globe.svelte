@@ -7,7 +7,7 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Image, mq } from '@layerd/ui';
+	import { Image, mq, navigationState } from '@layerd/ui';
 	import { untrack } from 'svelte';
 	import * as THREE from 'three';
 	import Globe from 'globe.gl';
@@ -66,11 +66,13 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	const isGlobeReady = $derived(globeInitialized);
 
 	// Create a reactive, merged configuration
+	// Include the autoplay prop explicitly since it's extracted separately
 	const mergedConfig = $derived(
 		mergeConfigs(
 			createDefaultConfig(windowWidth, windowHeight),
 			restProps.config, // The main config object prop
-			restProps // Individual objects like `data`, `arcs`, etc.
+			restProps, // Individual objects like `data`, `arcs`, etc.
+			{ autoplay } // Ensure autoplay prop is merged last (highest precedence)
 		)
 	);
 
@@ -428,6 +430,7 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	let resumeTimeout: ReturnType<typeof setTimeout> | null = $state(null);
 	let autoplayInitTimeout: ReturnType<typeof setTimeout> | null = $state(null);
 	let isFirstAutoplayCycle = $state(true); // Track if this is the first cycle
+	let isPausedByInteraction = $state(false); // Track if user manually paused via interaction
 
 	/**
 	 * Start auto-playing through locations
@@ -435,9 +438,19 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	 * @param startDelayMs - Delay before first location change (optional, only used on first cycle)
 	 */
 	function startAutoPlay(intervalMs: number = 3000, startDelayMs?: number) {
-		if (isAutoPlaying) return; // Already playing
+		console.log('▶️ startAutoPlay() called');
+		console.log('  - intervalMs:', intervalMs);
+		console.log('  - startDelayMs:', startDelayMs);
+		console.log('  - isAutoPlaying before:', isAutoPlaying);
+		console.log('  - isPausedByInteraction:', isPausedByInteraction);
+		
+		if (isAutoPlaying) {
+			console.log('  - Already playing, returning');
+			return; // Already playing
+		}
 
 		isAutoPlaying = true;
+		console.log('  - isAutoPlaying set to true');
 
 		// If this is the first cycle and startDelay is provided, wait before first change
 		if (isFirstAutoplayCycle && startDelayMs && startDelayMs > 0) {
@@ -480,23 +493,49 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	 * Pause auto-play temporarily (for pauseOnInteraction)
 	 */
 	function pauseAutoPlay() {
+		console.log('🛑 pauseAutoPlay() called');
+		console.log('  - autoPlayInterval exists:', !!autoPlayInterval);
+		console.log('  - resumeTimeout exists:', !!resumeTimeout);
+		console.log('  - isAutoPlaying before:', isAutoPlaying);
+		console.log('  - isPausedByInteraction before:', isPausedByInteraction);
+		
 		if (autoPlayInterval) {
 			clearInterval(autoPlayInterval);
 			autoPlayInterval = null;
 		}
+		if (resumeTimeout) {
+			clearTimeout(resumeTimeout);
+			resumeTimeout = null;
+		}
 		isAutoPlaying = false;
+		isPausedByInteraction = true; // Mark as paused by user interaction
+		
+		console.log('  - isAutoPlaying after:', isAutoPlaying);
+		console.log('  - isPausedByInteraction after:', isPausedByInteraction);
 	}
 
 	/**
 	 * Schedule resuming auto-play after a delay
 	 */
 	function scheduleResumeAutoPlay(intervalMs: number, resumeDelayMs: number) {
+		console.log('⏰ scheduleResumeAutoPlay() called');
+		console.log('  - intervalMs:', intervalMs);
+		console.log('  - resumeDelayMs:', resumeDelayMs);
+		console.log('  - Clearing existing resumeTimeout:', !!resumeTimeout);
+		
 		if (resumeTimeout) {
 			clearTimeout(resumeTimeout);
 		}
 		resumeTimeout = setTimeout(() => {
+			console.log('✅ Resume timeout fired!');
+			console.log('  - isPausedByInteraction before clear:', isPausedByInteraction);
+			isPausedByInteraction = false; // Clear the pause flag before resuming
+			console.log('  - isPausedByInteraction after clear:', isPausedByInteraction);
+			console.log('  - Calling startAutoPlay with interval:', intervalMs);
 			startAutoPlay(intervalMs);
 		}, resumeDelayMs);
+		
+		console.log('  - resumeTimeout scheduled for', resumeDelayMs, 'ms');
 	}
 
 	/**
@@ -537,29 +576,148 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	// Track autoplay enabled state separately to ensure reactivity
 	const autoplayEnabled = $derived(autoplay?.enabled ?? false);
 
+	// Track if globe should be animating
+	let shouldAnimate = $state(true);
+
+	// Track if globe should be mounted in DOM (only when in viewport)
+	let shouldMountGlobe = $state(true);
+	
+	// Track if we should defer mounting to prevent blocking main thread
+	let deferredMountHandle: number | ReturnType<typeof setTimeout> | null = null;
+
+	// Handle THREE.js renderer and globe lifecycle based on viewport visibility
+	$effect(() => {
+		// Get current activeSection from navigationState
+		const currentSection = navigationState.activeSection;
+		const isInViewport = currentSection === 'Home';
+
+		console.log('👁️ Viewport visibility changed:', isInViewport ? 'IN VIEW' : 'OUT OF VIEW');
+
+		if (!isInViewport) {
+			// Clear any pending deferred mount
+			if (deferredMountHandle) {
+				if (typeof deferredMountHandle === 'number' && 'cancelIdleCallback' in window) {
+					window.cancelIdleCallback(deferredMountHandle);
+				} else {
+					clearTimeout(deferredMountHandle as ReturnType<typeof setTimeout>);
+				}
+				deferredMountHandle = null;
+			}
+			
+			if (globeInstance) {
+				// Completely destroy the globe when out of view
+				console.log('🗑️ Destroying globe (out of view)');
+				
+				// Stop all animations
+				shouldAnimate = false;
+				stopAutoPlay();
+				
+				// Clear all timeouts and state
+				arcCleanupTimeouts.forEach((timeout) => clearTimeout(timeout));
+				arcCleanupTimeouts.clear();
+				activeArcs = [];
+				activeRings = [];
+				
+				// Destroy globe instance
+				globeInstance._destructor();
+				globeInstance = null;
+				
+				// Clear marker elements
+				markerElements.clear();
+				
+				// Reset all initialization flags for fresh start when coming back
+				globeInitialized = false;
+				initializationStarted = false;
+				labelsInitialized = false;
+				labelOpacityMap = new Map();
+				
+				// Reset data to trigger reload from props/URLs
+				polygonData = null;
+				processedLocations = [];
+				processedPorts = [];
+				
+				// Reset location state
+				previousLocation = null;
+				displayPreviousLocation = null;
+				currentIndex = -1;
+				isPausedByInteraction = false;
+				
+				console.log('✅ Globe destroyed completely');
+			}
+			
+			// Unmount DOM elements immediately
+			shouldMountGlobe = false;
+		} else {
+			// DEFER mounting to prevent blocking main thread during navigation
+			// Use requestIdleCallback if available, otherwise setTimeout
+			console.log('⏳ Deferring globe mount to prevent blocking...');
+			
+			if ('requestIdleCallback' in window) {
+				deferredMountHandle = window.requestIdleCallback(() => {
+					console.log('✅ Mounting globe after idle callback');
+					shouldMountGlobe = true;
+					deferredMountHandle = null;
+				}, { timeout: 200 }); // Force after 200ms if browser stays busy
+			} else {
+				deferredMountHandle = setTimeout(() => {
+					console.log('✅ Mounting globe after timeout');
+					shouldMountGlobe = true;
+					deferredMountHandle = null;
+				}, 100); // Fallback delay
+			}
+		}
+
+		// When coming back into view, the initialization effect will recreate everything
+		// because initializationStarted = false now
+	});
+
 	// Handle autoplay state changes (separate effect to avoid conflicts)
 	$effect(() => {
 		// Wait for globe to be initialized before handling autoplay
 		if (!globeInstance || !globeInitialized) return;
 
 		const hasLocations = effectiveLocations.length > 0;
+		const isInViewport = navigationState.activeSection === 'Home';
+		// Use untrack to read pausedByUser to avoid infinite loop
+		const pausedByUser = untrack(() => isPausedByInteraction);
 
-		if (autoplayEnabled && hasLocations && autoplay) {
+		console.log('🔄 Autoplay effect triggered');
+		console.log('  - autoplayEnabled:', autoplayEnabled);
+		console.log('  - hasLocations:', hasLocations);
+		console.log('  - isInViewport:', isInViewport);
+		console.log('  - pausedByUser:', pausedByUser);
+		console.log('  - isAutoPlaying:', untrack(() => isAutoPlaying));
+
+		// Only enable autoplay when both: autoplayEnabled prop is true AND globe is in viewport AND not paused by user
+		if (autoplayEnabled && hasLocations && autoplay && isInViewport && !pausedByUser) {
 			const interval = autoplay.interval ?? 3000;
 			const startDelay = autoplay.startDelay ?? 0;
 
+			console.log('  ✅ Conditions met for autoplay');
+			console.log('  - interval:', interval);
+			console.log('  - startDelay:', startDelay);
+
 			// Only start if not already playing
 			if (!untrack(() => isAutoPlaying)) {
+				console.log('  - Not playing, will start autoplay');
 				// On first start, use startDelay; on subsequent starts (after scrolling back), start immediately
 				const delay = untrack(() => isFirstAutoplayCycle) ? startDelay : 0;
+				console.log('  - Using delay:', delay);
 				untrack(() => startAutoPlay(interval, delay));
+			} else {
+				console.log('  - Already playing, skipping start');
 			}
-		} else {
-			// Stop autoplay when disabled or no locations
+		} else if (!pausedByUser) {
+			console.log('  ❌ Conditions NOT met, stopping autoplay (pausedByUser is false)');
+			// Only stop autoplay automatically when disabled, no locations, or out of viewport
+			// Do NOT stop if paused by user interaction (let the resume timer handle it)
 			untrack(() => stopAutoPlay());
+		} else {
+			console.log('  ⏸️ Paused by user, not stopping (let resume timer handle it)');
 		}
 
 		return () => {
+			console.log('🧹 Autoplay effect cleanup');
 			untrack(() => stopAutoPlay());
 		};
 	});
@@ -572,22 +730,34 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 		const autoplayConfig = untrack(() => mergedConfig.autoplay);
 
 		if (event.key === 'ArrowLeft') {
+			console.log('⬅️ Arrow Left pressed');
 			prevLocation();
 			event.preventDefault();
 
 			// Handle pause on interaction
-			if (autoplayConfig?.pauseOnInteraction && untrack(() => isAutoPlaying)) {
+			console.log('  - pauseOnInteraction:', autoplayConfig?.pauseOnInteraction);
+			console.log('  - isAutoPlaying:', isAutoPlaying);
+			console.log('  - resumeDelay:', autoplayConfig?.resumeDelay);
+			
+			if (autoplayConfig?.pauseOnInteraction && isAutoPlaying) {
+				console.log('  - Pausing autoplay due to keyboard interaction');
 				pauseAutoPlay();
 				if (autoplayConfig.resumeDelay) {
 					scheduleResumeAutoPlay(autoplayConfig.interval ?? 3000, autoplayConfig.resumeDelay);
 				}
 			}
 		} else if (event.key === 'ArrowRight') {
+			console.log('➡️ Arrow Right pressed');
 			nextLocation();
 			event.preventDefault();
 
 			// Handle pause on interaction
-			if (autoplayConfig?.pauseOnInteraction && untrack(() => isAutoPlaying)) {
+			console.log('  - pauseOnInteraction:', autoplayConfig?.pauseOnInteraction);
+			console.log('  - isAutoPlaying:', isAutoPlaying);
+			console.log('  - resumeDelay:', autoplayConfig?.resumeDelay);
+			
+			if (autoplayConfig?.pauseOnInteraction && isAutoPlaying) {
+				console.log('  - Pausing autoplay due to keyboard interaction');
 				pauseAutoPlay();
 				if (autoplayConfig.resumeDelay) {
 					scheduleResumeAutoPlay(autoplayConfig.interval ?? 3000, autoplayConfig.resumeDelay);
@@ -1389,11 +1559,14 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 						markerKey(marker);
 
 						marker.onclick = () => {
+							console.log('🖱️ Marker clicked');
 							const idx = effectiveLocations.findIndex(
 								(loc) =>
 									parseFloat(String(loc.lat)) === parseFloat(String(d.lat)) &&
 									parseFloat(String(loc.lng)) === parseFloat(String(d.lng))
 							);
+							console.log('  - Found location index:', idx);
+							
 							if (idx >= 0) {
 								// Set flag to bypass arc delay for immediate activation
 								wasClickNavigation = true;
@@ -1401,7 +1574,12 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 
 								// Handle pause on interaction
 								const autoplayConfig = mergedConfig.autoplay;
+								console.log('  - pauseOnInteraction:', autoplayConfig?.pauseOnInteraction);
+								console.log('  - isAutoPlaying:', isAutoPlaying);
+								console.log('  - resumeDelay:', autoplayConfig?.resumeDelay);
+								
 								if (autoplayConfig?.pauseOnInteraction && isAutoPlaying) {
+									console.log('  - Pausing autoplay due to marker click');
 									pauseAutoPlay();
 									if (autoplayConfig.resumeDelay) {
 										scheduleResumeAutoPlay(
@@ -1492,100 +1670,99 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 		}); // End of scheduleInit callback
 	});
 
-	// Keyboard navigation and cleanup
-	onMount(() => {
+	// ============================================================================
+	// Data Loading Effect - Runs when data needs to be fetched/refetched
+	// ============================================================================
+	$effect(() => {
 		// Get data from config
 		const cfg = mergedConfig;
 		const locs = cfg.data?.locations;
 		const polygonUrl = cfg.data?.polygons;
 		const ports = cfg.data?.ports;
 
-		// Smart conditional loading - only fetch what's provided and not already loaded
-		const shouldFetchLocations = locs && typeof locs === 'string';
-		const shouldFetchPolygons = polygonUrl && typeof polygonUrl === 'string';
-		const shouldFetchPorts = ports && typeof ports === 'string';
+		// Check if data is already provided as objects (pre-loaded via props)
+		const locationsNeedLoading = Array.isArray(locs) && locs.length > 0 && processedLocations.length === 0;
+		const polygonsNeedLoading = polygonUrl && typeof polygonUrl === 'object' && !polygonData;
+		const portsNeedLoading = Array.isArray(ports) && ports.length > 0 && processedPorts.length === 0;
 
-		// Check if data is already provided as objects (pre-loaded)
-		const locationsAlreadyLoaded = Array.isArray(locs) && locs.length > 0;
-		const polygonsAlreadyLoaded = polygonUrl && typeof polygonUrl === 'object';
-		const portsAlreadyLoaded = Array.isArray(ports) && ports.length > 0;
-
-		// Set pre-loaded data immediately
-		if (locationsAlreadyLoaded) {
-			console.log('✅ Locations pre-loaded');
+		// Set pre-loaded data immediately (e.g., when globe is recreated after being destroyed)
+		if (locationsNeedLoading) {
+			console.log('✅ Setting locations from props');
 			processedLocations = locs;
 		}
-		if (polygonsAlreadyLoaded) {
-			console.log('✅ Polygons pre-loaded');
+		if (polygonsNeedLoading) {
+			console.log('✅ Setting polygons from props');
 			polygonData = polygonUrl;
 		}
-		if (portsAlreadyLoaded) {
-			console.log('✅ Ports pre-loaded');
+		if (portsNeedLoading) {
+			console.log('✅ Setting ports from props');
 			processedPorts = ports;
 		}
 
-		// Only fetch data that needs fetching
-		const fetchPromises: Promise<any>[] = [];
+		// Fetch data from URLs if needed
+		const shouldFetchLocations = locs && typeof locs === 'string' && processedLocations.length === 0;
+		const shouldFetchPolygons = polygonUrl && typeof polygonUrl === 'string' && !polygonData;
+		const shouldFetchPorts = ports && typeof ports === 'string' && processedPorts.length === 0;
 
 		if (shouldFetchLocations) {
-			console.log('📡 Fetching locations...');
-			fetchPromises.push(
-				fetch(locs as string)
-					.then((res) => res.json())
-					.then((data) => {
-						processedLocations = data;
-						console.log('✅ Locations fetched');
-					})
-					.catch((err) => {
-						console.error('Failed to fetch locations:', err);
-						processedLocations = [];
-					})
-			);
+			console.log('📡 Fetching locations from URL...');
+			fetch(locs as string)
+				.then((res) => res.json())
+				.then((data) => {
+					processedLocations = data;
+					console.log('✅ Locations fetched');
+				})
+				.catch((err) => {
+					console.error('Failed to fetch locations:', err);
+					processedLocations = [];
+				});
 		}
 
 		if (shouldFetchPolygons) {
-			console.log('📡 Fetching polygons...');
-			fetchPromises.push(
-				fetch(polygonUrl as string)
-					.then((res) => res.json())
-					.then((data) => {
-						polygonData = data;
-						console.log('✅ Polygons fetched');
-					})
-					.catch((err) => {
-						console.error('Failed to load polygon data:', err);
-						polygonData = { features: [] };
-					})
-			);
+			console.log('📡 Fetching polygons from URL...');
+			fetch(polygonUrl as string)
+				.then((res) => res.json())
+				.then((data) => {
+					polygonData = data;
+					console.log('✅ Polygons fetched');
+				})
+				.catch((err) => {
+					console.error('Failed to load polygon data:', err);
+					polygonData = { features: [] };
+				});
 		}
 
 		if (shouldFetchPorts) {
-			console.log('📡 Fetching ports...');
-			fetchPromises.push(
-				fetch(ports as string)
-					.then((res) => res.json())
-					.then((data) => {
-						processedPorts = data;
-						console.log('✅ Ports fetched');
-					})
-					.catch((err) => {
-						console.error('Failed to fetch ports:', err);
-						processedPorts = [];
-					})
-			);
+			console.log('📡 Fetching ports from URL...');
+			fetch(ports as string)
+				.then((res) => res.json())
+				.then((data) => {
+					processedPorts = data;
+					console.log('✅ Ports fetched');
+				})
+				.catch((err) => {
+					console.error('Failed to fetch ports:', err);
+					processedPorts = [];
+				});
 		}
+	});
 
-		// Wait for all fetches to complete (only if there are any)
-		if (fetchPromises.length > 0) {
-			Promise.all(fetchPromises).catch((error) => {
-				console.error('Error loading globe data:', error);
-			});
-		}
-
+	// Keyboard navigation and cleanup
+	onMount(() => {
 		window.addEventListener('keydown', handleKeyboard);
 
 		return () => {
 			window.removeEventListener('keydown', handleKeyboard);
+
+			// Clear deferred mount handle (either requestIdleCallback or setTimeout)
+			if (deferredMountHandle) {
+				if (typeof deferredMountHandle === 'number' && 'cancelIdleCallback' in window) {
+					window.cancelIdleCallback(deferredMountHandle);
+				} else {
+					clearTimeout(deferredMountHandle as ReturnType<typeof setTimeout>);
+				}
+				deferredMountHandle = null;
+			}
 
 			// Stop auto-play
 			stopAutoPlay();
@@ -1612,28 +1789,30 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	bind:innerHeight={windowHeight}
 />
 
-<div
-	class="bleed"
-	style="display: contents;"
->
+{#if shouldMountGlobe}
 	<div
-		class="globe-wrapper absolute inset-0 h-svh w-svw overflow-clip {className}"
-		class:fade-in={isGlobeReady}
-		class:opacity-0={!isGlobeReady}
+		class="bleed"
+		style="display: contents;"
 	>
-		<Image
-			bg
-			class="globe-atmosphere -z-1 pointer-events-none h-svh w-svw overflow-clip"
-			overlay="bg-radial from-primary to-transparent from-30% to-60% translate-y-1/2 scale-x-250 scale-y-95 md:scale-y-100 md:scale-x-125 absolute bottom-0 origin-bottom opacity-60 block"
-		/>
 		<div
-			class="globe-container absolute inset-0 h-full w-full"
-			class:pointer-events-auto={isGlobeReady}
-			class:pointer-events-none={!isGlobeReady}
-			{@attach attachGlobeContainer}
-		></div>
+			class="globe-wrapper absolute inset-0 h-svh w-svw overflow-clip {className}"
+			class:fade-in={isGlobeReady}
+			class:opacity-0={!isGlobeReady}
+		>
+			<Image
+				bg
+				class="globe-atmosphere -z-1 pointer-events-none h-svh w-svw overflow-clip"
+				overlay="bg-radial from-primary to-transparent from-30% to-60% translate-y-1/2 scale-x-250 scale-y-95 md:scale-y-100 md:scale-x-125 absolute bottom-0 origin-bottom opacity-60 block"
+			/>
+			<div
+				class="globe-container absolute inset-0 h-full w-full"
+				class:pointer-events-auto={isGlobeReady}
+				class:pointer-events-none={!isGlobeReady}
+				{@attach attachGlobeContainer}
+			></div>
+		</div>
 	</div>
-</div>
+{/if}
 
 <style lang="postcss">
 	@reference "@layerd/ui/ui.css";

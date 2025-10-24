@@ -104,9 +104,21 @@
 		property="og:image:alt"
 		content="Trident Cubed | Marine Surveying & Engineering Services"
 	/>
+	<!-- Preload critical background image -->
+	<link rel="preload" as="image" href="/photos/houston-night.webp" fetchpriority="high" />
 </svelte:head>
 
 <!-- <Metadata /> -->
+<!-- Hidden image to keep background cached in memory -->
+<img 
+	src="/photos/houston-night.webp" 
+	alt="" 
+	aria-hidden="true"
+	loading="eager"
+	fetchpriority="high"
+	style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; z-index: -9999;"
+/>
+
 <Header
 	fixed
 	appearance={navOpen ? 'glass' : scroll.top ? 'ghost' : 'glass'}

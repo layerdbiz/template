@@ -116,7 +116,7 @@
 {#snippet fixedBackgroundImage(src: string, alt: string)}
 	<div
 		class="absolute inset-0 size-full bg-cover bg-fixed bg-bottom bg-no-repeat {image || ''}"
-		style="background-image: url({src});"
+		style="background-image: url({src}); will-change: auto;"
 		aria-hidden="true"
 	></div>
 {/snippet}

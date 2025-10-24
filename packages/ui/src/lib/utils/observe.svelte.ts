@@ -48,6 +48,7 @@ class NavigationState {
 	private registeredLinks = new Set<string>(); // Track which element IDs have corresponding links
 	private isNavigating = false; // Flag to prevent intersection updates during navigation
 	private navigationTimeout: ReturnType<typeof setTimeout> | null = null;
+	private updateDebounceTimeout: ReturnType<typeof setTimeout> | null = null; // Debounce rapid updates
 
 	constructor() {
 		// Monitor URL hash changes
@@ -69,14 +70,16 @@ class NavigationState {
 						clearTimeout(this.navigationTimeout);
 					}
 
-					// Always update sticky active for registered links immediately
+					// IMMEDIATELY update both active section and sticky active for instant feedback
+					this._activeSection = newHash;
 					this._stickyActiveSection = newHash;
 
 					// Reset navigation flag after scroll animation would complete
+					// Reduced from 1000ms to 600ms for faster responsiveness
 					this.navigationTimeout = setTimeout(() => {
 						this.isNavigating = false;
 						this.navigationTimeout = null;
-					}, 1000); // Give enough time for smooth scroll to complete
+					}, 600); // Shorter timeout - most smooth scrolls complete in 300-500ms
 				} else if (!newHash && previousHash) {
 					// Only clear sticky active if user explicitly removed the hash
 					// and we're not currently viewing a section
@@ -174,8 +177,15 @@ class NavigationState {
 			this.intersectingElements.delete(elementId);
 		}
 
-		// Recalculate the most visible element
-		this.updateMostVisibleElement();
+		// Debounce updates to prevent rapid-fire changes during scroll
+		if (this.updateDebounceTimeout) {
+			clearTimeout(this.updateDebounceTimeout);
+		}
+
+		this.updateDebounceTimeout = setTimeout(() => {
+			this.updateMostVisibleElement();
+			this.updateDebounceTimeout = null;
+		}, 16); // Reduced to ~1 frame (16ms) for instant response while still debouncing
 	}
 
 	private updateMostVisibleElement() {
@@ -211,11 +221,16 @@ class NavigationState {
 			}
 		}
 
-		this._activeSection = mostVisibleId;
+		// Only update if actually changed
+		if (this._activeSection !== mostVisibleId) {
+			this._activeSection = mostVisibleId;
+		}
 
 		// Update sticky active only when a new element becomes visible AND has a corresponding link
 		if (mostVisibleId && this.registeredLinks.has(mostVisibleId)) {
-			this._stickyActiveSection = mostVisibleId;
+			if (this._stickyActiveSection !== mostVisibleId) {
+				this._stickyActiveSection = mostVisibleId;
+			}
 		}
 
 		// Handle initial case: if we have a hash but no sticky active yet,
