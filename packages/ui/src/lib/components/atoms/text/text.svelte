@@ -3,6 +3,7 @@
 	 * @tags text, typography, heading, paragraph
 	 */
 	import { Component, type ComponentProps, type ComponentReturn } from '@layerd/ui';
+	import { onMount, onDestroy } from 'svelte';
 
 	export interface TextProps extends ComponentProps {
 		// Core text properties
@@ -27,6 +28,7 @@
 
 		// Typewriter effect
 		typewriter?: {
+			enabled?: boolean;
 			start?: string;
 			messages: string[];
 			type?: 'typewriter' | 'reveal';
@@ -103,50 +105,50 @@
 		...props
 	}: TextProps = $props();
 
-	// Determine final type and content based on props
-	const getTypeAndContent = $derived(() => {
+	// Determine final type and content based on props (memoized to avoid double computation)
+	const typeAndContent = $derived.by(() => {
 		// Check string props first (highest priority)
-		if (typeof h1 === 'string') return { type: 'h1', content: h1 };
-		if (typeof h2 === 'string') return { type: 'h2', content: h2 };
-		if (typeof h3 === 'string') return { type: 'h3', content: h3 };
-		if (typeof h4 === 'string') return { type: 'h4', content: h4 };
-		if (typeof h5 === 'string') return { type: 'h5', content: h5 };
-		if (typeof h6 === 'string') return { type: 'h6', content: h6 };
-		if (typeof p === 'string') return { type: 'p', content: p };
-		if (typeof bold === 'string') return { type: 'bold', content: bold };
-		if (typeof italic === 'string') return { type: 'italic', content: italic };
-		if (typeof line === 'string') return { type: 'line', content: line };
-		if (typeof underline === 'string') return { type: 'underline', content: underline };
-		if (typeof quote === 'string') return { type: 'quote', content: quote };
-		if (typeof key === 'string') return { type: 'key', content: key };
-		if (typeof small === 'string') return { type: 'small', content: small };
-		if (typeof code === 'string') return { type: 'code', content: code };
-		if (typeof codeblock === 'string') return { type: 'codeblock', content: codeblock };
+		if (typeof h1 === 'string') return { type: 'h1' as const, content: h1 };
+		if (typeof h2 === 'string') return { type: 'h2' as const, content: h2 };
+		if (typeof h3 === 'string') return { type: 'h3' as const, content: h3 };
+		if (typeof h4 === 'string') return { type: 'h4' as const, content: h4 };
+		if (typeof h5 === 'string') return { type: 'h5' as const, content: h5 };
+		if (typeof h6 === 'string') return { type: 'h6' as const, content: h6 };
+		if (typeof p === 'string') return { type: 'p' as const, content: p };
+		if (typeof bold === 'string') return { type: 'bold' as const, content: bold };
+		if (typeof italic === 'string') return { type: 'italic' as const, content: italic };
+		if (typeof line === 'string') return { type: 'line' as const, content: line };
+		if (typeof underline === 'string') return { type: 'underline' as const, content: underline };
+		if (typeof quote === 'string') return { type: 'quote' as const, content: quote };
+		if (typeof key === 'string') return { type: 'key' as const, content: key };
+		if (typeof small === 'string') return { type: 'small' as const, content: small };
+		if (typeof code === 'string') return { type: 'code' as const, content: code };
+		if (typeof codeblock === 'string') return { type: 'codeblock' as const, content: codeblock };
 
 		// Check boolean props (medium priority)
-		if (h1 === true) return { type: 'h1', content: text };
-		if (h2 === true) return { type: 'h2', content: text };
-		if (h3 === true) return { type: 'h3', content: text };
-		if (h4 === true) return { type: 'h4', content: text };
-		if (h5 === true) return { type: 'h5', content: text };
-		if (h6 === true) return { type: 'h6', content: text };
-		if (p === true) return { type: 'p', content: text };
-		if (bold === true) return { type: 'bold', content: text };
-		if (italic === true) return { type: 'italic', content: text };
-		if (line === true) return { type: 'line', content: text };
-		if (underline === true) return { type: 'underline', content: text };
-		if (quote === true) return { type: 'quote', content: text };
-		if (key === true) return { type: 'key', content: text };
-		if (small === true) return { type: 'small', content: text };
-		if (code === true) return { type: 'code', content: text };
-		if (codeblock === true) return { type: 'codeblock', content: text };
+		if (h1 === true) return { type: 'h1' as const, content: text };
+		if (h2 === true) return { type: 'h2' as const, content: text };
+		if (h3 === true) return { type: 'h3' as const, content: text };
+		if (h4 === true) return { type: 'h4' as const, content: text };
+		if (h5 === true) return { type: 'h5' as const, content: text };
+		if (h6 === true) return { type: 'h6' as const, content: text };
+		if (p === true) return { type: 'p' as const, content: text };
+		if (bold === true) return { type: 'bold' as const, content: text };
+		if (italic === true) return { type: 'italic' as const, content: text };
+		if (line === true) return { type: 'line' as const, content: text };
+		if (underline === true) return { type: 'underline' as const, content: text };
+		if (quote === true) return { type: 'quote' as const, content: text };
+		if (key === true) return { type: 'key' as const, content: text };
+		if (small === true) return { type: 'small' as const, content: text };
+		if (code === true) return { type: 'code' as const, content: text };
+		if (codeblock === true) return { type: 'codeblock' as const, content: text };
 
 		// Default to type prop (lowest priority)
 		return { type, content: text };
 	});
 
-	const finalType = $derived(getTypeAndContent().type);
-	const finalContent = $derived(getTypeAndContent().content);
+	const finalType = $derived(typeAndContent.type);
+	const finalContent = $derived(typeAndContent.content);
 
 	// Build prose classes
 	const proseClasses = $derived.by(() => {
@@ -165,160 +167,190 @@
 		return classes;
 	});
 
-	// Typewriter effect logic
+	// Typewriter effect logic - with $state for all variables
 	let typewriterEl = $state<HTMLElement | null>(null);
 	let display = $state('');
-	let running = $state(false);
-	let isRevealed = $state(false);
 	let shouldApplyRevealClasses = $state(false);
-	let cancel = false;
-	let initialized = false;
+	let isRevealed = $state(false);
+	let isAnimating = $state(false); // Track if we're in animation mode
+	let currentMessageIndex = $state(0);
+	let phase = $state<'showing' | 'hiding' | 'waiting'>('waiting');
+	let animationTimerId: ReturnType<typeof setTimeout> | null = null;
+	let cycleTimerId: ReturnType<typeof setTimeout> | null = null;
 
-	const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+	const revealText = (msg: string) => {
+		// Apply classes FIRST (text will be hidden by clip-path)
+		shouldApplyRevealClasses = true;
+		isRevealed = false;
+		isAnimating = true;
 
-	const typeText = async (msg: string) => {
-		const mode = typewriter?.type ?? 'typewriter';
-
-		if (mode === 'reveal') {
-			// Reveal mode: set text first, then trigger reveal animation after a delay
-			shouldApplyRevealClasses = true;
-			isRevealed = false; // Start hidden
+		// Wait one frame, THEN set the text content
+		requestAnimationFrame(() => {
 			display = msg;
-			if (typewriterEl) typewriterEl.textContent = msg;
-			// Delay to ensure DOM updates and reveal classes are applied before triggering transition
-			await sleep(50);
-			isRevealed = true; // Trigger reveal transition
-		} else {
-			// Typewriter mode: character-by-character animation
-			display = '';
-			if (typewriterEl) typewriterEl.textContent = '';
-			for (const ch of msg) {
-				if (cancel) return;
-				display += ch;
-				if (typewriterEl) typewriterEl.textContent = display;
-				await sleep(typewriter?.speed ?? 50);
-			}
-		}
+			// Wait another frame for DOM update, THEN trigger reveal
+			requestAnimationFrame(() => {
+				isRevealed = true;
+			});
+		});
 	};
 
-	const deleteText = async () => {
-		const mode = typewriter?.type ?? 'typewriter';
-		// Check if delete animation is enabled (defaults to true)
+	const hideText = () => {
 		const shouldAnimate = typewriter?.delete ?? true;
-
-		if (mode === 'reveal') {
-			// Reveal mode: handle delete animation or instant clear
-			if (shouldAnimate) {
-				// With animation: remove reveal-active to trigger reverse transition
-				isRevealed = false;
-				// Wait for CSS transition to complete (duration-50 = 100ms)
-				await sleep(100);
-				// Then clear text and reset classes
-				display = '';
-				if (typewriterEl) typewriterEl.textContent = '';
-				shouldApplyRevealClasses = false;
-			} else {
-				// Without animation: instantly clear everything in one step
-				// Reset all states simultaneously to avoid any transition
-				display = '';
-				if (typewriterEl) typewriterEl.textContent = '';
-				shouldApplyRevealClasses = false;
-				isRevealed = false;
-				// Small delay to let DOM settle before next message
-				await sleep(50);
-			}
-		} else {
-			// Typewriter mode: character-by-character deletion
-			if (shouldAnimate) {
-				// Animated deletion: character by character
-				while (display.length > 0 && !cancel) {
-					display = display.slice(0, -1);
-					if (typewriterEl) typewriterEl.textContent = display;
-					await sleep(typewriter?.speed ?? 50);
-				}
-			} else {
-				// Instant deletion: remove all at once
-				display = '';
-				if (typewriterEl) typewriterEl.textContent = '';
-			}
-		}
-	};
-
-	const cycleMessages = async () => {
-		if (running || !typewriter?.messages?.length) return;
-		running = true;
-
-		// Determine if we have a start text to delete first
-		const hasStartText = display.length > 0;
-
-		// Delete start text first if it exists
-		if (hasStartText && !cancel) {
-			// Add a delay before starting to delete the start text
-			await sleep(typewriter?.delay ?? 3000);
-			await deleteText();
-		}
-
-		// First cycle: skip the first message (already displayed), start from second
-		// Subsequent cycles: include all messages
-		let isFirstCycle = hasStartText && typewriter.start === undefined;
-
-		// Then cycle through messages
-		do {
-			// On first cycle, skip the first message (it was already shown)
-			// On subsequent cycles, include all messages
-			const startIndex = isFirstCycle ? 1 : 0;
-
-			for (let i = startIndex; i < typewriter.messages.length; i++) {
-				if (cancel) break;
-				await typeText(typewriter.messages[i]);
-				await sleep(typewriter?.delay ?? 3000);
-				await deleteText();
-			}
-
-			// After first cycle, include all messages
-			isFirstCycle = false;
-		} while ((typewriter?.loop ?? true) && !cancel);
-		running = false;
-	};
-
-	$effect(() => {
-		if (!typewriter) {
-			cancel = true;
-			display = '';
-			if (typewriterEl) typewriterEl.textContent = '';
+		if (shouldAnimate) {
 			isRevealed = false;
+		} else {
+			display = '';
 			shouldApplyRevealClasses = false;
-			initialized = false;
-			return;
+			isRevealed = false;
 		}
+	};
 
-		// Only initialize once
-		if (initialized) return;
+	const runAnimationCycle = () => {
+		if (!typewriter?.messages?.length) return;
 
-		// Wait for element to be bound before initializing
-		if (!typewriterEl) return;
+		const delay = typewriter.delay ?? 3000;
+		const shouldDelete = typewriter?.delete ?? true;
+		const hideAnimationDuration = shouldDelete ? 700 : 0;
 
-		cancel = false;
-		initialized = true;
+		if (phase === 'showing') {
+			// Time to hide current message
+			hideText();
+			phase = 'hiding';
 
-		// Use the first message as start text if start is not provided
-		const startText =
-			typewriter.start !== undefined ? typewriter.start : (typewriter.messages[0] ?? '');
+			// If no delete animation, immediately show next message
+			if (!shouldDelete) {
+				display = '';
+				shouldApplyRevealClasses = false;
+				isRevealed = false;
 
+				currentMessageIndex = (currentMessageIndex + 1) % typewriter.messages.length;
+
+				if (!typewriter.loop && currentMessageIndex === 0) {
+					phase = 'waiting';
+					return;
+				}
+
+				requestAnimationFrame(() => {
+					requestAnimationFrame(() => {
+						revealText(typewriter.messages[currentMessageIndex]);
+						phase = 'showing';
+						cycleTimerId = setTimeout(runAnimationCycle, delay);
+					});
+				});
+			} else {
+				// Wait for hide animation, then show next
+				animationTimerId = setTimeout(() => {
+					display = '';
+					shouldApplyRevealClasses = false;
+
+					currentMessageIndex = (currentMessageIndex + 1) % typewriter.messages.length;
+
+					if (!typewriter.loop && currentMessageIndex === 0) {
+						phase = 'waiting';
+						return;
+					}
+
+					revealText(typewriter.messages[currentMessageIndex]);
+					phase = 'showing';
+					cycleTimerId = setTimeout(runAnimationCycle, delay);
+				}, hideAnimationDuration + 50);
+			}
+		}
+	};
+
+	const initTypewriter = () => {
+		if (!typewriter?.messages?.length) return;
+
+		// Set initial display
+		const startText = typewriter.start ?? typewriter.messages[0];
 		display = startText;
-		typewriterEl.textContent = startText;
-		// For reveal mode, the first message should be visible (not in hidden state)
-		// and should not have reveal classes applied until cycling starts
 		isRevealed = false;
 		shouldApplyRevealClasses = false;
+		isAnimating = false;
+		phase = 'waiting';
 
-		if (typewriter.autoplay ?? true) cycleMessages();
+		// Auto-start if enabled
+		if (typewriter.autoplay ?? true) {
+			const initialDelay = typewriter.delay ?? 3000;
+			const shouldSkipFirst = !typewriter.start || startText === typewriter.messages[0];
+
+			currentMessageIndex = shouldSkipFirst ? 1 : 0;
+			if (currentMessageIndex >= typewriter.messages.length) {
+				currentMessageIndex = 0;
+			}
+
+			animationTimerId = setTimeout(() => {
+				revealText(typewriter.messages[currentMessageIndex]);
+				phase = 'showing';
+				cycleTimerId = setTimeout(runAnimationCycle, initialDelay);
+			}, initialDelay);
+		}
+	};
+
+	const cleanupTypewriter = () => {
+		if (animationTimerId) clearTimeout(animationTimerId);
+		if (cycleTimerId) clearTimeout(cycleTimerId);
+		animationTimerId = null;
+		cycleTimerId = null;
+		display = '';
+		isRevealed = false;
+		shouldApplyRevealClasses = false;
+		phase = 'waiting';
+		currentMessageIndex = 0;
+	};
+
+	// Determine typewriter enabled state - use observeInstance if no explicit enabled prop
+	const getTypewriterEnabled = (observeInstance?: import('@layerd/ui').ObserveClass) => {
+		// If explicit enabled prop exists, use it
+		if (typewriter?.enabled !== undefined) {
+			return typewriter.enabled;
+		}
+		// If observe instance exists, use its intersection state
+		if (observeInstance) {
+			return observeInstance.isIntersecting;
+		}
+		// Default to true
+		return true;
+	};
+
+	// Track previous enabled state to detect changes
+	let previousEnabled = $state<boolean | undefined>(undefined);
+
+	// Initialize on mount, cleanup on destroy
+	onMount(() => {
+		// Note: observeInstance won't be available here, so we use the prop value
+		const isEnabled = typewriter?.enabled ?? true;
+		previousEnabled = isEnabled;
+
+		if (typewriter && isEnabled) {
+			initTypewriter();
+		}
+
+		// Watch for enabled prop changes (for explicit enabled prop only)
+		const interval = setInterval(() => {
+			const currentEnabled = typewriter?.enabled ?? true;
+			if (currentEnabled !== previousEnabled) {
+				previousEnabled = currentEnabled;
+
+				if (currentEnabled && typewriter) {
+					initTypewriter();
+				} else {
+					cleanupTypewriter();
+				}
+			}
+		}, 100);
 
 		return () => {
-			cancel = true;
-			initialized = false;
+			clearInterval(interval);
 		};
 	});
+
+	onDestroy(() => {
+		cleanupTypewriter();
+	});
+
+	// Determine if typewriter should be active (will be reactive to observeInstance in template)
+	const isTypewriterEnabled = $derived((typewriter?.enabled ?? true) && typewriter !== undefined);
 </script>
 
 <Component
@@ -333,22 +365,31 @@
 		>
 		<span
 			bind:this={typewriterEl}
-			class="typewriter-text {shouldApplyRevealClasses ? 'reveal reveal-r' : ''} {isRevealed
-				? 'reveal-active'
-				: ''}"
+			class="typewriter-text before:inline-block before:size-[1px] before:opacity-0 before:content-['.']"
+			class:reveal={shouldApplyRevealClasses}
+			class:reveal-r={shouldApplyRevealClasses}
+			class:reveal-active={isRevealed}
+			style:clip-path={isAnimating && !shouldApplyRevealClasses ? 'inset(0 100% 0 0)' : undefined}
 			aria-live="polite"
-			aria-atomic="true"
-		></span>
+			aria-atomic="true">{display}</span
+		>
 	{/snippet}
 
 	{#snippet component({
 		props: componentProps,
-		content
+		content,
+		observe: observeInstance
 	}: {
 		props: ComponentReturn;
 		content: import('svelte').Snippet<[string?]>;
+		observe?: import('@layerd/ui').ObserveClass;
 	})}
-		{#if typewriter}
+		{@const enabled =
+			typewriter?.enabled !== undefined
+				? typewriter.enabled
+				: (observeInstance?.isIntersecting ?? true)}
+		{@const shouldShowTypewriter = typewriter && enabled}
+		{#if shouldShowTypewriter}
 			{#if finalType === 'h1'}
 				<h1 {...componentProps}>{@render typewriterContent()}</h1>
 			{:else if finalType === 'h2'}
@@ -405,27 +446,5 @@
 
 	.text {
 		@apply block;
-	}
-
-	.typewriter-text {
-		/* Prevent layout shift when empty by maintaining minimum height */
-		display: inline-block;
-		min-height: 1ch;
-
-		/* Add a blinking cursor effect only when there's content */
-		&:not(:empty)::after {
-			content: '|';
-			opacity: 0;
-		}
-	}
-
-	@keyframes blink {
-		0%,
-		100% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 0;
-		}
 	}
 </style>

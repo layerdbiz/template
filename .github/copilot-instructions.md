@@ -56,7 +56,6 @@ template/
 ```bash
 # Installing packages - ALWAYS use --filter from root
  pnpm --filter @layerd/ui add runed
- pnpm --filter @layerd/ui add -D typescript
  pnpm --filter site add some-package
  pnpm --filter storybook add some-addon
 ```

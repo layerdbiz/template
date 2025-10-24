@@ -121,7 +121,8 @@
 		<!-- PURE snippet-based system - ALWAYS clean output, no wrapper ever! -->
 		{@render component({
 			props: getComponentProps(i),
-			content
+			content,
+			observe: observe ? observeInstances[i] : undefined
 		})}
 	{/if}
 {/each}

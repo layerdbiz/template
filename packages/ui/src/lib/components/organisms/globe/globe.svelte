@@ -3,46 +3,6 @@
 @tags organism, 3d, visualization, interactive, map, globe
 
 Interactive 3D globe visualization component with support for locations, arcs, rings, labels, and more.
-
-**Features:**
-- Automatic SVG-to-canvas conversion for crisp globe textures
-- Custom layer rendering for SVG files (2048x1024 resolution)
-- Standard texture support for PNG/JPG via built-in globe.gl
-- Configurable colors, emissive glow, and opacity for SVG textures
-- Location markers with click handlers and auto-play
-- Animated arcs between locations with customizable dash patterns
-- Ripple ring effects at arc endpoints
-- Labels with fade in/out animations
-- Responsive media query support with auto-recreation
-
-@example
-```svelte
-<Globe
-  data={{ locations: myLocations }}
-  globe={{
-    image: '/map.svg',  // Auto-detected as SVG, converted to canvas texture
-    svg: {
-      color: 0x1a1a2e,           // Tint color for SVG
-      opacity: 1,
-      emissive: 0x155dfc,        // Glow color
-      emissiveIntensity: 0.4     // Glow strength
-    },
-    altitude: 2.5,
-    latitude: 21
-  }}
-/>
-```
-
-@example Raster image (PNG/JPG)
-```svelte
-<Globe
-  data={{ locations: myLocations }}
-  globe={{
-    image: '/earth-texture.jpg',  // Standard texture via globe.gl
-    altitude: 2.5
-  }}
-/>
-```
 -->
 
 <script lang="ts">

@@ -724,7 +724,6 @@ export const sampleModals = [
 - **User activity**: Use `IsIdle` for timeout/session management
 - **Location tracking**: Use `useGeolocation` for location-aware features
 - **Animation loops**: Use `AnimationFrames` for smooth animations
-- **Intervals**: Use `Interval` for timed operations with controls
 - **Function debouncing**: Use `useDebounce` for function call delays
 - **Function throttling**: Use `useThrottle` for performance optimization
 - **Timed intervals**: Use `useInterval` for reactive timer controls

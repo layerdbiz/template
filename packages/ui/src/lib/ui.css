@@ -168,30 +168,25 @@
 	-webkit-box-reflect: below 3px linear-gradient(to bottom, transparent 90%, rgba(0, 0, 0, 0.25));
 }
 
-/* reveal */
-@layer utilities {
-	@property --reveal {
-		syntax: '<percentage>';
-		inherits: false;
-		initial-value: 0%;
-	}
-}
-
+/* reveal - using clip-path for hardware acceleration */
 @utility reveal {
-	@apply transition-[--reveal] duration-700 ease-out [--reveal:0%];
+	transition: clip-path 700ms ease-out;
 }
 @utility reveal-active {
-	@apply transition-[--reveal] duration-700 ease-out [--reveal:100%];
+	clip-path: inset(0 0 0 0) !important;
+	will-change: clip-path;
 }
+
+/* Directional reveal variants - set initial clipped state */
 @utility reveal-t {
-	@apply mask-t-from-(--reveal) mask-t-to-(--reveal);
+	clip-path: inset(0 0 100% 0);
 }
 @utility reveal-r {
-	@apply mask-r-from-(--reveal) mask-r-to-(--reveal);
+	clip-path: inset(0 100% 0 0);
 }
 @utility reveal-b {
-	@apply mask-b-from-(--reveal) mask-b-to-(--reveal);
+	clip-path: inset(100% 0 0 0);
 }
 @utility reveal-l {
-	@apply mask-l-from-(--reveal) mask-l-to-(--reveal);
+	clip-path: inset(0 0 0 100%);
 }

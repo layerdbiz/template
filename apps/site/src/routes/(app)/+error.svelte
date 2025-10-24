@@ -17,8 +17,8 @@
 		Flex,
 		Input,
 		Slider,
-		navigationState,
-		Globe
+		navigationState
+		// Globe
 	} from '@layerd/ui';
 	import { getTeamData } from '$lib/team/team.remote';
 	import { getFaqData } from '$lib/faq/faq.remote';
@@ -254,6 +254,8 @@
 	</section>
 
 	<!-- globe -->
+	<script>
+		/*
 	<Globe
 		startLocationId="4"
 		data={{
@@ -362,7 +364,8 @@
 			resumeDelay: 60000
 		}}
 	/>
-
+	*/
+	</script>
 	<!-- photo vignette 
 	------------------------------------------>
 	<Image
@@ -425,30 +428,32 @@
 	<!-- partners -->
 	{#if !mq.lg}
 		<!-- Desktop: 8 cols x 2 rows grid -->
-		<div class="mask-x-lg lg:mask-[unset] flex items-center justify-center gap-8 pb-20 invert">
+		<div
+			class="mask-x-lg lg:mask-[unset] flex items-center justify-center gap-12 px-10 pb-20 invert"
+		>
 			{#each partnersData as partner (partner.id)}
 				<img
 					src={partner.img}
 					alt={partner.name}
-					class="h-24 w-36 place-self-center object-contain"
+					class="max-h-28 w-auto place-self-center object-contain"
 				/>
 			{/each}
 		</div>
 	{:else}
-		<!-- Mobile: Slider with autoscroll (improved speed) -->
+		<!-- Mobile: Slider with autoscroll -->
 		<Slider
 			class="mask-x-lg bleed overflow-hidden"
 			show={3}
 			loop={true}
-			autoscroll={0.25}
-			container="gap-4"
+			autoscroll={0.5}
+			container=""
 			slide="flex-none"
 		>
 			{#each partnersData as partner (partner.id)}
 				<img
 					src={partner.img}
 					alt={partner.name}
-					class="h-12 w-auto object-contain invert"
+					class="max-h-24 w-auto place-self-center object-contain px-4 invert"
 				/>
 			{/each}
 		</Slider>
@@ -511,7 +516,7 @@
 
 	{#each aboutData as section (section.id)}
 		<Container
-			class="flex flex-col items-center justify-between gap-20 lg:flex-row even:lg:flex-row-reverse"
+			class="flex flex-col items-center justify-between gap-20 lg:flex-row lg:items-start even:lg:flex-row-reverse"
 		>
 			<Content
 				type="text"

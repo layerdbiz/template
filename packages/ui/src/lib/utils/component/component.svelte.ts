@@ -88,7 +88,11 @@ export interface ComponentReturn {
  */
 export interface ComponentWrapperProps extends ComponentProps {
 	component?: import("svelte").Snippet<
-		[{ props: ComponentReturn; content: import("svelte").Snippet<[string?]> }]
+		[{
+			props: ComponentReturn;
+			content: import("svelte").Snippet<[string?]>;
+			observe?: import("@layerd/ui").ObserveClass;
+		}]
 	>;
 }
 
