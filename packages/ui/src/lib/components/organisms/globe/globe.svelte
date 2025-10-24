@@ -140,7 +140,7 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 			const img = document.createElement('img');
 
 			img.onload = () => {
-				console.log('🎨 SVG loaded, creating ULTRA high-res canvas texture...');
+				
 
 				// Create a MAXIMUM RESOLUTION canvas for ultimate SVG crispness
 				// Use 16K resolution (16384x8192) for professional-grade quality
@@ -183,7 +183,7 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 				texture.anisotropy = 16; // Maximum anisotropic filtering
 				texture.generateMipmaps = false; // No mipmaps to avoid blur
 
-				console.log('✅ Texture configured for maximum sharpness (16K + nearest-neighbor)');
+				
 
 				resolve(texture);
 			};
@@ -194,7 +194,7 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 			};
 
 			// Load the SVG
-			console.log('📥 Loading SVG from:', url);
+			
 			img.src = url;
 		});
 	}
@@ -438,19 +438,19 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	 * @param startDelayMs - Delay before first location change (optional, only used on first cycle)
 	 */
 	function startAutoPlay(intervalMs: number = 3000, startDelayMs?: number) {
-		console.log('▶️ startAutoPlay() called');
-		console.log('  - intervalMs:', intervalMs);
-		console.log('  - startDelayMs:', startDelayMs);
-		console.log('  - isAutoPlaying before:', isAutoPlaying);
-		console.log('  - isPausedByInteraction:', isPausedByInteraction);
+		
+		
+		
+		
+		
 		
 		if (isAutoPlaying) {
-			console.log('  - Already playing, returning');
+			
 			return; // Already playing
 		}
 
 		isAutoPlaying = true;
-		console.log('  - isAutoPlaying set to true');
+		
 
 		// If this is the first cycle and startDelay is provided, wait before first change
 		if (isFirstAutoplayCycle && startDelayMs && startDelayMs > 0) {
@@ -478,34 +478,34 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	 * Stop auto-playing
 	 */
 	function stopAutoPlay() {
-		console.log('🛑 stopAutoPlay() called');
-		console.log('  - autoPlayInterval exists:', !!autoPlayInterval);
-		console.log('  - resumeTimeout exists:', !!resumeTimeout);
-		console.log('  - isAutoPlaying before:', isAutoPlaying);
+		
+		
+		
+		
 		
 		if (autoPlayInterval) {
 			clearInterval(autoPlayInterval);
 			autoPlayInterval = null;
-			console.log('  - Cleared autoPlayInterval');
+			
 		}
 		if (resumeTimeout) {
 			clearTimeout(resumeTimeout);
 			resumeTimeout = null;
-			console.log('  - Cleared resumeTimeout');
+			
 		}
 		isAutoPlaying = false;
-		console.log('  - isAutoPlaying after:', isAutoPlaying);
+		
 	}
 
 	/**
 	 * Pause auto-play temporarily (for pauseOnInteraction)
 	 */
 	function pauseAutoPlay() {
-		console.log('🛑 pauseAutoPlay() called');
-		console.log('  - autoPlayInterval exists:', !!autoPlayInterval);
-		console.log('  - resumeTimeout exists:', !!resumeTimeout);
-		console.log('  - isAutoPlaying before:', isAutoPlaying);
-		console.log('  - isPausedByInteraction before:', isPausedByInteraction);
+		
+		
+		
+		
+		
 		
 		if (autoPlayInterval) {
 			clearInterval(autoPlayInterval);
@@ -518,32 +518,32 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 		isAutoPlaying = false;
 		isPausedByInteraction = true; // Mark as paused by user interaction
 		
-		console.log('  - isAutoPlaying after:', isAutoPlaying);
-		console.log('  - isPausedByInteraction after:', isPausedByInteraction);
+		
+		
 	}
 
 	/**
 	 * Schedule resuming auto-play after a delay
 	 */
 	function scheduleResumeAutoPlay(intervalMs: number, resumeDelayMs: number) {
-		console.log('⏰ scheduleResumeAutoPlay() called');
-		console.log('  - intervalMs:', intervalMs);
-		console.log('  - resumeDelayMs:', resumeDelayMs);
-		console.log('  - Clearing existing resumeTimeout:', !!resumeTimeout);
+		
+		
+		
+		
 		
 		if (resumeTimeout) {
 			clearTimeout(resumeTimeout);
 		}
 		resumeTimeout = setTimeout(() => {
-			console.log('✅ Resume timeout fired!');
-			console.log('  - isPausedByInteraction before clear:', isPausedByInteraction);
+			
+			
 			isPausedByInteraction = false; // Clear the pause flag before resuming
-			console.log('  - isPausedByInteraction after clear:', isPausedByInteraction);
-			console.log('  - Calling startAutoPlay with interval:', intervalMs);
+			
+			
 			startAutoPlay(intervalMs);
 		}, resumeDelayMs);
 		
-		console.log('  - resumeTimeout scheduled for', resumeDelayMs, 'ms');
+		
 	}
 
 	/**
@@ -593,15 +593,15 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 
 		const isInViewport = navigationState.activeSection === 'Home';
 
-		console.log('🎬 Globe render control:', isInViewport ? 'RESUME' : 'PAUSE');
+		
 
 		if (!isInViewport) {
 			// Pause rendering completely when out of viewport
-			console.log('  - Pausing globe render loop');
+			
 			globeInstance.pauseAnimation();
 		} else {
 			// Resume rendering when back in viewport
-			console.log('  - Resuming globe render loop');
+			
 			globeInstance.resumeAnimation();
 		}
 	});
@@ -610,7 +610,7 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	$effect(() => {
 		// Wait for globe to be initialized before handling autoplay
 		if (!globeInstance || !globeInitialized) {
-			console.log('🔄 Autoplay effect: Waiting for initialization');
+			
 			return;
 		}
 
@@ -619,54 +619,54 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 		// Use untrack to read pausedByUser to avoid infinite loop
 		const pausedByUser = untrack(() => isPausedByInteraction);
 
-		console.log('🔄 Autoplay state effect triggered');
-		console.log('  - autoplayEnabled:', autoplayEnabled);
-		console.log('  - hasLocations:', hasLocations);
-		console.log('  - effectiveLocations.length:', effectiveLocations.length);
-		console.log('  - isInViewport:', isInViewport);
-		console.log('  - pausedByUser:', pausedByUser);
-		console.log('  - isAutoPlaying:', untrack(() => isAutoPlaying));
-		console.log('  - autoplay object exists:', !!autoplay);
-		console.log('  - autoplay.interval:', autoplay?.interval);
-		console.log('  - autoplay.startDelay:', autoplay?.startDelay);
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 
 		// Only enable autoplay when both: autoplayEnabled prop is true AND globe is in viewport AND not paused by user
 		if (autoplayEnabled && hasLocations && autoplay && isInViewport && !pausedByUser) {
 			const interval = autoplay.interval ?? 3000;
 			const startDelay = autoplay.startDelay ?? 0;
 
-			console.log('  ✅ All conditions met for autoplay');
-			console.log('  - interval:', interval);
-			console.log('  - startDelay:', startDelay);
-			console.log('  - isFirstAutoplayCycle:', untrack(() => isFirstAutoplayCycle));
+			
+			
+			
+			
 
 			// Only start if not already playing
 			if (!untrack(() => isAutoPlaying)) {
-				console.log('  - Not currently playing, will start autoplay');
+				
 				// On first start, use startDelay; on subsequent starts (after scrolling back), start immediately
 				const delay = untrack(() => isFirstAutoplayCycle) ? startDelay : 0;
-				console.log('  - Calculated delay:', delay);
+				
 				untrack(() => startAutoPlay(interval, delay));
 			} else {
-				console.log('  - Already playing, skipping start call');
+				
 			}
 		} else if (!pausedByUser) {
-			console.log('  ❌ Conditions NOT met for autoplay:');
-			console.log('     - autoplayEnabled:', autoplayEnabled);
-			console.log('     - hasLocations:', hasLocations);
-			console.log('     - autoplay exists:', !!autoplay);
-			console.log('     - isInViewport:', isInViewport);
-			console.log('     - Calling stopAutoPlay()');
+			
+			
+			
+			
+			
+			
 			// Only stop autoplay automatically when disabled, no locations, or out of viewport
 			// Do NOT stop if paused by user interaction (let the resume timer handle it)
 			untrack(() => stopAutoPlay());
 		} else {
-			console.log('  ⏸️ Paused by user interaction - not calling stopAutoPlay()');
-			console.log('     - Resume timer will handle restart');
+			
+			
 		}
 
 		return () => {
-			console.log('🧹 Autoplay state effect cleanup called');
+			
 			untrack(() => stopAutoPlay());
 		};
 	});
@@ -679,34 +679,34 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 		const autoplayConfig = untrack(() => mergedConfig.autoplay);
 
 		if (event.key === 'ArrowLeft') {
-			console.log('⬅️ Arrow Left pressed');
+			
 			prevLocation();
 			event.preventDefault();
 
 			// Handle pause on interaction
-			console.log('  - pauseOnInteraction:', autoplayConfig?.pauseOnInteraction);
-			console.log('  - isAutoPlaying:', isAutoPlaying);
-			console.log('  - resumeDelay:', autoplayConfig?.resumeDelay);
+			
+			
+			
 			
 			if (autoplayConfig?.pauseOnInteraction && isAutoPlaying) {
-				console.log('  - Pausing autoplay due to keyboard interaction');
+				
 				pauseAutoPlay();
 				if (autoplayConfig.resumeDelay) {
 					scheduleResumeAutoPlay(autoplayConfig.interval ?? 3000, autoplayConfig.resumeDelay);
 				}
 			}
 		} else if (event.key === 'ArrowRight') {
-			console.log('➡️ Arrow Right pressed');
+			
 			nextLocation();
 			event.preventDefault();
 
 			// Handle pause on interaction
-			console.log('  - pauseOnInteraction:', autoplayConfig?.pauseOnInteraction);
-			console.log('  - isAutoPlaying:', isAutoPlaying);
-			console.log('  - resumeDelay:', autoplayConfig?.resumeDelay);
+			
+			
+			
 			
 			if (autoplayConfig?.pauseOnInteraction && isAutoPlaying) {
-				console.log('  - Pausing autoplay due to keyboard interaction');
+				
 				pauseAutoPlay();
 				if (autoplayConfig.resumeDelay) {
 					scheduleResumeAutoPlay(autoplayConfig.interval ?? 3000, autoplayConfig.resumeDelay);
@@ -1094,7 +1094,7 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 			currentMqXl !== lastMqXl;
 
 		if (breakpointChanged) {
-			console.log('📱 Media query breakpoint changed, recreating globe...');
+			
 
 			// Defer recreation to avoid blocking
 			queueMicrotask(() => {
@@ -1217,13 +1217,13 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 			const cfg = untrack(() => mergedConfig);
 			const altitude = cfg.globe?.altitude ?? 0.5;
 
-			console.log('🌍 Initializing globe with config:', cfg);
+			
 
 			try {
 				const imageUrl = cfg.globe?.image ?? '';
 				const isSVG = imageUrl.toLowerCase().endsWith('.svg');
 
-				console.log('🖼️ Image URL:', imageUrl, 'isSVG:', isSVG);
+				
 
 				globe = new Globe(globeContainer)
 					.backgroundColor('rgba(0,0,0,0)')
@@ -1234,11 +1234,11 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 					.atmosphereColor(cfg.atmosphere?.color ?? 'lightskyblue')
 					.atmosphereAltitude(cfg.atmosphere?.altitude ?? 0.15);
 
-				console.log('✅ Globe instance created:', globe);
+				
 
 				// For SVG, convert to high-res PNG data URL for Globe.gl
 				if (imageUrl && isSVG) {
-					console.log('🌍 Loading SVG texture:', imageUrl);
+					
 
 					// Load SVG and convert to ultra-high quality canvas texture (16K resolution!)
 					loadSVGAsCanvasTexture(imageUrl)
@@ -1248,23 +1248,16 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 								return;
 							}
 
-							console.log('📦 16K Canvas texture loaded, converting to PNG data URL...');
+							
 
 							// Convert the canvas to a data URL that Globe.gl can use
 							const canvas = canvasTexture.image as HTMLCanvasElement;
 							const dataUrl = canvas.toDataURL('image/png', 1.0); // Maximum quality, no compression
 
-							console.log(
-								'🖼️ 16K PNG data URL created (nearest-neighbor filtering for crispness), length:',
-								dataUrl.length
-							);
 
 							// Apply using Globe.gl's standard texture loading system
 							globe.globeImageUrl(dataUrl);
 
-							console.log(
-								'✅ 16K texture applied via globeImageUrl() - should be ultra crisp now!'
-							);
 
 							// Wait a moment for Globe.gl to apply the texture, then customize material
 							setTimeout(() => {
@@ -1278,34 +1271,34 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 
 								// Access and customize the material after Globe.gl sets it up
 								const globeMaterial = globe.globeMaterial() as THREE.MeshPhongMaterial;
-								console.log('🎨 Customizing globe material:', globeMaterial);
+								
 
 								// Apply custom material properties for SVG styling
 								if (color !== 0xffffff) {
 									globeMaterial.color = new THREE.Color(color);
-									console.log('🎨 Applied color:', color);
+									
 								}
 								if (emissive !== 0x000000) {
 									globeMaterial.emissive = new THREE.Color(emissive);
 									globeMaterial.emissiveIntensity = emissiveIntensity;
-									console.log('✨ Applied emissive:', emissive, 'intensity:', emissiveIntensity);
+									
 								}
 
 								globeMaterial.needsUpdate = true;
-								console.log('✅ Material customization complete');
+								
 							}, 200);
 						})
 						.catch((error) => {
 							console.error('❌ Failed to load SVG texture:', error);
 							// Fallback to direct URL loading
 							if (globe) {
-								console.log('🔄 Falling back to direct URL loading...');
+								
 								globe.globeImageUrl(imageUrl);
 							}
 						});
 				} else if (imageUrl) {
 					// For non-SVG images, use standard texture approach
-					console.log('🖼️ Loading standard image texture:', imageUrl);
+					
 					globe.globeImageUrl(imageUrl);
 				} // Set a single, moderately bright ambient light to make rings/labels visible
 				const ambientLight = new THREE.AmbientLight(0xffffff, 2);
@@ -1330,7 +1323,7 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 					// HEXAGONS: Base solid countries (low altitude)
 					// Check if hexPolygon is enabled (default to true if not specified)
 					if (cfg.hexPolygon && cfg.hexPolygon.enabled !== false) {
-						console.log('✅ Rendering hexagon layer');
+						
 						globe
 							.hexPolygonsData(data.features || data)
 							.hexPolygonGeoJsonGeometry('geometry')
@@ -1344,14 +1337,14 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 							)
 							.hexPolygonsTransitionDuration(cfg.hexPolygon?.transitionDuration ?? 0);
 					} else if (cfg.hexPolygon && cfg.hexPolygon.enabled === false) {
-						console.log('⚠️ Hexagon layer disabled for performance');
+						
 						globe.hexPolygonsData([]); // Clear any existing hexagons
 					}
 
 					// POLYGONS: Blue glow effect (higher altitude, transparent cap, glowing sides)
 					// Check if polygon is enabled (default to true if not specified)
 					if (cfg.polygon && cfg.polygon.enabled !== false) {
-						console.log('✅ Rendering polygon glow layer');
+						
 						const sideColor = cfg.polygon.sideColor ?? 'rgba(21, 93, 252, 0.6)'; // Blue with 60% opacity
 						const capColor = cfg.polygon.capColor ?? 'rgba(0, 0, 0, 0)'; // Fully transparent
 
@@ -1363,7 +1356,7 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 							.polygonAltitude(cfg.polygon.altitude ?? 0.01)
 							.polygonsTransitionDuration(cfg.polygon.transitionDuration ?? 0);
 					} else if (cfg.polygon && cfg.polygon.enabled === false) {
-						console.log('⚠️ Polygon glow layer disabled for performance');
+						
 						globe.polygonsData([]); // Clear any existing polygons
 					}
 				}
@@ -1508,13 +1501,13 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 						markerKey(marker);
 
 						marker.onclick = () => {
-							console.log('🖱️ Marker clicked');
+							
 							const idx = effectiveLocations.findIndex(
 								(loc) =>
 									parseFloat(String(loc.lat)) === parseFloat(String(d.lat)) &&
 									parseFloat(String(loc.lng)) === parseFloat(String(d.lng))
 							);
-							console.log('  - Found location index:', idx);
+							
 							
 							if (idx >= 0) {
 								// Set flag to bypass arc delay for immediate activation
@@ -1523,12 +1516,12 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 
 								// Handle pause on interaction
 								const autoplayConfig = mergedConfig.autoplay;
-								console.log('  - pauseOnInteraction:', autoplayConfig?.pauseOnInteraction);
-								console.log('  - isAutoPlaying:', isAutoPlaying);
-								console.log('  - resumeDelay:', autoplayConfig?.resumeDelay);
+								
+								
+								
 								
 								if (autoplayConfig?.pauseOnInteraction && isAutoPlaying) {
-									console.log('  - Pausing autoplay due to marker click');
+									
 									pauseAutoPlay();
 									if (autoplayConfig.resumeDelay) {
 										scheduleResumeAutoPlay(
@@ -1592,14 +1585,14 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 				globe.controls().enableZoom = false;
 				globeInstance = globe;
 
-				console.log('✅ Globe fully initialized and controls configured');
-				console.log('📊 Globe renderer:', globe.renderer());
-				console.log('🎬 Globe scene:', globe.scene());
+				
+				
+				
 
 				// Force a render to make sure the globe is visible
 				setTimeout(() => {
 					if (globe) {
-						console.log('🔄 Forcing globe render...');
+						
 						globe.renderer().render(globe.scene(), globe.camera());
 					}
 				}, 100);
@@ -1636,15 +1629,15 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 
 		// Set pre-loaded data immediately (e.g., when globe is recreated after being destroyed)
 		if (locationsNeedLoading) {
-			console.log('✅ Setting locations from props');
+			
 			processedLocations = locs;
 		}
 		if (polygonsNeedLoading) {
-			console.log('✅ Setting polygons from props');
+			
 			polygonData = polygonUrl;
 		}
 		if (portsNeedLoading) {
-			console.log('✅ Setting ports from props');
+			
 			processedPorts = ports;
 		}
 
@@ -1654,12 +1647,12 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 		const shouldFetchPorts = ports && typeof ports === 'string' && processedPorts.length === 0;
 
 		if (shouldFetchLocations) {
-			console.log('📡 Fetching locations from URL...');
+			
 			fetch(locs as string)
 				.then((res) => res.json())
 				.then((data) => {
 					processedLocations = data;
-					console.log('✅ Locations fetched');
+					
 				})
 				.catch((err) => {
 					console.error('Failed to fetch locations:', err);
@@ -1668,12 +1661,12 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 		}
 
 		if (shouldFetchPolygons) {
-			console.log('📡 Fetching polygons from URL...');
+			
 			fetch(polygonUrl as string)
 				.then((res) => res.json())
 				.then((data) => {
 					polygonData = data;
-					console.log('✅ Polygons fetched');
+					
 				})
 				.catch((err) => {
 					console.error('Failed to load polygon data:', err);
@@ -1682,12 +1675,12 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 		}
 
 		if (shouldFetchPorts) {
-			console.log('📡 Fetching ports from URL...');
+			
 			fetch(ports as string)
 				.then((res) => res.json())
 				.then((data) => {
 					processedPorts = data;
-					console.log('✅ Ports fetched');
+					
 				})
 				.catch((err) => {
 					console.error('Failed to fetch ports:', err);
