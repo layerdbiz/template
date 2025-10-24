@@ -143,6 +143,34 @@
 		}
 	}
 
+	// Control autoplay/autoscroll based on intersection (passed from Component observe)
+	function controlPlayback(isIntersecting: boolean) {
+		if (!emblaApi || !isInitialized) return;
+
+		// Get the appropriate plugin
+		if (autoplay || variant === 'autoplay') {
+			const autoplayPlugin = emblaApi.plugins()?.autoplay;
+			if (autoplayPlugin) {
+				if (isIntersecting) {
+					autoplayPlugin.play();
+				} else {
+					autoplayPlugin.stop();
+				}
+			}
+		}
+
+		if (isAutoscroll) {
+			const autoScrollPlugin = emblaApi.plugins()?.autoScroll;
+			if (autoScrollPlugin) {
+				if (isIntersecting) {
+					autoScrollPlugin.play();
+				} else {
+					autoScrollPlugin.stop();
+				}
+			}
+		}
+	}
+
 	// Reactive effect to wrap children when content changes
 	$effect(() => {
 		if (containerRef) {
@@ -330,12 +358,23 @@
 <!-- Template 
 ::::::::::::::::::::::::::::::::::::::::::::: -->
 <Component
+	observe
 	{...props}
 	class="slider embla select-none overflow-hidden {isAutoscroll ? '' : 'cursor-grab'} {props.class}"
 >
-	{#snippet component({ props }: { props: any })}
+	{#snippet component({
+		props: componentProps,
+		observe: observeInstance
+	}: {
+		props: any;
+		observe?: import('@layerd/ui').ObserveClass;
+	})}
+		{@const isIntersecting = observeInstance?.isIntersecting ?? true}
+		{#if observeInstance}
+			{@render intersectionEffect(isIntersecting)}
+		{/if}
 		<div
-			{...props}
+			{...componentProps}
 			use:emblaCarouselSvelte={emblaConfig}
 			onemblaInit={onInit}
 		>
@@ -350,6 +389,16 @@
 		</div>
 	{/snippet}
 </Component>
+
+{#snippet intersectionEffect(isIntersecting: boolean)}
+	{(() => {
+		// Use $effect to control playback when intersection changes
+		$effect(() => {
+			controlPlayback(isIntersecting);
+		});
+		return '';
+	})()}
+{/snippet}
 
 <style lang="postcss">
 	@reference "@layerd/ui/ui.css";
