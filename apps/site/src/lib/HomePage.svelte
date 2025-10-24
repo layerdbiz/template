@@ -17,8 +17,8 @@
 		Flex,
 		Input,
 		Slider,
-		navigationState
-		// Globe
+		navigationState,
+		Globe
 	} from '@layerd/ui';
 	import { getTeamData } from '$lib/team/team.remote';
 	import { getFaqData } from '$lib/faq/faq.remote';
@@ -34,7 +34,7 @@
 	// ✅ READ REACTIVE STATE BEFORE ANY AWAITS - This prevents reactivity loss!
 	// These values are read at the top of the component, before any async boundaries
 	let currentHash = $derived(navigationState.currentHash);
-	let activeSection = $derived(navigationState.activeSection);
+	let activeSection = $derived(navigationState.activeSection ?? 'Home'); // Default to 'Home' on initial load
 	let stickyActiveSection = $derived(navigationState.stickyActiveSection);
 
 	// ✅ HOIST ALL DATA FETCHING TO TOP - Prevents component reactivity loss warnings
@@ -195,6 +195,7 @@
 		<!-- title -->
 		<div class="text-base-50 flex flex-col gap-2 text-center">
 			<Text
+				observe
 				class="bleed order-2 text-balance text-2xl font-black uppercase leading-tight tracking-tight text-white lg:text-[5vw]"
 				h1={getSection('Home')?.title ?? 'Hero Title'}
 				typewriter={{
@@ -233,13 +234,25 @@
 
 		<!-- buttons -->
 		<div class="pointer-events-auto flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:gap-6">
+			{#snippet shipIcon()}
+				<svg
+					viewBox="0 0 32 32"
+					fill="currentColor"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M5.29355 16.7172V8.05868C5.29355 7.69987 5.42796 7.35576 5.6672 7.10204C5.90645 6.84832 6.23094 6.70579 6.56928 6.70579H12.9479V4H18.0509V6.70579H24.4295C24.7679 6.70579 25.0924 6.84832 25.3316 7.10204C25.5709 7.35576 25.7053 7.69987 25.7053 8.05868V16.7172L27.0907 17.1582C27.4049 17.2582 27.6707 17.4826 27.833 17.7849C27.9952 18.0872 28.0415 18.4442 27.962 18.7817L26.0267 26.9911C24.9833 27.048 23.9426 26.8317 22.9966 26.3613C22.0506 25.8908 21.2283 25.1806 20.6023 24.2934C20.0082 25.1335 19.2377 25.8154 18.352 26.285C17.4663 26.7547 16.4897 26.9992 15.4994 26.9992C14.5092 26.9992 13.5325 26.7547 12.6468 26.285C11.7611 25.8154 10.9906 25.1335 10.3965 24.2934C9.77052 25.1806 8.94825 25.8908 8.00224 26.3613C7.05623 26.8317 6.01556 27.048 4.97207 26.9911L3.03806 18.7817C2.95857 18.4444 3.00461 18.0876 3.16661 17.7853C3.32862 17.483 3.59415 17.2584 3.90811 17.1582L5.29355 16.7172ZM7.84501 15.9055L15.4994 13.4703L19.0128 14.5877L21.3206 15.3224L23.1538 15.9055V9.41157H7.84501V15.9055Z"
+					/>
+				</svg>
+			{/snippet}
+
 			<Button
 				size={mq.lg ? 'lg' : 'xl'}
 				primary
 				variant="icon text"
-				icon="icon-[mdi--play-circle-outline]"
+				icon={shipIcon}
 				label="Learn More"
-				class="mx-auto !w-52  lg:min-w-72"
+				class="mx-auto !w-52 lg:min-w-72"
 				href="#About"
 			/>
 			<Button
@@ -254,8 +267,6 @@
 	</section>
 
 	<!-- globe -->
-	<script>
-		/*
 	<Globe
 		startLocationId="4"
 		data={{
@@ -357,15 +368,14 @@
 			duration: 1000
 		}}
 		autoplay={{
-			enabled: true,
-			interval: 5000,
-			pauseOnInteraction: true,
-			startDelay: 3000,
-			resumeDelay: 60000
+			enabled: activeSection === 'Home', // Only autoplay when Home section is active
+			interval: 5000, // 5 seconds between rotations
+			pauseOnInteraction: true, // Pause when user interacts
+			startDelay: 3000, // Initial delay before starting autoplay
+			resumeDelay: 30000 // Resume autoplay after 30 seconds of inactivity
 		}}
 	/>
-	*/
-	</script>
+
 	<!-- photo vignette 
 	------------------------------------------>
 	<Image
@@ -482,11 +492,11 @@
 <!-- ABOUT 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
 <Section
+	id="About"
 	divider
 	class="flex flex-col"
 >
 	<Title
-		id="About"
 		title={getSection('About')?.title ?? 'About Title'}
 		subtitle={getSection('About')?.subtitle ?? 'About Subtitle'}
 	/>
@@ -545,6 +555,7 @@
 <!-- SERVICES 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
 <Section
+	id="Services"
 	divider="both"
 	dividerTop={{
 		negative: true
@@ -556,7 +567,6 @@
 	class="bg-base-200-700 flex flex-col"
 >
 	<Title
-		id="Services"
 		title={getSection('Services')?.title ?? 'Services Title'}
 		subtitle={getSection('Services')?.subtitle ?? 'Services Subtitle'}
 	/>
@@ -578,6 +588,7 @@
 <!-- CONTACT 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
 <Section
+	id="Contact"
 	divider="both"
 	dividerTop={{
 		svg: 'text-base-200-700',
@@ -588,7 +599,6 @@
 	}}
 >
 	<Title
-		id="Contact"
 		title={getSection('Contact')?.title ?? 'Contact Title'}
 		subtitle={getSection('Contact')?.subtitle ?? 'Contact Subtitle'}
 	/>
@@ -830,12 +840,12 @@
 <!-- FAQ 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
 <Section
+	id="FAQ"
 	divider
 	dividerBottom={{ svg: 'text-base-950' }}
 	class="bg-base-200-700 flex flex-col gap-5"
 >
 	<Title
-		id="FAQ"
 		title={getSection('FAQ')?.title ?? 'FAQ Title'}
 		subtitle={getSection('FAQ')?.subtitle ?? 'FAQ Subtitle'}
 	/>
