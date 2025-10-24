@@ -478,15 +478,23 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	 * Stop auto-playing
 	 */
 	function stopAutoPlay() {
+		console.log('🛑 stopAutoPlay() called');
+		console.log('  - autoPlayInterval exists:', !!autoPlayInterval);
+		console.log('  - resumeTimeout exists:', !!resumeTimeout);
+		console.log('  - isAutoPlaying before:', isAutoPlaying);
+		
 		if (autoPlayInterval) {
 			clearInterval(autoPlayInterval);
 			autoPlayInterval = null;
+			console.log('  - Cleared autoPlayInterval');
 		}
 		if (resumeTimeout) {
 			clearTimeout(resumeTimeout);
 			resumeTimeout = null;
+			console.log('  - Cleared resumeTimeout');
 		}
 		isAutoPlaying = false;
+		console.log('  - isAutoPlaying after:', isAutoPlaying);
 	}
 
 	/**
@@ -579,145 +587,86 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	// Track if globe should be animating
 	let shouldAnimate = $state(true);
 
-	// Track if globe should be mounted in DOM (only when in viewport)
-	let shouldMountGlobe = $state(true);
-	
-	// Track if we should defer mounting to prevent blocking main thread
-	let deferredMountHandle: number | ReturnType<typeof setTimeout> | null = null;
-
-	// Handle THREE.js renderer and globe lifecycle based on viewport visibility
+	// Control globe render loop based on viewport visibility
 	$effect(() => {
-		// Get current activeSection from navigationState
-		const currentSection = navigationState.activeSection;
-		const isInViewport = currentSection === 'Home';
+		if (!globeInstance || !globeInitialized) return;
 
-		console.log('👁️ Viewport visibility changed:', isInViewport ? 'IN VIEW' : 'OUT OF VIEW');
+		const isInViewport = navigationState.activeSection === 'Home';
+
+		console.log('🎬 Globe render control:', isInViewport ? 'RESUME' : 'PAUSE');
 
 		if (!isInViewport) {
-			// Clear any pending deferred mount
-			if (deferredMountHandle) {
-				if (typeof deferredMountHandle === 'number' && 'cancelIdleCallback' in window) {
-					window.cancelIdleCallback(deferredMountHandle);
-				} else {
-					clearTimeout(deferredMountHandle as ReturnType<typeof setTimeout>);
-				}
-				deferredMountHandle = null;
-			}
-			
-			if (globeInstance) {
-				// Completely destroy the globe when out of view
-				console.log('🗑️ Destroying globe (out of view)');
-				
-				// Stop all animations
-				shouldAnimate = false;
-				stopAutoPlay();
-				
-				// Clear all timeouts and state
-				arcCleanupTimeouts.forEach((timeout) => clearTimeout(timeout));
-				arcCleanupTimeouts.clear();
-				activeArcs = [];
-				activeRings = [];
-				
-				// Destroy globe instance
-				globeInstance._destructor();
-				globeInstance = null;
-				
-				// Clear marker elements
-				markerElements.clear();
-				
-				// Reset all initialization flags for fresh start when coming back
-				globeInitialized = false;
-				initializationStarted = false;
-				labelsInitialized = false;
-				labelOpacityMap = new Map();
-				
-				// Reset data to trigger reload from props/URLs
-				polygonData = null;
-				processedLocations = [];
-				processedPorts = [];
-				
-				// Reset location state
-				previousLocation = null;
-				displayPreviousLocation = null;
-				currentIndex = -1;
-				isPausedByInteraction = false;
-				
-				console.log('✅ Globe destroyed completely');
-			}
-			
-			// Unmount DOM elements immediately
-			shouldMountGlobe = false;
+			// Pause rendering completely when out of viewport
+			console.log('  - Pausing globe render loop');
+			globeInstance.pauseAnimation();
 		} else {
-			// DEFER mounting to prevent blocking main thread during navigation
-			// Use requestIdleCallback if available, otherwise setTimeout
-			console.log('⏳ Deferring globe mount to prevent blocking...');
-			
-			if ('requestIdleCallback' in window) {
-				deferredMountHandle = window.requestIdleCallback(() => {
-					console.log('✅ Mounting globe after idle callback');
-					shouldMountGlobe = true;
-					deferredMountHandle = null;
-				}, { timeout: 200 }); // Force after 200ms if browser stays busy
-			} else {
-				deferredMountHandle = setTimeout(() => {
-					console.log('✅ Mounting globe after timeout');
-					shouldMountGlobe = true;
-					deferredMountHandle = null;
-				}, 100); // Fallback delay
-			}
+			// Resume rendering when back in viewport
+			console.log('  - Resuming globe render loop');
+			globeInstance.resumeAnimation();
 		}
-
-		// When coming back into view, the initialization effect will recreate everything
-		// because initializationStarted = false now
 	});
 
-	// Handle autoplay state changes (separate effect to avoid conflicts)
+	// Handle autoplay state changes based on viewport and config
 	$effect(() => {
 		// Wait for globe to be initialized before handling autoplay
-		if (!globeInstance || !globeInitialized) return;
+		if (!globeInstance || !globeInitialized) {
+			console.log('🔄 Autoplay effect: Waiting for initialization');
+			return;
+		}
 
 		const hasLocations = effectiveLocations.length > 0;
 		const isInViewport = navigationState.activeSection === 'Home';
 		// Use untrack to read pausedByUser to avoid infinite loop
 		const pausedByUser = untrack(() => isPausedByInteraction);
 
-		console.log('🔄 Autoplay effect triggered');
+		console.log('🔄 Autoplay state effect triggered');
 		console.log('  - autoplayEnabled:', autoplayEnabled);
 		console.log('  - hasLocations:', hasLocations);
+		console.log('  - effectiveLocations.length:', effectiveLocations.length);
 		console.log('  - isInViewport:', isInViewport);
 		console.log('  - pausedByUser:', pausedByUser);
 		console.log('  - isAutoPlaying:', untrack(() => isAutoPlaying));
+		console.log('  - autoplay object exists:', !!autoplay);
+		console.log('  - autoplay.interval:', autoplay?.interval);
+		console.log('  - autoplay.startDelay:', autoplay?.startDelay);
 
 		// Only enable autoplay when both: autoplayEnabled prop is true AND globe is in viewport AND not paused by user
 		if (autoplayEnabled && hasLocations && autoplay && isInViewport && !pausedByUser) {
 			const interval = autoplay.interval ?? 3000;
 			const startDelay = autoplay.startDelay ?? 0;
 
-			console.log('  ✅ Conditions met for autoplay');
+			console.log('  ✅ All conditions met for autoplay');
 			console.log('  - interval:', interval);
 			console.log('  - startDelay:', startDelay);
+			console.log('  - isFirstAutoplayCycle:', untrack(() => isFirstAutoplayCycle));
 
 			// Only start if not already playing
 			if (!untrack(() => isAutoPlaying)) {
-				console.log('  - Not playing, will start autoplay');
+				console.log('  - Not currently playing, will start autoplay');
 				// On first start, use startDelay; on subsequent starts (after scrolling back), start immediately
 				const delay = untrack(() => isFirstAutoplayCycle) ? startDelay : 0;
-				console.log('  - Using delay:', delay);
+				console.log('  - Calculated delay:', delay);
 				untrack(() => startAutoPlay(interval, delay));
 			} else {
-				console.log('  - Already playing, skipping start');
+				console.log('  - Already playing, skipping start call');
 			}
 		} else if (!pausedByUser) {
-			console.log('  ❌ Conditions NOT met, stopping autoplay (pausedByUser is false)');
+			console.log('  ❌ Conditions NOT met for autoplay:');
+			console.log('     - autoplayEnabled:', autoplayEnabled);
+			console.log('     - hasLocations:', hasLocations);
+			console.log('     - autoplay exists:', !!autoplay);
+			console.log('     - isInViewport:', isInViewport);
+			console.log('     - Calling stopAutoPlay()');
 			// Only stop autoplay automatically when disabled, no locations, or out of viewport
 			// Do NOT stop if paused by user interaction (let the resume timer handle it)
 			untrack(() => stopAutoPlay());
 		} else {
-			console.log('  ⏸️ Paused by user, not stopping (let resume timer handle it)');
+			console.log('  ⏸️ Paused by user interaction - not calling stopAutoPlay()');
+			console.log('     - Resume timer will handle restart');
 		}
 
 		return () => {
-			console.log('🧹 Autoplay effect cleanup');
+			console.log('🧹 Autoplay state effect cleanup called');
 			untrack(() => stopAutoPlay());
 		};
 	});
@@ -1754,16 +1703,6 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 		return () => {
 			window.removeEventListener('keydown', handleKeyboard);
 
-			// Clear deferred mount handle (either requestIdleCallback or setTimeout)
-			if (deferredMountHandle) {
-				if (typeof deferredMountHandle === 'number' && 'cancelIdleCallback' in window) {
-					window.cancelIdleCallback(deferredMountHandle);
-				} else {
-					clearTimeout(deferredMountHandle as ReturnType<typeof setTimeout>);
-				}
-				deferredMountHandle = null;
-			}
-
 			// Stop auto-play
 			stopAutoPlay();
 
@@ -1789,30 +1728,28 @@ Interactive 3D globe visualization component with support for locations, arcs, r
 	bind:innerHeight={windowHeight}
 />
 
-{#if shouldMountGlobe}
+<div
+	class="bleed"
+	style="display: contents;"
+>
 	<div
-		class="bleed"
-		style="display: contents;"
+		class="globe-wrapper absolute inset-0 h-svh w-svw overflow-clip {className}"
+		class:fade-in={isGlobeReady}
+		class:opacity-0={!isGlobeReady}
 	>
+		<Image
+			bg
+			class="globe-atmosphere -z-1 pointer-events-none h-svh w-svw overflow-clip"
+			overlay="bg-radial from-primary to-transparent from-30% to-60% translate-y-1/2 scale-x-250 scale-y-95 md:scale-y-100 md:scale-x-125 absolute bottom-0 origin-bottom opacity-60 block"
+		/>
 		<div
-			class="globe-wrapper absolute inset-0 h-svh w-svw overflow-clip {className}"
-			class:fade-in={isGlobeReady}
-			class:opacity-0={!isGlobeReady}
-		>
-			<Image
-				bg
-				class="globe-atmosphere -z-1 pointer-events-none h-svh w-svw overflow-clip"
-				overlay="bg-radial from-primary to-transparent from-30% to-60% translate-y-1/2 scale-x-250 scale-y-95 md:scale-y-100 md:scale-x-125 absolute bottom-0 origin-bottom opacity-60 block"
-			/>
-			<div
-				class="globe-container absolute inset-0 h-full w-full"
-				class:pointer-events-auto={isGlobeReady}
-				class:pointer-events-none={!isGlobeReady}
-				{@attach attachGlobeContainer}
-			></div>
-		</div>
+			class="globe-container absolute inset-0 h-full w-full"
+			class:pointer-events-auto={isGlobeReady}
+			class:pointer-events-none={!isGlobeReady}
+			{@attach attachGlobeContainer}
+		></div>
 	</div>
-{/if}
+</div>
 
 <style lang="postcss">
 	@reference "@layerd/ui/ui.css";
