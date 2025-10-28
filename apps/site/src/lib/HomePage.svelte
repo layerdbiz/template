@@ -29,7 +29,12 @@
 	import { getSectionsData } from '$lib/sections/sections.remote';
 	import { submitContactData } from '$lib/contact/contact.remote';
 	import { validateField } from '$lib/contact/validation';
-	import { getGlobeLocations, getGlobePolygons, getGlobePorts } from '$lib/globe/globe.remote';
+	import {
+		getGlobeLocations,
+		getGlobePolygons,
+		getGlobePorts,
+		getGlobeStatsData
+	} from '$lib/globe/globe.remote';
 
 	// ✅ READ REACTIVE STATE BEFORE ANY AWAITS - This prevents reactivity loss!
 	// These values are read at the top of the component, before any async boundaries
@@ -51,18 +56,19 @@
 	const globeLocations = await getGlobeLocations();
 	const globePolygons = await getGlobePolygons();
 	const globePorts = await getGlobePorts();
+	const globeStatsData = await getGlobeStatsData();
 
 	// Helper function for cleaner section access (now synchronous since data is already loaded)
 	function getSection(name: string) {
 		return sectionsData.find((s) => s.section === name);
 	}
 
-	// Stats
+	// Stats - dynamically populated from globe data
 	const stats = [
-		{ value: 100, label: 'Years' },
-		{ value: 5, label: 'Continents' },
-		{ value: 11, label: 'Locations' },
-		{ value: 69, label: 'Ports' }
+		{ value: 100, label: 'Years' }, // Static value - company years
+		{ value: globeStatsData.continents, label: 'Continents' }, // Dynamic from locations
+		{ value: globeStatsData.locations, label: 'Locations' }, // Dynamic from locations
+		{ value: globeStatsData.ports, label: 'Ports' } // Dynamic from ports
 	];
 
 	// Form clearing logic
