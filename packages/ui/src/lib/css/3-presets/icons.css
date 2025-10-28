@@ -849,3 +849,9 @@
 .icon-in {
 	@apply icon-[flagpack--in];
 }
+.icon-tt {
+	@apply icon-[flagpack--tt];
+}
+.icon-sr {
+	@apply icon-[flagpack--sr];
+}

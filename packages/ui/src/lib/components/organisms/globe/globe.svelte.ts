@@ -24,7 +24,7 @@ export interface Port {
 	location: string;
 	port: string;
 	city: string;
-	state_province?: string;
+	admin_division?: string;
 	country: string;
 	lat: number | string;
 	lng: number | string;
