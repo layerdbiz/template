@@ -183,7 +183,7 @@ Every time you write a Svelte component or a Svelte module you MUST invoke the `
 This is the task you will work on:
 
 <task>
-i need to generate custom html email signatures inside the `#apps/site/src/routes/(company)/[emails]` route using remote functions. The pages should fetch email content from an external API based on the slug parameter and render the email content dynamically. Please create the SvelteKit code needed to implement this functionality, including the remote function to fetch the email content and the Svelte component to display it.
+i need to generate custom html email signatures inside the `#apps/site/src/routes/(company)/[emails]` route using remote functions `query`. The pages should fetch email content from an external API based on the slug parameter and render the email content dynamically. Please create the SvelteKit code needed to implement this functionality, including the remote function to fetch the email content and the Svelte component to display it. 
 
 the json url is: https://sheetari.deno.dev/1BT2OPDOA-sEIF-JkyikVrB3StvsfdJNAnP4ih9bHhj4/
 
