@@ -134,7 +134,7 @@
 		<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="height:48px;">
 			<tbody>
 				<tr>
-					<td width="10" style="height:1px; font-size:1px; line-height:0;">&nbsp;</td>
+					<td width="10">&nbsp;</td>
 					<!-- LOGO (left) -->
 					<td align="left" valign="middle" style="vertical-align:middle;">
 						<a href="https://tridentcubed.com" target="_blank" rel="noopener" style="text-decoration:none;">
@@ -142,21 +142,32 @@
 						</a>
 					</td>
 					<!-- SOCIAL (right) -->
-					<td align="right" valign="middle" style="vertical-align:middle; white-space:nowrap; mso-line-height-rule:exactly; line-height:0; font-size:1px;">
-						<span style="width:6px; height:1px; display:inline-block;">&nbsp;</span>
-						<a style="text-decoration:none; display:inline-block;" href="${t.socialLinks.linkedin}" target="_blank" rel="noopener">
-							<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-linkedin.png" alt="LinkedIn" />
-						</a>
-						<span style="width:6px; height:1px; display:inline-block;">&nbsp;</span>
-						<a style="text-decoration:none; display:inline-block;" href="${t.socialLinks.facebook}" target="_blank" rel="noopener">
-							<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-facebook.png" alt="Facebook" />
-						</a>
-						<span style="width:6px; height:1px; display:inline-block;">&nbsp;</span>
-						<a style="text-decoration:none; display:inline-block;" href="${t.socialLinks.whatsapp}" target="_blank" rel="noopener">
-							<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-whatsapp.png" alt="WhatsApp" />
-						</a>
+					<td align="right" valign="middle" style="vertical-align:middle;">
+						<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="display:inline-block;">
+							<tbody>
+								<tr>
+									<td style="width:20px;">
+										<a style="text-decoration:none; display:block;" href="${t.socialLinks.linkedin}" target="_blank" rel="noopener">
+											<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-linkedin.png" alt="LinkedIn" />
+										</a>
+									</td>
+									<td style="width:6px;">&nbsp;</td>
+									<td style="width:20px;">
+										<a style="text-decoration:none; display:block;" href="${t.socialLinks.facebook}" target="_blank" rel="noopener">
+											<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-facebook.png" alt="Facebook" />
+										</a>
+									</td>
+									<td style="width:6px;">&nbsp;</td>
+									<td style="width:20px;">
+										<a style="text-decoration:none; display:block;" href="${t.socialLinks.whatsapp}" target="_blank" rel="noopener">
+											<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-whatsapp.png" alt="WhatsApp" />
+										</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
 					</td>
-					<td width="16" style="height:1px; font-size:1px; line-height:0;">&nbsp;</td>
+					<td width="16">&nbsp;</td>
 				</tr>
 			</tbody>
 		</table>
