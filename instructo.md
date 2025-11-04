@@ -183,26 +183,194 @@ Every time you write a Svelte component or a Svelte module you MUST invoke the `
 This is the task you will work on:
 
 <task>
-i need to generate custom html email signatures inside the `#apps/site/src/routes/(company)/[emails]` route using remote functions `query`. The pages should fetch email content from an external API based on the slug parameter and render the email content dynamically. Please create the SvelteKit code needed to implement this functionality, including the remote function to fetch the email content and the Svelte component to display it. 
+i need you to create a new svelte organism component for a custom html email signature called `<Email />` to be used inside the #apps/site/src/routes/(company)/[emails]/page.svelte file. the purpose is for the internal team to easily see a preview of the html email and the html code of the html for them to copy/paste into there email client to have uniform html email signatures. the "Preview" and "Code" should be button tabs the user can click on and it will display the preview or code for the user (preview is default). You should NOT create any new components for this and instead use the components that are already available (e.g. link, button, nav, etc.). The only component you can create is the `<Email>` component inside the organisms folder and import it in where needed. The location where this will be used is in `#apps/site/src/routes/(company)/[emails]` route. We need to populate the navigation in a sidebar for getting to each of the emails e.g.:
 
-the json url is: https://sheetari.deno.dev/1BT2OPDOA-sEIF-JkyikVrB3StvsfdJNAnP4ih9bHhj4/
+```markdown
+Emails
+- Person
+  - Cezary Poninski
+  - Duncan Cooke
+  - Hector Ramirez
+  - ...
+- Group
+  - Operations
+  - Project Group
+  - South America
+  - ...
+```
 
-the data looks like this:
+ We will need to create a remote function `query` file to get the data dynamically for display. The pages should fetch email content from an external API based on the slug parameter and render the email content dynamically. Please create the SvelteKit code needed to implement this functionality, including the remote function to fetch the email content and the Svelte component to display it. there's 3 json urls that are need for this:
+
+- person (team email signatures): https://sheetari.deno.dev/1Eauw3boJ1Gu6B78ywFuYB_bE3H1yHZyes0U0Mg9qRUs/person
+- group (company email signature): https://sheetari.deno.dev/1Eauw3boJ1Gu6B78ywFuYB_bE3H1yHZyes0U0Mg9qRUs/group
+- social (company social links and icons): https://sheetari.deno.dev/1BT2OPDOA-sEIF-JkyikVrB3StvsfdJNAnP4ih9bHhj4/social
+
+person json example:
+
+> note: you'll notice that the "group" is a comma separated list of other email addresses associated with the person. these should automatically add the correct html if there's more than one (see html email example code below).
+```json
+[
+  {
+    "id": "4",
+    "photo": null,
+    "rank": "1",
+    "type": "person",
+    "name": "Hector Ramirez",
+    "title": "Partner / Head of Operations",
+    "phone": "+1 (281) 769-8370",
+    "email": "H.Ramirez@TridentCubed",
+    "group": "ops.sa@tridentcubed.com, ops.carib@tridentcubed.com, ops.eu@tridentcubed.com",
+    "location": "Manvel, TX",
+    "slug": "hector-ramirez",
+    "href": "https://www.linkedin.com/in/hector-ramirez-15860543",
+    "src": "https://tridentcubed.com/emails/profile-hector-ramirez.png",
+    "src-old": "https://tridentcubed.com/emails/profile-hector-ramirez.png"
+  },
+]
+```
+
+group json example:
 ```json
 [
   {
     "id": "1",
-    "rank": "1",
-    "type": "person",
-    "name": "Cezary Poninski",
-    "title": "Founder / Managing Partner",
-    "email": "C.Poninski@TridentCubed.com",
-    "location": "Houston, TX",
-    "linkedin": "https://www.linkedin.com/in/cezary-poninski-455b8665",
-    "image": "https://tridentcubed.com/team/cezary-poninski.webp",
+    "photo": null,
+    "type": "group",
+    "shortname": "Operations",
+    "email": "operations@tridentcubed.com",
+    "name": "Trident Cubed",
+    "title": "Your Global Logistics Partner",
+    "phone": "+1 (409) 543-2725",
+    "href": "https://tridentcubed.com",
+    "src": "https://tridentcubed.com/branding/logo.png",
+    "slug": "operations"
   },
 ]
 ```
+
+social json example:
+```json
+[
+  {
+    "id": "1",
+    "icon": null,
+    "name": "LinkedIn",
+    "href": "https://www.linkedin.com/company/trident-cubed-solutions",
+    "src": "https://tridentcubed.com/emails/icon-linkedin.png",
+    "": null
+  },
+]
+```
+
+Here's the HTML emails signature code:
+```html
+<div style="box-sizing:border-box; font-family: Arial, sans-serif; font-size:14px; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; width:100%; margin:0; padding:0;">
+  <!-- HEADER / BODY -->
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="mso-table-lspace:0; mso-table-rspace:0;">
+    <tr>
+      <td colspan="2" style="padding-top:60px; padding-bottom:40px;">
+        Best Regards,
+      </td>
+    </tr>
+
+    <tr>
+			<!-- PHOTO 
+			::::::::::::::::::::::::::::::::::: -->
+      <td style="vertical-align:top; padding-right:10px;">
+				<a href="https://www.linkedin.com/in/michael-boone-79350757" target="_blank" rel="noopener" style="text-decoration:none;">
+					<img src="https://tridentcubed.com/emails/profile-michael-boone.png" alt="Michael Boone" height="132" style="display:block; border:0; outline:none; text-align:center; margin:0 auto;">
+				</a>
+      </td>
+
+      <!-- CONTACT 
+			::::::::::::::::::::::::::::::::::: -->
+      <td style="vertical-align:top; text-decoration:none !important; padding-top:10px; padding-right:10px;">
+				<!-- NAME -->
+        <strong style="font-size:24px; color:#111; font-weight:600; line-height:28px; display:block;">Michael Boone</strong>
+        <span style="color:#00458B; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.2px;">Partner / Business Development</span>
+
+        <!-- INFO -->
+        <div style="padding-top:10px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="font-size:14px; line-height:18px; ">
+            <!-- phone -->
+            <tr>
+              <td style="vertical-align:middle; padding-right:6px;">
+                <a href="tel:+14095432725" style="text-decoration:none;">
+                  <img src="https://tridentcubed.com/emails/icon-phone.png" alt="Phone" width="16" height="16" style="display:block; border:0; outline:none;">
+                </a>
+              </td>
+              <td style="vertical-align:middle;">
+                <a href="tel:+14095432725" style="font-size:12px; color:#6C737E !important; text-decoration:none !important;">+1 409.543.2725</a>
+              </td>
+            </tr>
+            <!-- email -->
+            <tr>
+              <td style="vertical-align:middle; padding-right:6px;">
+                <a href="mailto:m.boone@tridentcubed.com" style="text-decoration:none;">
+                  <img src="https://tridentcubed.com/emails/icon-email.png" alt="Email" width="16" height="16" style="display:block; border:0; outline:none;">
+                </a>
+              </td>
+              <td style="vertical-align:middle;">
+                <a href="mailto:m.boone@tridentcubed.com" style="font-size:12px; color:#6C737E !important; text-decoration:none !important;">M.Boone@TridentCubed.com</a>
+              </td>
+            </tr>
+            <!-- company -->
+            <tr>
+              <td style="vertical-align:middle; padding-right:6px;">
+                <a href="mailto:operations@tridentcubed.com" style="text-decoration:none;">
+                  <img src="https://tridentcubed.com/emails/icon-globe.png" alt="Company Email" width="16" height="16" style="display:block; border:0; outline:none;">
+                </a>
+              </td>
+              <td style="vertical-align:middle;">
+                <a href="mailto:operations@tridentcubed.com" style="font-size:12px; color:#6C737E !important; text-decoration:none !important;">Operations@TridentCubed.com</a>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </td>
+    </tr>
+
+		<!-- SPACER -->
+    <tr>
+      <td colspan="3" style="height:20px; font-size:1px; line-height:0;">&nbsp;</td>
+    </tr>
+  </table>
+	
+	<!-- FOOTER / PILL (bulletproof, vertically centered) -->
+	<div style="border-radius:20px; height:48px; background:black;">
+		<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="height:48px;">
+			<tr>
+				<td width="10" style="height:1px; font-size:1px; line-height:0;">&nbsp;</td>
+				<!-- LOGO (left) -->
+				<td align="left" valign="middle" style="vertical-align:middle;">
+					<a href="https://tridentcubed.com" target="_blank" rel="noopener" style="text-decoration:none;">
+						<img src="https://tridentcubed.com/emails/logo-footer-light.png" alt="Trident Cubed" height="32" style="display:block; border:0; outline:none; height:32px;">
+					</a>
+				</td>
+
+				<!-- SOCIAL (right) -->
+				<td align="right" valign="middle" style="vertical-align:middle; white-space:nowrap; mso-line-height-rule:exactly; line-height:0; font-size:1px;">
+					<span style="width:6px; height:1px; display:inline-block;">&nbsp;</span>
+					<a style="text-decoration:none; display:inline-block;" href="https://www.linkedin.com/company/trident-cubed-solutions" target="_blank" rel="noopener">
+						<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-linkedin.png" alt="LinkedIn">
+					</a>
+					<span style="width:6px; height:1px; display:inline-block;">&nbsp;</span>
+					<a style="text-decoration:none; display:inline-block;" href="https://www.facebook.com/TridentCubed" target="_blank" rel="noopener">
+						<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-facebook.png" alt="Facebook">
+					</a>
+					<span style="width:6px; height:1px; display:inline-block;">&nbsp;</span>
+					<a style="text-decoration:none; display:inline-block;" href="https://wa.me/15705751179" target="_blank" rel="noopener">
+						<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-whatsapp.png" alt="WhatsApp">
+					</a>
+				</td>
+				<td width="16" style="height:1px; font-size:1px; line-height:0;">&nbsp;</td>
+			</tr>
+		</table>
+	</div>
+</div>
+```
+
+I dont want you to write any code to files yet. Let's first discuss the plan so I know you understand. Once I say we're ready, we will begin.
 </task>
 
 If you are not writing the code into a file, once you have the final version of the code ask the user if it wants to generate a playground link to quickly check the code in it and if it answer yes call the `playground-link` tool and return the url to the user nicely formatted. The playground link MUST be generated only once you have the final version of the code and you are ready to share it, it MUST include an entry point file called `App.svelte` where the main component should live. If you have multiple files to include in the playground link you can include them all at the root.
