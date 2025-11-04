@@ -11,6 +11,8 @@
 		variant?: 'panel' | 'tooltip' | 'menu' | 'dialog' | 'sheet' | 'toast';
 
 		// Toggle-specific props
+		/** Whether the toggle content should be open by default */
+		open?: boolean;
 		/** Whether to auto-close other toggles when this one opens */
 		autoClose?: boolean;
 		/** How the toggle is triggered */
@@ -63,6 +65,7 @@
 		// Toggle-specific props
 		variant = 'panel',
 		button = {},
+		open = false,
 		autoClose = true,
 		trigger = 'click',
 		position = 'relative',
@@ -187,7 +190,7 @@
 	// Element references and state
 	let toggleElement = $state<HTMLElement>();
 	let contentElement = $state<HTMLElement>();
-	let isToggleOpen = $state(false);
+	let isToggleOpen = $state(open);
 
 	// Use useEventListener for comprehensive click handling and nested toggle management
 	useEventListener(

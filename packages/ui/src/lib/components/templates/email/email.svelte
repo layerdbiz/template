@@ -1,0 +1,183 @@
+<script lang="ts">
+	/**
+	 * @tags email, signature
+	 * @layout horizontal
+	 */
+	import { Component, type ComponentProps } from '@layerd/ui';
+
+	export interface EmailSignatureData {
+		id: string;
+		type: string;
+		name: string;
+		title: string;
+		phone: string;
+		email: string; // Primary email
+		group: string; // Secondary email (company/group email)
+		href: string; // LinkedIn URL
+		src: string; // Headshot image URL
+		slug: string;
+		logoImage?: string;
+		socialLinks?: {
+			linkedin?: string;
+			facebook?: string;
+			whatsapp?: string;
+		};
+	}
+
+	export interface EmailProps extends ComponentProps {
+		data: EmailSignatureData;
+		/** Callback to expose the getHTML method */
+		onMount?: (instance: { getHTML: () => string }) => void;
+	}
+
+	let { data, onMount, children = undefined, ...props }: EmailProps = $props();
+
+	// Shared template data - single source of truth
+	const template = $derived({
+		linkedinUrl: data.href,
+		profileImage: data.src,
+		name: data.name,
+		title: data.title,
+		phone: data.phone,
+		phoneDisplay: data.phone, // Use phone as-is for display
+		email: data.email,
+		groupEmails: data.group.split(',').map((e) => e.trim()), // Split all group emails
+		logoImage: data.logoImage || 'https://tridentcubed.com/emails/logo-footer-light.png',
+		socialLinks: {
+			linkedin:
+				data.socialLinks?.linkedin || 'https://www.linkedin.com/company/trident-cubed-solutions',
+			facebook: data.socialLinks?.facebook || 'https://www.facebook.com/TridentCubed',
+			whatsapp: data.socialLinks?.whatsapp || 'https://wa.me/15705751179'
+		}
+	});
+
+	// Generate clean HTML string for email clients
+	function getHTML(): string {
+		const t = template;
+		return `
+<div class="email-signature" style="box-sizing:border-box; font-family: Arial, sans-serif; font-size:14px; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; width:100%; margin:0; padding:0;">
+	<!-- HEADER / BODY -->
+	<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="mso-table-lspace:0; mso-table-rspace:0;">
+		<tbody>
+			<tr>
+				<td colspan="2" style="padding-top:60px; padding-bottom:40px;">Best Regards,</td>
+			</tr>
+			<tr>
+				<!-- PHOTO -->
+				<td style="vertical-align:top; padding-right:10px;">
+					<a href="${t.linkedinUrl}" target="_blank" rel="noopener" style="text-decoration:none;">
+						<img src="${t.profileImage}" alt="${t.name}" width="112" height="132" style="width:112px; height:132px; display:block; border:0; outline:none; text-align:center; margin:0 auto;" />
+					</a>
+				</td>
+				<!-- CONTACT -->
+				<td style="vertical-align:top; text-decoration:none !important; padding-top:10px; padding-right:10px;">
+					<!-- NAME -->
+					<strong style="font-size:24px; color:#111; font-weight:600; line-height:28px; display:block;">${t.name}</strong>
+					<span style="color:#00458B; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.2px;">${t.title}</span>
+					<!-- INFO -->
+					<div style="padding-top:10px;">
+						<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="font-size:14px; line-height:18px;">
+							<tbody>
+								<!-- phone -->
+								<tr>
+									<td height="16" style="vertical-align:middle; padding-right:6px;">
+										<a href="tel:${t.phone}" style="text-decoration:none;">
+											<img src="https://tridentcubed.com/emails/icon-phone.png" alt="Phone" width="16" height="16" style="display:block; border:0; outline:none; width:16px; height:16px;" />
+										</a>
+									</td>
+									<td style="vertical-align:middle;">
+										<a href="tel:${t.phone}" style="font-size:12px; color:#6C737E !important; text-decoration:none !important;">${t.phoneDisplay}</a>
+									</td>
+								</tr>
+								<!-- email -->
+								<tr>
+									<td style="vertical-align:middle; padding-right:6px;">
+										<a href="mailto:${t.email}" style="text-decoration:none;">
+											<img src="https://tridentcubed.com/emails/icon-email.png" alt="Email" width="16" height="16" style="display:block; border:0; outline:none; width:16px; height:16px;" />
+										</a>
+									</td>
+									<td style="vertical-align:middle;">
+										<a href="mailto:${t.email}" style="font-size:12px; color:#6C737E !important; text-decoration:none !important;">${t.email}</a>
+									</td>
+								</tr>
+								<!-- group emails -->
+								${t.groupEmails
+									.map(
+										(groupEmail) => `<tr>
+									<td style="vertical-align:middle; padding-right:6px;">
+										<a href="mailto:${groupEmail}" style="text-decoration:none;">
+											<img src="https://tridentcubed.com/emails/icon-globe.png" alt="Company Email" width="16" height="16" style="display:block; border:0; outline:none; width:16px; height:16px;" />
+										</a>
+									</td>
+									<td style="vertical-align:middle;">
+										<a href="mailto:${groupEmail}" style="font-size:12px; color:#6C737E !important; text-decoration:none !important;">${groupEmail}</a>
+									</td>
+								</tr>`
+									)
+									.join('')}
+							</tbody>
+						</table>
+					</div>
+				</td>
+			</tr>
+			<!-- SPACER -->
+			<tr>
+				<td colspan="3" style="height:20px; font-size:1px; line-height:0;">&nbsp;</td>
+			</tr>
+		</tbody>
+	</table>
+	<!-- FOOTER / PILL -->
+	<div style="border-radius:20px; height:48px; background:black;">
+		<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="height:48px;">
+			<tbody>
+				<tr>
+					<td width="10" style="height:1px; font-size:1px; line-height:0;">&nbsp;</td>
+					<!-- LOGO (left) -->
+					<td align="left" valign="middle" style="vertical-align:middle;">
+						<a href="https://tridentcubed.com" target="_blank" rel="noopener" style="text-decoration:none;">
+							<img src="${t.logoImage}" alt="Trident Cubed" height="32" style="display:block; border:0; outline:none; height:32px;" />
+						</a>
+					</td>
+					<!-- SOCIAL (right) -->
+					<td align="right" valign="middle" style="vertical-align:middle; white-space:nowrap; mso-line-height-rule:exactly; line-height:0; font-size:1px;">
+						<span style="width:6px; height:1px; display:inline-block;">&nbsp;</span>
+						<a style="text-decoration:none; display:inline-block;" href="${t.socialLinks.linkedin}" target="_blank" rel="noopener">
+							<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-linkedin.png" alt="LinkedIn" />
+						</a>
+						<span style="width:6px; height:1px; display:inline-block;">&nbsp;</span>
+						<a style="text-decoration:none; display:inline-block;" href="${t.socialLinks.facebook}" target="_blank" rel="noopener">
+							<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-facebook.png" alt="Facebook" />
+						</a>
+						<span style="width:6px; height:1px; display:inline-block;">&nbsp;</span>
+						<a style="text-decoration:none; display:inline-block;" href="${t.socialLinks.whatsapp}" target="_blank" rel="noopener">
+							<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-whatsapp.png" alt="WhatsApp" />
+						</a>
+					</td>
+					<td width="16" style="height:1px; font-size:1px; line-height:0;">&nbsp;</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>`;
+	}
+
+	// Expose the getHTML method via onMount callback
+	$effect(() => {
+		if (onMount) {
+			onMount({ getHTML });
+		}
+	});
+</script>
+
+<!-- Template 
+::::::::::::::::::::::::::::::::::::::::::::: -->
+<Component
+	{...props}
+	class="email {props.class}"
+>
+	{#snippet component({ props: componentProps })}
+		<div {...componentProps}>
+			{@html getHTML()}
+		</div>
+	{/snippet}
+</Component>

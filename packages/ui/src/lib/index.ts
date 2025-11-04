@@ -51,6 +51,7 @@ export { default as Header } from "./components/organisms/header/header.svelte";
 // templates
 export { default as About } from "./components/templates/about/about.svelte";
 export { default as Contact } from "./components/templates/contact/contact.svelte";
+export { default as Email, type EmailSignatureData, type EmailProps } from "./components/templates/email/email.svelte";
 export { default as Home } from "./components/templates/home/home.svelte";
 
 /* UTILS */

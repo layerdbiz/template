@@ -44,7 +44,5 @@
 		h1="Email Signatures"
 		class="mb-6 mt-10"
 	/>
-	<Preview>
-		{@render children()}
-	</Preview>
+	{@render children()}
 </main>
