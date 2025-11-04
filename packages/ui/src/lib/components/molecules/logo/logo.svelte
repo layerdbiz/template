@@ -15,6 +15,8 @@
 		variant?: 'color' | 'dark' | 'light';
 		/** Logo display type */
 		type?: 'icon' | 'logo' | 'both';
+		/** Logo color mode - controls SVG colors/gradients */
+		mode?: 'light' | 'dark' | 'white' | 'black';
 
 		/** Boolean shortcuts for color schemes */
 		dark?: boolean;
@@ -35,6 +37,7 @@
 		name = undefined,
 		variant = 'color',
 		type = 'both',
+		mode = 'dark',
 		dark = false,
 		light = false,
 		icon = false,
@@ -68,6 +71,107 @@
 	// Extract class for the icon/image (size classes should apply to the icon, not the wrapper)
 	const iconClasses = $derived(props.class || 'size-10');
 	const wrapperClasses = $derived('flex items-center gap-3');
+
+	// SVG color configuration based on mode
+	const svgColors = $derived.by(() => {
+		switch (mode) {
+			case 'light':
+				return {
+					// Bottom piece (base) - light blue gradient
+					baseFill: 'url(#gradient-base-light)',
+					baseGradient: {
+						id: 'gradient-base-light',
+						type: 'radial',
+						cx: '0',
+						cy: '0',
+						r: '1',
+						gradientUnits: 'userSpaceOnUse',
+						gradientTransform: 'translate(175.051 270.396) rotate(90) scale(70.4309 175.051)',
+						stops: [
+							{ offset: '0', color: '#2A90C7' },
+							{ offset: '1', color: '#225487' }
+						]
+					},
+					// Side pieces - light gray
+					sideFill: '#A8B2B7',
+					// Center piece (trident) - light gray gradient
+					centerFill: 'url(#gradient-center-light)',
+					centerGradient: {
+						id: 'gradient-center-light',
+						type: 'linear',
+						x1: '171.135',
+						y1: '0',
+						x2: '171.135',
+						y2: '220.945',
+						gradientUnits: 'userSpaceOnUse',
+						stops: [
+							{ offset: '0.503096', color: '#A8B2B7' },
+							{ offset: '1', color: '#C8D3D9' }
+						]
+					}
+				};
+			case 'dark':
+				return {
+					// Bottom piece (base) - bright blue gradient
+					baseFill: 'url(#gradient-base-dark)',
+					baseGradient: {
+						id: 'gradient-base-dark',
+						type: 'radial',
+						cx: '0',
+						cy: '0',
+						r: '1',
+						gradientUnits: 'userSpaceOnUse',
+						gradientTransform: 'translate(175.051 251.58) rotate(90) scale(111.415 111.415)',
+						stops: [
+							{ offset: '0', color: '#84D6FF' },
+							{ offset: '1', color: '#176FFF' }
+						]
+					},
+					// Side pieces - medium gray
+					sideFill: '#8998AE',
+					// Center piece (trident) - white
+					centerFill: 'white',
+					centerGradient: null
+				};
+			case 'white':
+				return {
+					baseFill: 'white',
+					baseGradient: null,
+					sideFill: 'white',
+					centerFill: 'white',
+					centerGradient: null
+				};
+			case 'black':
+				return {
+					baseFill: 'black',
+					baseGradient: null,
+					sideFill: 'black',
+					centerFill: 'black',
+					centerGradient: null
+				};
+			default:
+				return {
+					// Default to dark mode
+					baseFill: 'url(#gradient-base-dark)',
+					baseGradient: {
+						id: 'gradient-base-dark',
+						type: 'radial',
+						cx: '0',
+						cy: '0',
+						r: '1',
+						gradientUnits: 'userSpaceOnUse',
+						gradientTransform: 'translate(175.051 251.58) rotate(90) scale(111.415 111.415)',
+						stops: [
+							{ offset: '0', color: '#84D6FF' },
+							{ offset: '1', color: '#176FFF' }
+						]
+					},
+					sideFill: '#8998AE',
+					centerFill: 'white',
+					centerGradient: null
+				};
+		}
+	});
 </script>
 
 <Link
@@ -87,31 +191,81 @@
 			<svg
 				class="current-color {iconClasses}"
 				id="logo"
+				viewBox="0 0 351 341"
 				xmlns="http://www.w3.org/2000/svg"
-				viewBox="0 0 500 500"
 			>
+				<!-- Bottom piece (base) -->
 				<path
-					id="trident"
-					class={finalColor === 'light'
-						? 'text-white'
-						: finalColor === 'dark'
-							? 'text-black'
-							: 'text-current'}
-					fill="currentColor"
-					d="M298.3,188.3c0,0-1-.6-1.2-.7-8.6-7-16.5-16.5-24.2-24.5s-8.1-8.9-11.5-11.5-.4-.6-.9-.4c-.1,4.3-.2,8.6-.3,12.9-.9,29.9-2.1,61.9-.6,91.8s-.8,4.7,1.6,7.3c3.1,3.3,7.3,6.5,10.7,9.7,1.3,1.3,3.9,3.6,4.9,4.9s.8,1.7.1,2.8-3.9,4.2-5,5.3c-3.9,4-8.2,7.5-11.9,11.7-.9,7.6.2,15.3-.7,22.8-6.5-2.9-12.8-6.2-19.3-9.2-2-.9-8-2.9-9.2-4.1-2.3-2.2-.9-5.1-1.4-7.8s-13.5-14.6-16.4-18.2-1.8-2.4-1.9-2.9c-.2-.9,2.8-2.8,3.5-3.5,3.2-2.9,6.3-5.9,9.4-8.9s4.7-3.2,5-5.6,0-3.8,0-5.6c1.5-34.1,0-68.8.5-103-.1-1.7-1.8-.2-2.4.4-11,10.4-20.9,24-32.5,33.7-1.1.9-2,1.5-3.3,2.1-.3,0-.2-.5-.1-.7.5-2.8,2.7-7.5,3.6-10.6,15.5-49.7,31.1-99.4,45.9-149.3.9-3.1,1.7-8.5,2.8-11.1s.4-.6.7-.8c1.1,0,5,12.5,5.5,14.2,2.6,8.4,4.6,16.9,7.2,25.3l41.1,133.5Z"
+					id="trident-base"
+					fill={svgColors.baseFill}
+					d="M350.088 199.965C328.864 235.873 286.78 249.415 256.853 252.089C226.949 254.763 198.383 248.078 171.105 234.609C143.828 221.14 112.077 209.762 66.3951 223.255C20.7378 236.724 0 269.788 0 269.788C8.48477 264.585 16.5562 260.063 24.3116 256.173L171.105 340.827L310.727 260.331C313.304 258.969 315.784 257.535 318.142 256.052C351.765 234.876 350.088 199.989 350.088 199.989V199.965ZM160.36 252.916V307.325L51.6136 244.625C90.7554 231.424 122.579 236.384 160.36 252.916ZM181.875 307.325V262.616C201.082 270.42 219.802 274.359 237.379 275.331L181.875 307.35V307.325Z"
+				/>
+
+				<!-- Side pieces (4 paths) -->
+				<path
+					fill={svgColors.sideFill}
+					d="M262.591 137.243L294.513 125.378V225.445C302.535 222.042 310.728 217.471 318.168 211.369V82.5656L262.591 137.243Z"
 				/>
 				<path
-					id="sides"
-					class="text-base-400/60"
-					fill="currentColor"
-					d="M447.1,309l-25.4,14.3-7.2,3.4-.7-.4.3-135.9c-.4-.4-5.6,1.5-6.6,1.8-12.3,4.4-24.1,10.7-37.1,13.1l8.7-7.5c20.4-19.3,39.4-40.9,59.9-60,.5-.5,7.5-6.9,7.8-6.5.3,43.2-.3,86.3,0,129.5.1,15,1.7,31.9.6,46.7,0,.5,0,1.2-.4,1.5ZM50.4,137.5c-1.8-1.7-3.6-3.6-5.5-5.2s-2.2-1.8-2.4-1.6v194.6c10.9-5.7,21.2-12.4,32.5-17,.5-6.1.4-12.4.3-18.6-.3-28.9-.4-57.9.3-86.8s-.1-8.4.3-12.6l42.1,15.6c.1-1.5-2.2-3-3.2-4-21.7-21.3-42.4-43.5-64.4-64.5ZM181.7,49.8c-38.3,21.8-76.1,44.5-114.5,66.2l-.8.8c1.5.6,3.2,2,4.4,3.1,2.9,2.5,5.3,5.6,8,8.3,3.8,3.7,7.9,7.3,11.5,11.2.8.4,5.6-2.5,6.7-3.1,16-8.8,31.6-18.4,47.4-27.6,15.5-9,31.4-17.4,46.7-26.9s5.3-3,6.5-4.7,2-4.8,2.6-6.5c4.4-12.2,7.2-24.9,11.4-37.1-10.2,4.9-20.2,10.6-30,16.2ZM277.6,33.3l11.8,38c1.9,7.5,8.7,10.7,14.9,14.4,15.3,9.2,31.3,17.5,46.8,26.5,15.8,9.1,31.4,18.6,47.3,27.8l.8-.2,22.4-23.1v-.9c.1,0-144-82.4-144-82.4Z"
+					fill={svgColors.sideFill}
+					d="M47.7251 211.831V125.378L79.6463 137.243L24.0698 82.5656V224.108C25.3827 223.257 26.7198 222.431 28.0569 221.628C34.3293 217.884 40.9178 214.602 47.7251 211.831Z"
 				/>
 				<path
-					id="wave"
-					class="text-primary-500"
-					fill="currentColor"
-					d="M466.2,352.4c-7.7,8.4-17.5,15.4-27.2,21.3-22,13.5-45.4,26.2-67.8,39.1-35.5,20.4-70.9,40.9-106.4,61.3-5.4,3.1-12.4,7.7-17.9,10.1-1.9.8-2.2.4-3.9-.3-5.1-2.1-11-5.8-15.9-8.6-57.7-32.4-114.2-66.9-171.9-99.2-2.4-1.3-11.3-6.7-13.5-6.5s-3.7,1.6-4.6,2.1c-7.7,4.2-15.8,10.8-23.4,14.7s-2.5,1-3.7,1.4c-.4-.5,3.5-5.6,4.1-6.3,18-22.2,44.1-41.2,70.6-52,39.7-16.1,78-18.8,119.4-6.9,28.4,8.2,52.9,24.2,81.2,32.8,53.4,16.2,112.6,9.5,160.4-19.3,16.7-10.1,29.6-22.1,40.8-38.1,1.3-1.9,2.3-4.3,4-5.9-.1,7.6-1.5,15.1-3.4,22.4-3.7,14.1-10.9,26.9-20.7,37.7ZM228.8,364.7c-.7-.7-3.5-2.2-4.5-2.7-37.4-19.3-83.5-22.2-124.1-13.1-4.5,1-11.6,2.5-15.8,4s0,2.7,1.3,3.5c3.6,2.2,8.1,4,11.9,6.1,17.9,9.9,35.3,20.9,53.1,31.1,20.3,11.7,40.9,23.1,61.2,34.7s15.1,9.4,16.8,9.5.7,0,1,0c-.7-23.3-.7-46.8-.6-70.1s.8-1.8-.4-3ZM260.5,380l-.6,7.2.2,50c.4.9,1.6.8,2.4.4,15.1-9.9,30.8-19,46.5-27.9,5-2.8,10.1-5.8,15.2-8.4s7-2.8,9.1-4.1.6-.6.9-.9c0-.6-4.4-1.2-5.2-1.3-2.5-.4-5.2-.3-7.6-.6-15-1.8-31.5-4.8-45.9-9.4-1.9-.6-14.5-5.6-15.1-5.1Z"
+					fill={svgColors.sideFill}
+					d="M41.9379 72.1334L59.418 89.3218L137.629 43.7131L148.253 10.1387L41.9379 72.1334Z"
 				/>
+				<path
+					fill={svgColors.sideFill}
+					d="M300.298 72.1334L193.983 10.1387L204.607 43.7131L282.818 89.3218L300.298 72.1334Z"
+				/>
+
+				<!-- Center piece (trident) -->
+				<path
+					fill={svgColors.centerFill}
+					d="M195.591 190.579L181.879 176.867V97.9031H182.949L210.445 124.257L171.133 0L131.821 124.257L159.318 97.9031H160.387V176.867L146.676 190.579L160.387 204.291V211.171C167.195 213.87 173.321 216.739 178.67 219.389C179.74 219.923 180.834 220.434 181.903 220.945V204.291L195.615 190.579H195.591Z"
+				/>
+
+				<defs>
+					<!-- Base gradient (bottom piece) -->
+					{#if svgColors.baseGradient}
+						{#if svgColors.baseGradient.type === 'radial'}
+							<radialGradient
+								id={svgColors.baseGradient.id}
+								cx={svgColors.baseGradient.cx}
+								cy={svgColors.baseGradient.cy}
+								r={svgColors.baseGradient.r}
+								gradientUnits={svgColors.baseGradient.gradientUnits}
+								gradientTransform={svgColors.baseGradient.gradientTransform}
+							>
+								{#each svgColors.baseGradient.stops as stop}
+									<stop
+										offset={stop.offset}
+										stop-color={stop.color}
+									/>
+								{/each}
+							</radialGradient>
+						{/if}
+					{/if}
+
+					<!-- Center gradient (trident) -->
+					{#if svgColors.centerGradient}
+						<linearGradient
+							id={svgColors.centerGradient.id}
+							x1={svgColors.centerGradient.x1}
+							y1={svgColors.centerGradient.y1}
+							x2={svgColors.centerGradient.x2}
+							y2={svgColors.centerGradient.y2}
+							gradientUnits={svgColors.centerGradient.gradientUnits}
+						>
+							{#each svgColors.centerGradient.stops as stop}
+								<stop
+									offset={stop.offset}
+									stop-color={stop.color}
+								/>
+							{/each}
+						</linearGradient>
+					{/if}
+				</defs>
 			</svg>
 		{/if}
 	{/if}

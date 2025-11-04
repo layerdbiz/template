@@ -41,7 +41,10 @@
 		phone: data.phone,
 		phoneDisplay: data.phone, // Use phone as-is for display
 		email: data.email,
-		groupEmails: data.group.split(',').map((e) => e.trim()), // Split all group emails
+		groupEmails: data.group
+			.split(',')
+			.map((e) => e.trim())
+			.filter((e) => e.length > 0), // Split all group emails and filter empty
 		logoImage: data.logoImage || 'https://tridentcubed.com/emails/logo-footer-light.png',
 		socialLinks: {
 			linkedin:
@@ -65,8 +68,8 @@
 			<tr>
 				<!-- PHOTO -->
 				<td style="vertical-align:top; padding-right:10px;">
-					<a href="${t.linkedinUrl}" target="_blank" rel="noopener" style="text-decoration:none;">
-						<img src="${t.profileImage}" alt="${t.name}" width="112" height="132" style="width:112px; height:132px; display:block; border:0; outline:none; text-align:center; margin:0 auto;" />
+					<a href="${t.linkedinUrl}" target="_blank" rel="noopener" style="text-decoration:none; width:112px; height:132px; display:block;">
+						<img src="${t.profileImage}" alt="${t.name}" width="112" style="width:112px; display:block; border:0; outline:none; text-align:center; margin:0 auto;" />
 					</a>
 				</td>
 				<!-- CONTACT -->

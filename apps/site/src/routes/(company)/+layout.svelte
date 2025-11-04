@@ -1,19 +1,55 @@
-<script>
+<script lang="ts">
 	import '../../app.css';
-	import { Logo, Toggle, Link, Text, Preview } from '@layerd/ui';
+	import { Logo, Toggle, Link } from '@layerd/ui';
+	import { fetchAllEmails } from '$lib/email/email.remote';
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 
 	let { children } = $props();
+
+	// Fetch all emails for navigation (await at top level)
+	const emailData = await fetchAllEmails();
+
+	// Get current slug from URL parameter
+	const currentSlug = $derived(page.params.slug);
+
+	// Create navigation structure
+	const categories = $derived([
+		{
+			label: 'Person',
+			href: '/company/emails/cezary-poninski',
+			items: emailData.persons.map((p) => ({ slug: p.slug, name: p.name })),
+			open: true
+		},
+		{
+			label: 'Group',
+			href: '/company/emails/carribean',
+			items: emailData.groups.map((g) => ({ slug: g.slug, name: g.shortname })),
+			open: false
+		}
+	]);
+
+	// Handle category toggle with navigation
+	function handleCategoryToggle(categoryHref: string) {
+		// Navigate using SvelteKit's client-side routing
+		goto(categoryHref);
+	}
 </script>
 
 <main class="grid min-h-svh w-full grid-cols-[280px_minmax(600px,_1fr)_100px] gap-10">
 	<nav class="bg-neutral-200/40 p-4">
-		<Logo name="Trident Cubed" />
+		<Logo
+			mode="black"
+			name="Company"
+			href="/company/emails"
+		/>
 
 		<div class="ml-2 mt-8">
 			<Toggle
 				open
 				variant="panel"
 				label="Email"
+				onToggle={() => handleCategoryToggle('/company/emails')}
 				button={{
 					icon: 'icon-[mdi--email-outline] transition-transform duration-200',
 					iconHover: 'icon-[mdi--email] transition-transform duration-200',
@@ -26,76 +62,38 @@
 					size: 'sm'
 				}}
 			>
-				<Toggle
-					open
-					variant="panel"
-					label="Person"
-					button={{
-						icon: 'icon-[mdi--chevron-right] text-base-400 transition-transform duration-200',
-						iconHover: 'icon-[mdi--chevron-right] text-primary-600 duration-200',
-						iconToggle:
-							'icon-[mdi--chevron-right] text-primary-600 transition-transform duration-200 rotate-90 text-primary',
-						variant: 'icon text',
-						width: 'full',
-						padding: 'none',
-						appearance: 'ghost',
-						class: '!p-0 !font-bold',
-						size: 'sm'
-					}}
-				>
-					<div class="ml-7 pb-2">
-						<Link
-							href="/hector"
-							text="Hector Ramirez"
-							class="text-sm"
-						/>
-						<Link
-							href="/hector"
-							text="Hector Ramirez"
-							class="text-sm"
-						/>
-						<Link
-							href="/hector"
-							text="Hector Ramirez"
-							class="text-sm"
-						/>
-					</div>
-				</Toggle>
-
-				<Toggle
-					variant="panel"
-					label="Group"
-					button={{
-						icon: 'icon-[mdi--chevron-right] text-base-400 transition-transform duration-200',
-						iconHover: 'icon-[mdi--chevron-right] text-primary-600 duration-200',
-						iconToggle:
-							'icon-[mdi--chevron-right] text-primary-600 transition-transform duration-200 rotate-90 text-primary',
-						variant: 'icon text',
-						width: 'full',
-						padding: 'none',
-						appearance: 'ghost',
-						class: '!p-0 !font-bold',
-						size: 'sm'
-					}}
-				>
-					<div class="ml-7 pb-2">
-						<Link
-							href="/hector"
-							text="Hector Ramirez"
-							class="text-sm"
-						/>
-						<Link
-							href="/hector"
-							text="Hector Ramirez"
-							class="text-sm"
-						/>
-						<Link
-							href="/hector"
-							text="Hector Ramirez"
-							class="text-sm"
-						/>
-					</div>
-				</Toggle>
+				{#each categories as category}
+					<Toggle
+						open={category.open}
+						variant="panel"
+						label={category.label}
+						onToggle={() => handleCategoryToggle(category.href)}
+						button={{
+							icon: 'text-sm text-base-400 transition-transform duration-200 !pt-5 icon-[mdi--chevron-right]',
+							iconHover: 'text-sm text-primary-600 duration-200 !pt-5 icon-[mdi--chevron-right]',
+							iconToggle:
+								'text-primary-600 text-sm transition-transform duration-200 rotate-90 text-primary !pt-5 icon-[mdi--chevron-right]',
+							variant: 'icon text',
+							width: 'full',
+							padding: 'none',
+							appearance: 'ghost',
+							class: '!p-0 !font-bold',
+							size: 'sm'
+						}}
+					>
+						<div class="ml-7 pb-2">
+							{#each category.items as item}
+								<Link
+									href="/company/emails/{item.slug}"
+									text={item.name}
+									class="text-sm {currentSlug === item.slug
+										? 'font-bold text-black'
+										: 'text-neutral-500 hover:text-black'}"
+								/>
+							{/each}
+						</div>
+					</Toggle>
+				{/each}
 			</Toggle>
 		</div>
 	</nav>

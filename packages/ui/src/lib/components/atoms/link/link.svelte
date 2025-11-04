@@ -149,7 +149,7 @@
 	@reference "@layerd/ui/ui.css";
 
 	.link:not(.logo) {
-		@apply relative flex items-center transition duration-200 ease-in-out;
+		@apply relative flex items-center ease-in-out;
 		@apply rounded-full px-12 py-3 lg:bg-[transparent] lg:px-[unset] lg:py-[unset];
 	}
 	/* 

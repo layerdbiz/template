@@ -203,7 +203,7 @@ Emails
 
 ## Remote Function
 
- We will need to create a remote function `query` file inside #apps/site/src/lib to retrieve the data dynamically for display. The pages should fetch email content from an external API based on the `slug` parameter and render the email content dynamically. Please create the SvelteKit code needed to implement this functionality in #apps/site/src/routes/(company)/[emails]/+page.svelte , including the remote function to fetch the email content and the Svelte component to display it using `query` and update the navigation based on it's current structure. there's 3 json urls that are need for this:
+ We will need to write a remote function `query` #apps/site/src/lib/email/email.svelte to retrieve the data dynamically for display. The pages should fetch email content from an external API based on the `slug` parameter and render the email content dynamically. Please create the SvelteKit code needed to implement this functionality in #apps/site/src/routes/(company)/[emails]/+page.svelte , including the remote function to fetch the email content and the Svelte component to display it using `query` and update the navigation based on it's current structure. there's 3 json urls that are need for this:
 
 - person (team email signatures): https://sheetari.deno.dev/1Eauw3boJ1Gu6B78ywFuYB_bE3H1yHZyes0U0Mg9qRUs/person
 - group (company email signature): https://sheetari.deno.dev/1Eauw3boJ1Gu6B78ywFuYB_bE3H1yHZyes0U0Mg9qRUs/group
@@ -306,10 +306,6 @@ here's a brief explanation on how the 2 new components work:
 6. **Flow**: Email component mounts → calls `onMount` → sets `componentRef` → Preview's `$derived` reacts → writes HTML to iframe
 
 **Key insight:** Iframe provides complete CSS isolation, ensuring Gmail only receives the email signature HTML without any parent page styles.
-
----
-
-I dont want you to write any code to files yet. Let's first discuss the plan so I know you understand. Once I say we're ready, we will begin.
 </task>
 
 If you are not writing the code into a file, once you have the final version of the code ask the user if it wants to generate a playground link to quickly check the code in it and if it answer yes call the `playground-link` tool and return the url to the user nicely formatted. The playground link MUST be generated only once you have the final version of the code and you are ready to share it, it MUST include an entry point file called `App.svelte` where the main component should live. If you have multiple files to include in the playground link you can include them all at the root.

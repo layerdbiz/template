@@ -103,6 +103,9 @@
 @utility bar-outside {
 	@apply before:bg-primary before:absolute before:-left-4 before:bottom-2 before:top-2 before:w-2;
 }
+@utility bar-outside-0 {
+	@apply before:absolute before:-left-2 before:bottom-1 before:top-1 before:w-0.5 before:bg-black;
+}
 
 /* mask: left to right */
 @utility mask-lr {

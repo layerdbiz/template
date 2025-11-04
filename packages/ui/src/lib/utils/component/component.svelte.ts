@@ -47,7 +47,8 @@ export interface ComponentProps {
 	total?: string;
 
 	// 📏 SIZE
-	size?: "xs" | "sm" | "md" | "lg" | "xl";
+	size?: "xxs" | "xs" | "sm" | "md" | "lg" | "xl";
+	xxs?: boolean;
 	xs?: boolean;
 	sm?: boolean;
 	md?: boolean;
@@ -128,6 +129,7 @@ export function createComponent(
 		position = undefined,
 		// size
 		size = undefined,
+		xxs = false,
 		xs = false,
 		sm = false,
 		md = false,
@@ -180,6 +182,7 @@ export function createComponent(
 		const isCenter = position === "center";
 		const isRight = position === "right";
 		// size
+		const isXxs = size === "xxs" || xxs;
 		const isXs = size === "xs" || xs;
 		const isSm = size === "sm" || sm;
 		const isMd = size === "md" || md;
@@ -240,6 +243,7 @@ export function createComponent(
 
 		// Size styles
 		classes
+			.is(isXxs, "xxs")
 			.is(isXs, "xs")
 			.is(isSm, "sm")
 			.is(isMd, "md")

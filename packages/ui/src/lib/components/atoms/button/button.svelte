@@ -666,6 +666,9 @@
 		}
 
 		/* sizes (md stays text-md) */
+		&:where(.xxs) {
+			@apply text-[10px];
+		}
 		&:where(.xs) {
 			@apply text-xs;
 		}

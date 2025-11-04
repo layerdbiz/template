@@ -160,20 +160,36 @@
 						? 'bg-white'
 						: 'bg-neutral-900'}"
 				>
-					<Button
-						variant="icon text"
-						label={copyStatus === 'copied' ? 'copied' : 'copy'}
-						icon={copyStatus === 'copied' ? 'icon-[mdi--check]' : 'icon-[mdi--content-copy]'}
-						align="center"
-						size="xs"
-						appearance={copyStatus === 'copied' ? 'heavy' : 'lite'}
-						color={copyStatus === 'copied' ? 'accent' : 'base'}
-						onclick={handleCopy}
-						disabled={!htmlCode}
-						class="!absolute right-4 top-4 uppercase {copyStatus === 'copied'
-							? 'pointer-events-none'
-							: ''}"
-					/>
+					<div class="absolute right-2 top-2 flex gap-1">
+						<!-- EDIT -->
+						<Button
+							variant="icon text"
+							label="edit"
+							icon="icon-[mdi--pencil-outline]"
+							align="center"
+							size="xxs"
+							appearance="lite"
+							color="base"
+							class="min-w-18 uppercase"
+							href="https://docs.google.com/spreadsheets/d/1Eauw3boJ1Gu6B78ywFuYB_bE3H1yHZyes0U0Mg9qRUs/edit?gid=0#gid=0"
+							target="_blank"
+							rel="noopener"
+						/>
+
+						<!-- COPY -->
+						<Button
+							variant="icon text"
+							label={copyStatus === 'copied' ? 'copied' : 'copy'}
+							icon={copyStatus === 'copied' ? 'icon-[mdi--check]' : 'icon-[mdi--content-copy]'}
+							align="center"
+							size="xxs"
+							appearance={copyStatus === 'copied' ? 'heavy' : 'lite'}
+							color={copyStatus === 'copied' ? 'accent' : 'base'}
+							onclick={handleCopy}
+							disabled={!htmlCode}
+							class="uppercase {copyStatus === 'copied' ? 'pointer-events-none' : ''}"
+						/>
+					</div>
 					{#if currentView === 'preview'}
 						<!-- Iframe for isolated rendering (no parent CSS contamination) -->
 						<iframe

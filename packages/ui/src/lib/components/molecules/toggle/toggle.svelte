@@ -53,6 +53,8 @@
 		trigger_content?: import('svelte').Snippet;
 		/** Snippet for the toggle content that appears when opened */
 		content?: import('svelte').Snippet;
+		/** Callback when toggle state changes */
+		onToggle?: (isOpen: boolean) => void;
 
 		// Basic HTML props
 		class?: string;
@@ -80,6 +82,7 @@
 		label = undefined,
 		trigger_content = undefined,
 		content = undefined,
+		onToggle = undefined,
 		children = undefined,
 		...props
 	}: ToggleProps = $props();
@@ -219,6 +222,9 @@
 
 				const wasOpen = isToggleOpen;
 				isToggleOpen = !isToggleOpen;
+
+				// Call onToggle callback if provided
+				onToggle?.(isToggleOpen);
 
 				// Handle auto-close behavior for sibling toggles
 				if (config.autoClose && isToggleOpen && !wasOpen && toggleElement) {
