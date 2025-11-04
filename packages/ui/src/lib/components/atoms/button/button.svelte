@@ -156,13 +156,15 @@
 	}
 
 	// Determine which icons to show based on state (primary icon)
+	// When toggled, always show iconToggle and ignore hover state
 	const currentIcon = $derived(
-		isHovered && iconHover ? iconHover : isToggled && iconToggle ? iconToggle : icon
+		isToggled && iconToggle ? iconToggle : isHovered && iconHover ? iconHover : icon
 	);
 
 	// Determine which icons to show based on state (end icon)
+	// When toggled, always show iconEndToggle and ignore hover state
 	const currentIconEnd = $derived(
-		isHovered && iconEndHover ? iconEndHover : isToggled && iconEndToggle ? iconEndToggle : iconEnd
+		isToggled && iconEndToggle ? iconEndToggle : isHovered && iconEndHover ? iconEndHover : iconEnd
 	);
 
 	// Auto-detect variant for backward compatibility

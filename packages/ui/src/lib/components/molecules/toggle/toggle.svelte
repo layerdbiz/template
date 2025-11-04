@@ -887,6 +887,6 @@
 
 	:global(.toggle--panel .btn .btn-label),
 	:global(.toggle--panel .toggle-content) {
-		@apply pr-8 md:pr-12;
+		/* @apply pr-8 md:pr-12; */
 	}
 </style>

@@ -1,48 +1,106 @@
 <script>
 	import '../../app.css';
-	import { Logo, Toggle, Text, Preview } from '@layerd/ui';
+	import { Logo, Toggle, Link, Text, Preview } from '@layerd/ui';
 
 	let { children } = $props();
 </script>
 
-<!-- <main class="grid min-h-svh grid-cols-[280px_minmax(900px,_1fr)_100px] gap-10">
-	<nav class="bg-neutral-200 p-4">
+<main class="grid min-h-svh w-full grid-cols-[280px_minmax(600px,_1fr)_100px] gap-10">
+	<nav class="bg-neutral-200/40 p-4">
 		<Logo name="Trident Cubed" />
 
-		<div>
-			<Text
-				h3="Email"
-				class="mb-2 mt-4"
-			/>
+		<div class="ml-2 mt-8">
 			<Toggle
+				open
 				variant="panel"
-				label="Person"
-				class="border-base-300-700 border-b last:border-0"
+				label="Email"
 				button={{
-					icon: 'icon-[mdi--chevron-right] transition-transform duration-200 rotate-0',
-					iconToggle:
-						'icon-[mdi--chevron-right] text-primary transition-transform duration-200 rotate-90',
+					icon: 'icon-[mdi--email-outline] transition-transform duration-200',
+					iconHover: 'icon-[mdi--email] transition-transform duration-200',
+					iconToggle: 'icon-[mdi--email] transition-transform duration-200',
 					variant: 'icon text',
 					width: 'full',
 					padding: 'none',
 					appearance: 'ghost',
-					class: '!font-black hover:[&_.btn-icon]:text-primary'
+					class: '!p-0 !font-bold uppercase',
+					size: 'sm'
 				}}
 			>
-				<p>test</p>
+				<Toggle
+					open
+					variant="panel"
+					label="Person"
+					button={{
+						icon: 'icon-[mdi--chevron-right] text-base-400 transition-transform duration-200',
+						iconHover: 'icon-[mdi--chevron-right] text-primary-600 duration-200',
+						iconToggle:
+							'icon-[mdi--chevron-right] text-primary-600 transition-transform duration-200 rotate-90 text-primary',
+						variant: 'icon text',
+						width: 'full',
+						padding: 'none',
+						appearance: 'ghost',
+						class: '!p-0 !font-bold',
+						size: 'sm'
+					}}
+				>
+					<div class="ml-7 pb-2">
+						<Link
+							href="/hector"
+							text="Hector Ramirez"
+							class="text-sm"
+						/>
+						<Link
+							href="/hector"
+							text="Hector Ramirez"
+							class="text-sm"
+						/>
+						<Link
+							href="/hector"
+							text="Hector Ramirez"
+							class="text-sm"
+						/>
+					</div>
+				</Toggle>
+
+				<Toggle
+					variant="panel"
+					label="Group"
+					button={{
+						icon: 'icon-[mdi--chevron-right] text-base-400 transition-transform duration-200',
+						iconHover: 'icon-[mdi--chevron-right] text-primary-600 duration-200',
+						iconToggle:
+							'icon-[mdi--chevron-right] text-primary-600 transition-transform duration-200 rotate-90 text-primary',
+						variant: 'icon text',
+						width: 'full',
+						padding: 'none',
+						appearance: 'ghost',
+						class: '!p-0 !font-bold',
+						size: 'sm'
+					}}
+				>
+					<div class="ml-7 pb-2">
+						<Link
+							href="/hector"
+							text="Hector Ramirez"
+							class="text-sm"
+						/>
+						<Link
+							href="/hector"
+							text="Hector Ramirez"
+							class="text-sm"
+						/>
+						<Link
+							href="/hector"
+							text="Hector Ramirez"
+							class="text-sm"
+						/>
+					</div>
+				</Toggle>
 			</Toggle>
 		</div>
 	</nav>
 
-	<div>
+	<div class="container py-10">
 		{@render children()}
 	</div>
-</main> -->
-
-<main class="container">
-	<Text
-		h1="Email Signatures"
-		class="mb-6 mt-10"
-	/>
-	{@render children()}
 </main>
