@@ -68,7 +68,7 @@
 	<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="mso-table-lspace:0; mso-table-rspace:0;">
 		<tbody>
 			<tr>
-				<td colspan="2" style="padding-top:60px; padding-bottom:40px; color: #111111">Best Regards,</td>
+				<td colspan="2" style="padding-top:40px; padding-bottom:40px; color: #111111">Best Regards,</td>
 			</tr>
 
 			<tr>
@@ -140,12 +140,7 @@
 		</tbody>
 	</table>
 
-
-
-
-
 	<!-- #1 FOOTER (forced transparency) -->
-	#1
 	<div style="border-radius:20px; height:48px; background:#000000 !important;">
 		<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="height:48px; background:transparent !important;">
 			<tbody style="background:transparent !important;">
@@ -191,52 +186,52 @@
 			</tbody>
 		</table>
 	</div>
-	
-	<!-- #2 FOOTER (table radius - no div)-->
-	#2
-	<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-radius:20px; height:48px; background:#000000 !important;">
-		<tbody style="background:transparent !important;">
-			<tr>
-				<td width="10">&nbsp;</td>
-				<!-- LOGO (left) -->
-				<td align="left" valign="middle" style="vertical-align:middle;">
-					<a href="https://tridentcubed.com" target="_blank" rel="noopener" style="text-decoration:none;">
-						<img src="${t.logoImage}" alt="Trident Cubed" height="32" style="display:block; border:0; outline:none; height:32px;" />
-					</a>
-				</td>
-				<!-- SOCIAL (right) -->
-				<td align="right" valign="middle" style="vertical-align:middle;">
-					<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="display:inline-block; background:transparent !important;">
-						<tbody style="background:transparent !important;">
-							<tr>
-								<td style="width:20px;">
-									<a style="text-decoration:none; display:block;" href="${t.socialLinks.linkedin}" target="_blank" rel="noopener">
-										<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-linkedin.png" alt="LinkedIn" />
-									</a>
-								</td>
-								<td style="width:6px;">&nbsp;</td>
-								<td style="width:20px;">
-									<a style="text-decoration:none; display:block;" href="${t.socialLinks.facebook}" target="_blank" rel="noopener">
-										<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-facebook.png" alt="Facebook" />
-									</a>
-								</td>
-								<td style="width:6px;">&nbsp;</td>
-								<td style="width:20px;">
-									<a style="text-decoration:none; display:block;" href="${t.socialLinks.whatsapp}" target="_blank" rel="noopener">
-										<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-whatsapp.png" alt="WhatsApp" />
-									</a>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</td>
-				<td width="16">&nbsp;</td>
-			</tr>
-		</tbody>
-	</table>
 
 </div>`;
 	}
+
+	// <!-- #2 FOOTER (table radius - no div)-->
+	// #2
+	// <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-radius:20px; height:48px; background:#000000 !important;">
+	// 	<tbody style="background:transparent !important;">
+	// 		<tr>
+	// 			<td width="10">&nbsp;</td>
+	// 			<!-- LOGO (left) -->
+	// 			<td align="left" valign="middle" style="vertical-align:middle;">
+	// 				<a href="https://tridentcubed.com" target="_blank" rel="noopener" style="text-decoration:none;">
+	// 					<img src="${t.logoImage}" alt="Trident Cubed" height="32" style="display:block; border:0; outline:none; height:32px;" />
+	// 				</a>
+	// 			</td>
+	// 			<!-- SOCIAL (right) -->
+	// 			<td align="right" valign="middle" style="vertical-align:middle;">
+	// 				<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="display:inline-block; background:transparent !important;">
+	// 					<tbody style="background:transparent !important;">
+	// 						<tr>
+	// 							<td style="width:20px;">
+	// 								<a style="text-decoration:none; display:block;" href="${t.socialLinks.linkedin}" target="_blank" rel="noopener">
+	// 									<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-linkedin.png" alt="LinkedIn" />
+	// 								</a>
+	// 							</td>
+	// 							<td style="width:6px;">&nbsp;</td>
+	// 							<td style="width:20px;">
+	// 								<a style="text-decoration:none; display:block;" href="${t.socialLinks.facebook}" target="_blank" rel="noopener">
+	// 									<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-facebook.png" alt="Facebook" />
+	// 								</a>
+	// 							</td>
+	// 							<td style="width:6px;">&nbsp;</td>
+	// 							<td style="width:20px;">
+	// 								<a style="text-decoration:none; display:block;" href="${t.socialLinks.whatsapp}" target="_blank" rel="noopener">
+	// 									<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-whatsapp.png" alt="WhatsApp" />
+	// 								</a>
+	// 							</td>
+	// 						</tr>
+	// 					</tbody>
+	// 				</table>
+	// 			</td>
+	// 			<td width="16">&nbsp;</td>
+	// 		</tr>
+	// 	</tbody>
+	// </table>
 
 	// <!-- #3 FOOTER (faux images) -->
 	// #3
