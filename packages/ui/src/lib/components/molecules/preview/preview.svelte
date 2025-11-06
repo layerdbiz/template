@@ -68,16 +68,47 @@
 				// Auto-resize iframe to content height
 				const resizeIframe = () => {
 					if (iframeDoc.body && iframeElement) {
-						const contentHeight = iframeDoc.body.scrollHeight;
-						iframeElement.style.height = `${contentHeight}px`;
+						// Use requestAnimationFrame to avoid layout thrashing
+						requestAnimationFrame(() => {
+							const contentHeight = Math.max(
+								iframeDoc.body.scrollHeight,
+								iframeDoc.documentElement.scrollHeight
+							);
+							if (iframeElement && contentHeight > 0) {
+								iframeElement.style.height = `${contentHeight}px`;
+							}
+						});
 					}
 				};
 
-				// Resize after content loads (images, etc.)
-				if (iframeDoc.readyState === 'complete') {
-					resizeIframe();
+				// Wait for all images and content to load
+				const images = Array.from(iframeDoc.images);
+
+				if (images.length > 0) {
+					let loadedCount = 0;
+					const totalImages = images.length;
+
+					const onImageLoad = () => {
+						loadedCount++;
+						if (loadedCount >= totalImages) {
+							// All images loaded
+							resizeIframe();
+						}
+					};
+
+					images.forEach((img) => {
+						if (img.complete) {
+							onImageLoad();
+						} else {
+							img.addEventListener('load', onImageLoad, { once: true });
+							img.addEventListener('error', onImageLoad, { once: true });
+						}
+					});
 				} else {
-					iframeElement.onload = resizeIframe;
+					// No images, resize after a short delay
+					requestAnimationFrame(() => {
+						setTimeout(resizeIframe, 50);
+					});
 				}
 			}
 		}
