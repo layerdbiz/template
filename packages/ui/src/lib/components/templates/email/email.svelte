@@ -22,6 +22,11 @@
 			facebook?: string;
 			whatsapp?: string;
 		};
+		banner?: {
+			href: string;
+			src: string;
+			alt: string;
+		};
 	}
 
 	export interface EmailProps extends ComponentProps {
@@ -55,7 +60,14 @@
 				data.socialLinks?.linkedin || 'https://www.linkedin.com/company/trident-cubed-solutions',
 			facebook: data.socialLinks?.facebook || 'https://www.facebook.com/TridentCubed',
 			whatsapp: data.socialLinks?.whatsapp || 'https://wa.me/15705751179'
-		}
+		},
+		banner: data.banner
+			? {
+					href: data.banner.href,
+					src: data.banner.src,
+					alt: data.banner.alt
+				}
+			: undefined
 	});
 
 	// Generate clean HTML string for email clients
@@ -64,7 +76,7 @@
 		return `
 <div class="email-signature" style="box-sizing:border-box; font-family: Arial, sans-serif; font-size:14px; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; width:100%; margin:0; padding:0;">
 	
-	<!-- HEADER / BODY -->
+	<!-- BODY -->
 	<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="mso-table-lspace:0; mso-table-rspace:0;">
 		<tbody>
 			<tr>
@@ -140,7 +152,9 @@
 		</tbody>
 	</table>
 
-	<!-- #1 FOOTER (forced transparency) -->
+
+	<!-- #1 FOOTER
+	::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
 	<div style="border-radius:20px; height:48px; background:#000000 !important;">
 		<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="height:48px; background:transparent !important;">
 			<tbody style="background:transparent !important;">
@@ -187,8 +201,198 @@
 		</table>
 	</div>
 
+	<!-- BANNER IMAGE -->
+	${
+		t.banner
+			? `<a href="${t.banner.href}" target="_blank" rel="noopener">
+		<img src="${t.banner.src}" alt="${t.banner.alt}" style="max-width:100%; margin-top:20px; margin-bottom:20px;" />
+	</a>`
+			: ''
+	}
+	
+	<!-- Links -->
+	<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="padding-top:10px; border-radius: 20px 20px 0 0; height:100px;">
+		<tbody style="background:transparent !important;">
+			<tr>
+				<td width="10">&nbsp;</td>
+
+				<!-- LOGO (left) -->
+				<td align="center" valign="middle" style="vertical-align:middle;">
+					<a href="https://tridentcubed.com/terms" target="_blank" rel="noopener" style="text-decoration:none; color:#a4afc0; font-size:9px;">Terms of Service</a>
+					<span style="color:#a4afc0; font-size:9px;"> | </span>
+					<a href="https://tridentcubed.com/privacy" target="_blank" rel="noopener" style="text-decoration:none; color:#a4afc0; font-size:9px;">Privacy Policy</a>
+				</td>
+
+				<td width="16">&nbsp;</td>
+			</tr>
+			<tr>
+				<td width="10">&nbsp;</td>
+
+				<!-- BBB -->
+				<td align="center" valign="top" style="vertical-align:top;">
+					<a style="text-decoration:none; display:block;" href="https://www.bbb.org/us/tx/houston/profile/transportation/trident-cubed-solutions-llc-0915-90069161" target="_blank" rel="noopener">
+						<img width="20" style="border:0; outline:none; display:block; opacity: 0.65" src="/emails/bbb-logo.png" alt="Better Business Bureau" />
+					</a>
+				</td>
+
+				<td width="16">&nbsp;</td>
+			</tr>
+		</tbody>
+	</table>
+
+
+
+
+
+
 </div>`;
 	}
+	// <!-- #2 FOOTER
+	// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+	// <div style="border-radius:20px; height:48px; background:#000000 !important;">
+	// 	<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="height:48px; background:transparent !important;">
+	// 		<tbody style="background:transparent !important;">
+	// 			<tr>
+	// 				<td width="10">&nbsp;</td>
+
+	// 				<!-- LOGO (left) -->
+	// 				<td align="left" valign="middle" style="vertical-align:middle;">
+	// 					<a href="https://tridentcubed.com" target="_blank" rel="noopener" style="text-decoration:none;">
+	// 						<img src="${t.logoImage}" alt="Trident Cubed" height="32" style="display:block; border:0; outline:none; height:32px;" />
+	// 					</a>
+	// 				</td>
+
+	// 				<!-- SOCIAL (right) -->
+	// 				<td align="right" valign="middle" style="vertical-align:middle;">
+	// 					<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="display:inline-block; background:transparent !important;">
+	// 						<tbody style="background:transparent !important;">
+	// 							<tr>
+	// 								<td style="width:20px;">
+	// 									<a style="text-decoration:none; display:block;" href="${t.socialLinks.linkedin}" target="_blank" rel="noopener">
+	// 										<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-linkedin.png" alt="LinkedIn" />
+	// 									</a>
+	// 								</td>
+	// 								<td style="width:6px;">&nbsp;</td>
+	// 								<td style="width:20px;">
+	// 									<a style="text-decoration:none; display:block;" href="${t.socialLinks.facebook}" target="_blank" rel="noopener">
+	// 										<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-facebook.png" alt="Facebook" />
+	// 									</a>
+	// 								</td>
+	// 								<td style="width:6px;">&nbsp;</td>
+	// 								<td style="width:20px;">
+	// 									<a style="text-decoration:none; display:block;" href="${t.socialLinks.whatsapp}" target="_blank" rel="noopener">
+	// 										<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-whatsapp.png" alt="WhatsApp" />
+	// 									</a>
+	// 								</td>
+	// 							</tr>
+	// 						</tbody>
+	// 					</table>
+	// 				</td>
+
+	// 				<td width="16">&nbsp;</td>
+	// 			</tr>
+	// 		</tbody>
+	// 	</table>
+	// </div>
+
+	// <!-- Links -->
+	// <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:10px; height:40px; margin-bottom:40px;">
+	// 	<tbody style="background:transparent !important;">
+	// 		<tr>
+
+	// 			<!-- SPACER -->
+	// 			<td width="10">&nbsp;</td>
+
+	// 			<!-- BBB -->
+	// 			<td align="center" valign="middle" style="vertical-align:middle; width:30px;">
+	// 				<a style="text-decoration:none; display:block;" href="https://www.bbb.org/us/tx/houston/profile/transportation/trident-cubed-solutions-llc-0915-90069161" target="_blank" rel="noopener">
+	// 					<img width="20" style="border:0; outline:none; display:block; opacity: 0.65" src="/emails/bbb-logo.png" alt="Better Business Bureau" />
+	// 				</a>
+	// 			</td>
+
+	// 			<!-- SPACER -->
+	// 			<td width="10">&nbsp;</td>
+
+	// 			<!-- LINKS -->
+	// 			<td align="left" valign="middle" style="vertical-align:middle;">
+	// 				<a href="https://tridentcubed.com" target="_blank" rel="noopener" style="text-decoration:none; color:#a4afc0; font-size:9px;">Terms of Service</a>
+	// 				<span style="color:#a4afc0; font-size:9px;"> | </span>
+	// 				<a href="https://tridentcubed.com" target="_blank" rel="noopener" style="text-decoration:none; color:#a4afc0; font-size:9px;">Privacy Policy</a>
+	// 			</td>
+	// 		</tr>
+	// 	</tbody>
+	// </table>
+
+	// <!-- #3 FOOTER
+	// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+
+	// <div style="border-radius:20px; height:48px; background:#000000 !important;">
+	// 	<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="height:48px; background:transparent !important;">
+	// 		<tbody style="background:transparent !important;">
+	// 			<tr>
+	// 				<td width="10">&nbsp;</td>
+
+	// 				<!-- LOGO (left) -->
+	// 				<td align="left" valign="middle" style="vertical-align:middle;">
+	// 					<a href="https://tridentcubed.com" target="_blank" rel="noopener" style="text-decoration:none;">
+	// 						<img src="${t.logoImage}" alt="Trident Cubed" height="32" style="display:block; border:0; outline:none; height:32px;" />
+	// 					</a>
+	// 				</td>
+
+	// 				<!-- SOCIAL (right) -->
+	// 				<td align="right" valign="middle" style="vertical-align:middle;">
+	// 					<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="display:inline-block; background:transparent !important;">
+	// 						<tbody style="background:transparent !important;">
+	// 							<tr>
+	// 								<td style="width:20px;">
+	// 									<a style="text-decoration:none; display:block;" href="${t.socialLinks.linkedin}" target="_blank" rel="noopener">
+	// 										<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-linkedin.png" alt="LinkedIn" />
+	// 									</a>
+	// 								</td>
+	// 								<td style="width:6px;">&nbsp;</td>
+	// 								<td style="width:20px;">
+	// 									<a style="text-decoration:none; display:block;" href="${t.socialLinks.facebook}" target="_blank" rel="noopener">
+	// 										<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-facebook.png" alt="Facebook" />
+	// 									</a>
+	// 								</td>
+	// 								<td style="width:6px;">&nbsp;</td>
+	// 								<td style="width:20px;">
+	// 									<a style="text-decoration:none; display:block;" href="${t.socialLinks.whatsapp}" target="_blank" rel="noopener">
+	// 										<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-whatsapp.png" alt="WhatsApp" />
+	// 									</a>
+	// 								</td>
+	// 							</tr>
+	// 						</tbody>
+	// 					</table>
+	// 				</td>
+
+	// 				<td width="16">&nbsp;</td>
+	// 			</tr>
+	// 		</tbody>
+	// 	</table>
+	// </div>
+
+	// <!-- Links -->
+	// <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto; margin-top:10px; height:40px;">
+	// 	<tbody style="background:transparent !important;">
+	// 		<tr>
+
+	// 			<!-- BBB -->
+	// 			<td align="center" valign="middle" style="vertical-align:middle; width: 40px;">
+	// 				<a style="text-decoration:none; display:block;" href="https://www.bbb.org/us/tx/houston/profile/transportation/trident-cubed-solutions-llc-0915-90069161" target="_blank" rel="noopener">
+	// 					<img width="20" style="border:0; outline:none; display:block; opacity: 0.65" src="/emails/bbb-logo.png" alt="Better Business Bureau" />
+	// 				</a>
+	// 			</td>
+
+	// 			<!-- LINKS -->
+	// 			<td align="center" valign="middle" style="vertical-align:middle;">
+	// 				<a href="https://tridentcubed.com" target="_blank" rel="noopener" style="text-decoration:none; color:#a4afc0; font-size:9px;">Terms of Service</a>
+	// 				<span style="color:#a4afc0; font-size:9px;"> | </span>
+	// 				<a href="https://tridentcubed.com" target="_blank" rel="noopener" style="text-decoration:none; color:#a4afc0; font-size:9px;">Privacy Policy</a>
+	// 			</td>
+	// 		</tr>
+	// 	</tbody>
+	// </table>
 
 	// <!-- #2 FOOTER (table radius - no div)-->
 	// #2

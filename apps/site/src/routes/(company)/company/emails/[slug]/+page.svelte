@@ -2,20 +2,26 @@
 	import { Email, Preview } from '@layerd/ui';
 	import type { EmailSignatureData } from '@layerd/ui';
 	import { page } from '$app/state';
-	import { fetchAllEmails, fetchSocials } from '$lib/email/email.remote';
+	import { fetchAllEmails, fetchSocials, fetchBanners } from '$lib/email/email.remote';
 
 	// Get slug from URL parameter
 	const slug = $derived(page.params.slug);
 
-	// Fetch all emails and socials (await at top level)
+	// Fetch all emails, socials, and banners (await at top level)
 	const allEmails = await fetchAllEmails();
 	const socials = await fetchSocials();
+	const banners = await fetchBanners();
 
 	// Find the matching email signature based on slug
 	const emailData = $derived.by((): EmailSignatureData | null => {
 		// Search in persons first
 		const person = allEmails.persons.find((p) => p.slug === slug);
 		if (person) {
+			// Find matching banner if person has banner field
+			const matchedBanner = person.banner
+				? banners.find((b) => b.banner === person.banner)
+				: undefined;
+
 			return {
 				id: person.id,
 				type: person.type,
@@ -27,13 +33,25 @@
 				href: person.href,
 				src: person.src,
 				slug: person.slug,
-				socialLinks: socials
+				socialLinks: socials,
+				banner: matchedBanner
+					? {
+							href: matchedBanner.href,
+							src: matchedBanner.src,
+							alt: matchedBanner.banner
+						}
+					: undefined
 			};
 		}
 
 		// Search in groups
 		const group = allEmails.groups.find((g) => g.slug === slug);
 		if (group) {
+			// Find matching banner if group has banner field
+			const matchedBanner = group.banner
+				? banners.find((b) => b.banner === group.banner)
+				: undefined;
+
 			return {
 				id: group.id,
 				type: group.type,
@@ -45,7 +63,14 @@
 				href: group.href,
 				src: group.src,
 				slug: group.slug,
-				socialLinks: socials
+				socialLinks: socials,
+				banner: matchedBanner
+					? {
+							href: matchedBanner.href,
+							src: matchedBanner.src,
+							alt: matchedBanner.banner
+						}
+					: undefined
 			};
 		}
 

@@ -27,6 +27,7 @@ interface PersonAPIResponse {
 	slug: string;
 	rank?: string;
 	location?: string;
+	banner?: string; // Banner identifier to match with banner sheet
 }
 
 interface GroupAPIResponse {
@@ -40,11 +41,19 @@ interface GroupAPIResponse {
 	href: string;
 	src: string;
 	slug: string;
+	banner?: string; // Banner identifier to match with banner sheet
 }
 
 interface SocialAPIResponse {
 	id: string;
 	name: string;
+	href: string;
+	src: string;
+}
+
+interface BannerAPIResponse {
+	id: string;
+	banner: string;
 	href: string;
 	src: string;
 }
@@ -108,6 +117,14 @@ export const fetchSocials = query(async () => {
 	});
 
 	return socialLinks;
+});
+
+/**
+ * Fetch banner images
+ */
+export const fetchBanners = query(async () => {
+	const data = await getSheetariEmailData("banner");
+	return data as BannerAPIResponse[];
 });
 
 /**
