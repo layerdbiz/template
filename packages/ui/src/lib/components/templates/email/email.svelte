@@ -45,7 +45,11 @@
 			.split(',')
 			.map((e) => e.trim())
 			.filter((e) => e.length > 0), // Split all group emails and filter empty
-		logoImage: data.logoImage || 'https://tridentcubed.com/emails/logo-footer-light.png',
+		logoImage: data.logoImage || '/emails/logo-footer-light.png',
+		emailFooterLogo: '/emails/email-footer-logo.png',
+		emailFooterLinkedin: '/emails/email-footer-linkedin.png',
+		emailFooterFacebook: '/emails/email-footer-facebook.png',
+		emailFooterWhatsapp: '/emails/email-footer-whatsapp.png',
 		socialLinks: {
 			linkedin:
 				data.socialLinks?.linkedin || 'https://www.linkedin.com/company/trident-cubed-solutions',
@@ -129,10 +133,16 @@
 			</tr>
 		</tbody>
 	</table>
-	<!-- FOOTER / PILL -->
-	<div style="border-radius:20px; height:48px; background:black;">
-		<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="height:48px;">
-			<tbody>
+
+
+
+
+
+	<!-- #1 FOOTER (forced transparency) -->
+	#1
+	<div style="border-radius:20px; height:48px; background:#000000 !important;">
+		<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="height:48px; background:transparent !important;">
+			<tbody style="background:transparent !important;">
 				<tr>
 					<td width="10">&nbsp;</td>
 					<!-- LOGO (left) -->
@@ -143,8 +153,8 @@
 					</td>
 					<!-- SOCIAL (right) -->
 					<td align="right" valign="middle" style="vertical-align:middle;">
-						<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="display:inline-block;">
-							<tbody>
+						<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="display:inline-block; background:transparent !important;">
+							<tbody style="background:transparent !important;">
 								<tr>
 									<td style="width:20px;">
 										<a style="text-decoration:none; display:block;" href="${t.socialLinks.linkedin}" target="_blank" rel="noopener">
@@ -172,8 +182,91 @@
 			</tbody>
 		</table>
 	</div>
+	
+	<!-- #2 FOOTER (table radius - no div)-->
+	#2
+	<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-radius:20px; height:48px; background:#000000 !important;">
+		<tbody style="background:transparent !important;">
+			<tr>
+				<td width="10">&nbsp;</td>
+				<!-- LOGO (left) -->
+				<td align="left" valign="middle" style="vertical-align:middle;">
+					<a href="https://tridentcubed.com" target="_blank" rel="noopener" style="text-decoration:none;">
+						<img src="${t.logoImage}" alt="Trident Cubed" height="32" style="display:block; border:0; outline:none; height:32px;" />
+					</a>
+				</td>
+				<!-- SOCIAL (right) -->
+				<td align="right" valign="middle" style="vertical-align:middle;">
+					<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="display:inline-block; background:transparent !important;">
+						<tbody style="background:transparent !important;">
+							<tr>
+								<td style="width:20px;">
+									<a style="text-decoration:none; display:block;" href="${t.socialLinks.linkedin}" target="_blank" rel="noopener">
+										<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-linkedin.png" alt="LinkedIn" />
+									</a>
+								</td>
+								<td style="width:6px;">&nbsp;</td>
+								<td style="width:20px;">
+									<a style="text-decoration:none; display:block;" href="${t.socialLinks.facebook}" target="_blank" rel="noopener">
+										<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-facebook.png" alt="Facebook" />
+									</a>
+								</td>
+								<td style="width:6px;">&nbsp;</td>
+								<td style="width:20px;">
+									<a style="text-decoration:none; display:block;" href="${t.socialLinks.whatsapp}" target="_blank" rel="noopener">
+										<img width="20" height="20" style="border:0; outline:none; display:block;" src="https://tridentcubed.com/emails/icon-whatsapp.png" alt="WhatsApp" />
+									</a>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</td>
+				<td width="16">&nbsp;</td>
+			</tr>
+		</tbody>
+	</table>
+
 </div>`;
 	}
+
+	// <!-- #3 FOOTER (faux images) -->
+	// #3
+	// <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="">
+	// 	<tbody>
+	// 		<tr style="height:48px; mso-line-height-rule:exactly;">
+	// 			<!-- LOGO (left) -->
+	// 			<td align="left" valign="middle" style="height:48px; width:199px; padding:0; font-size:0; line-height:0;">
+	// 				<a href="https://tridentcubed.com" target="_blank" rel="noopener" style="display:inline-block; text-decoration:none; line-height:0;">
+	// 					<img src="${t.emailFooterLogo}" alt="Trident Cubed" height="48"
+	// 							style="display:block; height:48px; width:199px; border:0; outline:none;" />
+	// 				</a>
+	// 			</td>
+
+	// 			<!-- RED BAR (middle) -->
+	// 			<td align="center" valign="middle" style="background:#000000; height:48px; width:100px; padding:0; font-size:0; line-height:0;">
+	// 				<div style="background:#000000; display:block; width:100%; height:48px; line-height:0; mso-line-height-rule:exactly;">&nbsp;</div>
+	// 			</td>
+
+	// 			<!-- SOCIAL (right) -->
+	// 			<td align="right" valign="middle" style="height:48px; padding:0; font-size:0; line-height:0;">
+	// 				<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; font-size:0; line-height:0;">
+	// 					<tr>
+	// 						<td style="padding:0;"><a href="${t.socialLinks.linkedin}" target="_blank" rel="noopener" style="display:block; line-height:0;">
+	// 							<img height="48" width="26" style="display:block; height:48px; width:26px; border:0; outline:none;" src="${t.emailFooterLinkedin}" alt="LinkedIn" />
+	// 						</a></td>
+	// 						<td style="padding:0;"><a href="${t.socialLinks.facebook}" target="_blank" rel="noopener" style="display:block; line-height:0;">
+	// 							<img height="48" width="26" style="display:block; height:48px; width:26px; border:0; outline:none;" src="${t.emailFooterFacebook}" alt="Facebook" />
+	// 						</a></td>
+	// 						<td style="padding:0;"><a href="${t.socialLinks.whatsapp}" target="_blank" rel="noopener" style="display:block; line-height:0;">
+	// 							<img height="48" width="34" style="display:block; height:48px; width:34px; border:0; outline:none;" src="${t.emailFooterWhatsapp}" alt="WhatsApp" />
+	// 						</a></td>
+	// 					</tr>
+	// 				</table>
+	// 			</td>
+	// 		</tr>
+
+	// 	</tbody>
+	// </table>
 
 	// Expose the getHTML method via onMount callback
 	$effect(() => {
