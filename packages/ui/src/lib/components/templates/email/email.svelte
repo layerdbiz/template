@@ -63,24 +63,30 @@
 		const t = template;
 		return `
 <div class="email-signature" style="box-sizing:border-box; font-family: Arial, sans-serif; font-size:14px; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; width:100%; margin:0; padding:0;">
+	
 	<!-- HEADER / BODY -->
 	<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="mso-table-lspace:0; mso-table-rspace:0;">
 		<tbody>
 			<tr>
-				<td colspan="2" style="padding-top:60px; padding-bottom:40px;">Best Regards,</td>
+				<td colspan="2" style="padding-top:60px; padding-bottom:40px; color: #111111">Best Regards,</td>
 			</tr>
+
 			<tr>
+
 				<!-- PHOTO -->
 				<td style="vertical-align:top; padding-right:10px;">
 					<a href="${t.linkedinUrl}" target="_blank" rel="noopener" style="text-decoration:none; width:112px; height:132px; display:block;">
 						<img src="${t.profileImage}" alt="${t.name}" width="112" style="width:112px; display:block; border:0; outline:none; text-align:center; margin:0 auto;" />
 					</a>
 				</td>
+
 				<!-- CONTACT -->
 				<td style="vertical-align:top; text-decoration:none !important; padding-top:10px; padding-right:10px;">
+					
 					<!-- NAME -->
-					<strong style="font-size:24px; color:#111; font-weight:600; line-height:28px; display:block;">${t.name}</strong>
+					<strong style="font-size:24px; color:#111111; font-weight:600; line-height:28px; display:block;">${t.name}</strong>
 					<span style="color:#00458B; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.2px;">${t.title}</span>
+					
 					<!-- INFO -->
 					<div style="padding-top:10px;">
 						<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="font-size:14px; line-height:18px;">
@@ -145,12 +151,14 @@
 			<tbody style="background:transparent !important;">
 				<tr>
 					<td width="10">&nbsp;</td>
+
 					<!-- LOGO (left) -->
 					<td align="left" valign="middle" style="vertical-align:middle;">
 						<a href="https://tridentcubed.com" target="_blank" rel="noopener" style="text-decoration:none;">
 							<img src="${t.logoImage}" alt="Trident Cubed" height="32" style="display:block; border:0; outline:none; height:32px;" />
 						</a>
 					</td>
+
 					<!-- SOCIAL (right) -->
 					<td align="right" valign="middle" style="vertical-align:middle;">
 						<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="display:inline-block; background:transparent !important;">
@@ -177,6 +185,7 @@
 							</tbody>
 						</table>
 					</td>
+
 					<td width="16">&nbsp;</td>
 				</tr>
 			</tbody>
