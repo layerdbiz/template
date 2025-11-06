@@ -50,11 +50,11 @@
 			.split(',')
 			.map((e) => e.trim())
 			.filter((e) => e.length > 0), // Split all group emails and filter empty
-		logoImage: data.logoImage || '/emails/logo-footer-light.png',
-		emailFooterLogo: '/emails/email-footer-logo.png',
-		emailFooterLinkedin: '/emails/email-footer-linkedin.png',
-		emailFooterFacebook: '/emails/email-footer-facebook.png',
-		emailFooterWhatsapp: '/emails/email-footer-whatsapp.png',
+		logoImage: data.logoImage || 'https://tridentcubed.com/emails/logo-footer-light.png',
+		emailFooterLogo: 'https://tridentcubed.com/emails/email-footer-logo.png',
+		emailFooterLinkedin: 'https://tridentcubed.com/emails/email-footer-linkedin.png',
+		emailFooterFacebook: 'https://tridentcubed.com/emails/email-footer-facebook.png',
+		emailFooterWhatsapp: 'https://tridentcubed.com/emails/email-footer-whatsapp.png',
 		socialLinks: {
 			linkedin:
 				data.socialLinks?.linkedin || 'https://www.linkedin.com/company/trident-cubed-solutions',
@@ -231,7 +231,7 @@
 				<!-- BBB -->
 				<td align="center" valign="top" style="vertical-align:top;">
 					<a style="text-decoration:none; display:block;" href="https://www.bbb.org/us/tx/houston/profile/transportation/trident-cubed-solutions-llc-0915-90069161" target="_blank" rel="noopener">
-						<img width="20" style="border:0; outline:none; display:block; opacity: 0.65" src="/emails/bbb-logo.png" alt="Better Business Bureau" />
+						<img width="20" style="border:0; outline:none; display:block; opacity: 0.65" src="https://tridentcubed.com/emails/bbb-logo.png" alt="Better Business Bureau" />
 					</a>
 				</td>
 
