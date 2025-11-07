@@ -17,13 +17,13 @@
 	const categories = $derived([
 		{
 			label: 'Person',
-			href: '/company/emails/cezary-poninski',
+			href: '/company/emails/capt-cezary-poninski',
 			items: emailData.persons.map((p) => ({ slug: p.slug, name: p.name })),
 			open: true
 		},
 		{
 			label: 'Group',
-			href: '/company/emails/carribean',
+			href: '/company/emails/operations',
 			items: emailData.groups.map((g) => ({ slug: g.slug, name: g.shortname })),
 			open: false
 		}
