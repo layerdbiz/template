@@ -204,11 +204,19 @@
 	<!-- BANNER IMAGE -->
 	${
 		t.banner
-			? `<a href="${t.banner.href}" target="_blank" rel="noopener">
-		<img src="${t.banner.src}" alt="${t.banner.alt}" style="max-width:100%; margin-top:20px; margin-bottom:20px;" />
-	</a>`
+			? `
+	<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="mso-table-lspace:0; mso-table-rspace:0;">
+		<tr>
+			<td style="padding:20px 0 20px 0; line-height:0; font-size:0;">
+				<a href="${t.banner.href}" target="_blank" rel="noopener" style="text-decoration:none; display:block;">
+					<img src="${t.banner.src}" alt="${t.banner.alt}" width="100%" style="margin:0 auto; display:block; border:0; outline:none; width:100%; height:auto;" />
+				</a>
+			</td>
+		</tr>
+	</table>`
 			: ''
 	}
+
 	
 	<!-- Links -->
 	<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="padding-top:10px; border-radius: 20px 20px 0 0; height:100px;">
