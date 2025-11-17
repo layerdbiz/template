@@ -206,7 +206,7 @@
 				h1={getSection('Home')?.title ?? 'Hero Title'}
 				typewriter={{
 					type: 'reveal',
-					messages: ['We Are Port Captains', 'We Are Surveyors', 'We Are Transport Engineers'],
+					messages: ['We Dont Ship Cargo.', 'We Make Sure It Ships.'],
 					delay: 5000,
 					loop: true,
 					autoplay: true,
@@ -215,7 +215,8 @@
 				}}
 			/>
 			<h2 class="text-base-200 order-1 text-[x-small] uppercase tracking-widest lg:text-sm">
-				{getSection('Home')?.subtitle ?? 'Hero Subtitle'}
+				<!-- {getSection('Home')?.subtitle ?? 'Hero Subtitle'} -->
+				Your Trusted Global Partner
 			</h2>
 
 			<!-- stats -->
