@@ -213,6 +213,14 @@
 		const hideAnimationDuration = shouldDelete ? 700 : 0;
 
 		if (phase === 'showing') {
+			// Check if we're on the last message and loop is disabled
+			const nextIndex = (currentMessageIndex + 1) % typewriter.messages.length;
+			if (!typewriter.loop && nextIndex === 0) {
+				// Stay on the last message, don't hide it
+				phase = 'waiting';
+				return;
+			}
+
 			// Time to hide current message
 			hideText();
 			phase = 'hiding';
@@ -223,12 +231,7 @@
 				shouldApplyRevealClasses = false;
 				isRevealed = false;
 
-				currentMessageIndex = (currentMessageIndex + 1) % typewriter.messages.length;
-
-				if (!typewriter.loop && currentMessageIndex === 0) {
-					phase = 'waiting';
-					return;
-				}
+				currentMessageIndex = nextIndex;
 
 				requestAnimationFrame(() => {
 					requestAnimationFrame(() => {
@@ -243,12 +246,7 @@
 					display = '';
 					shouldApplyRevealClasses = false;
 
-					currentMessageIndex = (currentMessageIndex + 1) % typewriter.messages.length;
-
-					if (!typewriter.loop && currentMessageIndex === 0) {
-						phase = 'waiting';
-						return;
-					}
+					currentMessageIndex = nextIndex;
 
 					revealText(typewriter.messages[currentMessageIndex]);
 					phase = 'showing';
@@ -322,10 +320,10 @@
 	function updateTypewriterState(isIntersecting: boolean, enabledProp: boolean | undefined) {
 		currentIntersectionState = isIntersecting;
 		currentEnabledProp = enabledProp;
-		
+
 		const enabled = enabledProp !== undefined ? enabledProp : isIntersecting;
 		const shouldRun = enabled && typewriter !== undefined;
-		
+
 		if (shouldRun && !isTypewriterActive && typewriter) {
 			initTypewriter();
 			isTypewriterActive = true;
