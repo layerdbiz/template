@@ -206,7 +206,7 @@
 				h1={getSection('Home')?.title ?? 'Hero Title'}
 				typewriter={{
 					type: 'reveal',
-					messages: ['We Dont Ship Cargo.', 'We Make Ship Happen.'],
+					messages: ['We Dont Ship Cargo', 'We Make Ship Happen'],
 					delay: 5500,
 					loop: false,
 					autoplay: true,
